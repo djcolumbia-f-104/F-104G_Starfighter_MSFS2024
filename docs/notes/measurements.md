@@ -276,3 +276,17 @@ Reference FM Fig. A2-3 (PDF 457, "Takeoff Airspeed Schedule"): normal liftoff �
 - **AP-10 change (needs Build All + full restart):** per-position values in `[FLAPS.0]` with add incidence 1;
   LAND lift/drag scalar 1.273 (ΔCL 0.62, ΔCD 0.12 as derived from CR-2144), TAKEOFF lift scalar 1.847 (ΔCL 0.30,
   from FM liftoff speed: 0.90 - 0.565 at θ 10.6°). Prediction for the next run: liftoff ≈ 175-180 kt at θ ≈ 10.5°.
+
+## 2026-10-25: T3-D run 5 - flaps never extended (systems), fixed
+Build 15:38 with the AP-10 flap scalars, sim restart 15:42 (T1 ✓), 19 006 lb (FM liftoff 177 kt).
+`docs/data/flighttest_2026-10-25_T3D_takeoff_run5.csv`: first liftoff **193.6 kt at θ 10.6°** - identical to run 4,
+the flap change had no effect. Then a short touchdown, sustained liftoff 211 kt; the script crashed at the AP handover
+(`AP_VS_ON` not in the Python-SimConnect catalog -> None). Recovered by repositioning to 16 500 ft.
+- **Cause:** with the flap lever at TAKEOFF, TRAILING/LEADING_EDGE_FLAPS_LEFT_ANGLE stayed 0°. `[FLAPS.0] system_type = 1`
+  (hydraulic, my estimate) but the test-bed systems.cfg has no hydraulic system (`normal_pressure = 0`); the same for
+  `gear_system_type = 1` (gear did not extend in flight, round E). **The flaps have never moved in any test so far**
+  (round D "gear/flaps down" was in fact flaps up; β/δr does not depend on flaps).
+- Fix: flaps `system_type = 0` (electric, FM 1-73 "two ac motor powered actuators", template circuit Flaps_Motor);
+  gear `gear_system_type = 0` (test-bed solution via circuit Gears_Motor; real gear is hydraulic). T0 rules AP-10 added.
+  `takeoff_test.py` now checks the real flap angle before the run, reports the first liftoff, maps AP_PANEL_VS_ON
+  directly and stops if an event is missing. Needs Build All + full restart.

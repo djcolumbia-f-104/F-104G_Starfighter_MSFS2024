@@ -17,6 +17,7 @@ import sys
 import time
 
 from SimConnect import AircraftEvents, AircraftRequests, SimConnect
+from SimConnect.EventList import Event
 
 sys.stdout.reconfigure(encoding="utf-8")
 out = sys.argv[1]
@@ -29,8 +30,13 @@ sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
 ae = AircraftEvents(sm)
 ev = {n: ae.find(n) for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "THROTTLE1_SET", "PARKING_BRAKES", "GEAR_UP",
-                              "FLAPS_UP", "AP_MASTER", "AP_ALT_VAR_SET_ENGLISH", "AP_ALT_HOLD_ON", "AP_VS_VAR_SET_ENGLISH", "AP_VS_ON",
+                              "FLAPS_UP", "AP_MASTER", "AP_ALT_VAR_SET_ENGLISH", "AP_ALT_HOLD_ON", "AP_VS_VAR_SET_ENGLISH",
                               "AP_HDG_HOLD_ON", "HEADING_BUG_SET")}
+# nicht im Katalog der Bibliothek (ae.find -> None, Lauf 5 brach ab) -> direkt abbilden
+ev["AP_PANEL_VS_ON"] = Event(b"AP_PANEL_VS_ON", sm)
+missing = [n for n, e in ev.items() if e is None]
+if missing:
+    sys.exit(f"Events nicht gefunden: {missing}")
 
 
 def rad(v):
@@ -62,6 +68,11 @@ lat0, lon0 = aq.get("PLANE_LATITUDE"), aq.get("PLANE_LONGITUDE")
 print(f"Startposition (für msfs_set_aircraft_position): lat {lat0}, lon {lon0}, Kurs {s0['hdg']:.1f}° rw")
 if not s0["gnd"]:
     sys.exit("Flugzeug ist nicht am Boden - abgebrochen")
+# Hebelstellung allein genügt nicht (Lauf 5: Hebel TAKEOFF, Klappen 0°, weil hydraulisch ohne Hydrauliksystem)
+flap = rad(aq.get("TRAILING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
+print(f"Klappen Hinterkante {flap:.1f}°, Trimmung {rad(aq.get('ELEVATOR_TRIM_POSITION')) * DEG:.2f}°")
+if not 10 <= flap <= 20:
+    sys.exit("Klappen nicht in TAKEOFF (15°) - abgebrochen")
 hdg0 = s0["hdg"]
 if aq.get("BRAKE_PARKING_POSITION") != 1:
     ev["PARKING_BRAKES"]()
@@ -120,7 +131,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             ev["AP_VS_VAR_SET_ENGLISH"](4000)
             if aq.get("AUTOPILOT_MASTER") != 1:
                 ev["AP_MASTER"]()
-            ev["AP_VS_ON"]()
+            ev["AP_PANEL_VS_ON"]()
             ev["AP_HDG_HOLD_ON"]()
             ap_on = True
             print(f"AP übernimmt bei {s['agl']:.0f} ft über Grund, {s['ias']:.0f} kt")
@@ -131,6 +142,9 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             air_since = None
         elif air_since is None:
             air_since = s
+            if res.get("first_air") is None:            # erstes Abheben (Lauf 5 setzte danach noch einmal auf)
+                res["first_air"] = s
+                print(f"Erstes Abheben: {s['ias']:.0f} kt, Nicklage {s['theta']:.1f}°, Rollstrecke {dist:.0f} ft")
         elif res["liftoff"] is None and s["t"] - air_since["t"] > 1.0:
             res["liftoff"] = dict(air_since, tt=air_since["t"] - t0)
             print(f"Abheben: {air_since['ias']:.0f} kt, Nicklage {air_since['theta']:.1f}°, "

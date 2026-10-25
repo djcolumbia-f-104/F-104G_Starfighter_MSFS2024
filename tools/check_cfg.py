@@ -93,6 +93,13 @@ for pos, soll in ((1, 0.30), (2, 0.62)):
     check("AP-10", f"Klappenstellung {pos}: ΔCL ≈ {soll} (lift_coef_flaps x lift scalar x rad), add incidence 1",
           abs(dcl - soll) < 0.03 and v[7] == 1, info=f"ΔCL {dcl:.3f}, add incidence {v[7]}")
 
+hyd = num(load(os.path.join(CFG, "systems.cfg")).get("hydraulic_system", {}).get("normal_pressure")) or 0
+check("AP-10", "Klappen elektrisch (FM 1-73: AC-Motoren); hydraulisch nur mit Hydrauliksystem (T3-D Lauf 5)",
+      num(flaps.get("system_type")) == 0, info=f"system_type {flaps.get('system_type')}")
+check("AP-10", "Fahrwerk nicht hydraulisch, solange [HYDRAULIC_SYSTEM] keinen Druck hat (Runde E)",
+      num(fm.get("contact_points", {}).get("gear_system_type")) != 1 or hyd > 0,
+      info=f"gear_system_type {fm.get('contact_points', {}).get('gear_system_type')}, Hydraulikdruck {hyd}")
+
 cp = fm.get("contact_points", {})
 
 

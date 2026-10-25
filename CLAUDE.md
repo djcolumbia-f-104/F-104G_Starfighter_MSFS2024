@@ -18,8 +18,9 @@ sideslip is strong, as in the real F-104 (FM 6-2) - the AP wing leveler cannot h
 destabilizing -> disabled in systems.f104.cfg. **T3-E2 passed (round E):** δa/δr 0.39, β/δr 0.32, both within CR-2144
 Table III-9 (0.27-0.47 / 0.32-0.42; the rudder's own rolling moment L'δr must be included). AP-6 done.
 Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s; even then the jet sinks ~6 500 ft).
-**T3-D takeoff (2026-10-25, `tools/takeoff_test.py`):** liftoff 194 kt vs. FM 174 kt -> flap lift fixed (AP-10, SDK
-radians formula + add incidence). **Needs Build All + full sim restart**, then repeat T3-D (procedure in the cookbook).
+**T3-D takeoff (2026-10-25, `tools/takeoff_test.py`):** liftoff 194 kt vs. FM 174-177 kt. Two causes fixed: flap lift
+formula (AP-10, SDK radians + add incidence) and **flaps/gear never moved** (hydraulic system_type without a hydraulic
+system in the template -> now electric). **Needs Build All + full sim restart**, then repeat T3-D (cookbook).
 **Next step:** repeat T3-D, then T3-H climb (ISA), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
 supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
@@ -150,7 +151,10 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
   - `htail_area = 0` becomes 0.1 ft² (warning in debug, harmless).
   - Flaps: ΔCL = lift_coef_flaps x lift scalar x deflection in RADIANS; per-position `add incidence` (default 0.5)
     adds only half at α 0 -> set it to 1 and scale per position (8 values in `flaps-position.i`).
-  - `AP_ALT_HOLD_ON` holds the current altitude; positive `AXIS_RUDDER_SET` = nose left.
+  - `AP_ALT_HOLD_ON` holds the current altitude; positive `AXIS_RUDDER_SET` = nose left. Python-SimConnect lacks some
+    events (`AP_VS_ON`): map them with `SimConnect.EventList.Event(b"AP_PANEL_VS_ON", sm)`.
+  - Flaps/gear with `system_type`/`gear_system_type` = 1 (hydraulic) do not move without a [HYDRAULIC_SYSTEM] with
+    pressure -> always check the real angle (TRAILING_EDGE_FLAPS_LEFT_ANGLE, GEAR_TOTAL_PCT_EXTENDED), not the lever.
 
 ## Python
 - Python 3.15.1 (default) is too new for many packages; project venv `tools\.venv` (3.13, markitdown, PyMuPDF).
