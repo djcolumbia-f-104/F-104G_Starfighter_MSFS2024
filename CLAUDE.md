@@ -29,7 +29,9 @@ without a hydraulic system in the template -> now electric).
 **Automation idea (pete, 2026-10-25, to try first next session):** (1) does reloading the aircraft (instead of a full
 sim restart) re-run the normalization? (2) script: kill sim -> `steam://rungameid/2537590` -> wait for SimConnect ->
 `msfs_load_flight`; (3) `fspackagetool.exe` build with the sim closed; (4) GUI clicks via AutoHotkey if needed.
-n8n is not suitable (no desktop control).
+n8n is not suitable (no desktop control). Preferred: own small project MCP server (Python FastMCP, `tools/mcp_f104/`)
+wrapping restart_sim, check_build (T0/T1), preflight, takeoff/doublet/sideslip tests and analyse_* with compact
+results only (saves most tokens); do not modify the third-party simconnect-mcp.
 **Next step:** AP-11 - read CR-2144 Table III-10/11 (PDF 63/64, Dutch roll ωn/ζ), then reduce Cnβ (vtail_area /
 rudder_lift_coef / fuselage) while keeping β/δr 0.32 (T3-E) - test with `tools/doublet_test.py`; then tune the yaw
 damper (T3-J), T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
