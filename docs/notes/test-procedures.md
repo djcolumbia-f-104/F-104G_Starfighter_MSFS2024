@@ -84,7 +84,7 @@ points with brakes fully out (target 0.042 ±20 %) and CD_sim/CD_nasa for the cl
 Clean, ~16 500 ft, ~350 KIAS, AP ALT + wing leveler (no HDG). Logger 40 s per run. Rudder doublet:
 `AXIS_RUDDER_SET 16383` for ~1 s, `-16383` for ~1 s, `0`. Run 1 yaw damper off, run 2 after `YAW_DAMPER_ON`
 (read AUTOPILOT_YAW_DAMPER first, toggle events switch blindly). Evaluate INCIDENCE_BETA (column 23): period,
-cycles to half amplitude. Target: CR-2144 Dutch roll (handling qualities table III-10/11, PDF 63/64) without SAS,
+cycles to half amplitude. Use `tools/doublet_test.py <csv> 30` (7 Hz, prints peaks, period, ratio). Target: CR-2144 Dutch roll (handling qualities table III-10/11, PDF 63/64) without SAS,
 "completely damped" with SAS (FM 6-3). Also hold 30° bank for 20 s with the yaw damper on: no roll-off.
 
 ## T3-E rudder (sideslip)

@@ -329,3 +329,19 @@ Changes (cfg value comparison against the previous commit: only these keys): spe
 `yaw_damper_rudder_gain` 1.0, `max_pitch_velocity_lo_alt`/`hi_alt` 5/4 °/s. The clean flight model is unchanged
 (spoilers only act when extended, the yaw damper only after YAW_DAMPER_ON). takeoff_test.py ends with throttle 7000
 instead of military; simlog.py logs SPOILERS_HANDLE_POSITION and AMBIENT_TEMPERATURE.
+
+## 2026-10-25: round F flown - speed brakes PASSED, AP pitch rate OK, Dutch roll too fast (new finding)
+Build + full restart (T1 ✓, T2 ✓). Positioned at 16 500 ft / 520 kt TAS: with AP pitch rate 5°/s the jet now sank
+only ~1 400 ft (before: up to 6 500 ft) ✓.
+- **S11e speed brakes** (`..._roundF_speedbrake.csv`, ~490 -> 420 KIAS, M 0.97 -> 0.84, throttle constant):
+  fully out **ΔCD 0.046** steady (mean incl. extension 0.040) vs. target 0.042 ±20 % -> **PASSED**. Deceleration
+  +0.3 kt/s -> -3.5 kt/s. The "CD_sim/CD_nasa 1.48" points right after SPOILERS_OFF are the retraction transient
+  (handle already 0, surface still moving) - not a flight model error.
+- **T3-J Dutch roll** (`tools/doublet_test.py`, 7 Hz, ~420 KIAS, 15 000 ft, AP ALT + wing leveler):
+  yaw damper off (`..._doublet_ydoff.csv`): β peaks -2.13/+0.98/-0.67/+0.41°, **period ≈ 0.87 s**, amplitude ratio
+  per cycle ≈ 0.31 (ζ ≈ 0.19); yaw damper on, gain 0.3 (`..._doublet_ydon.csv`): practically identical (ratio 0.33),
+  no roll-off (bank -1..-4°) ✓.
+  CR-2144 F/C 4 (15 000 ft, M 0.9): N'β = 9.91 -> ωn ≈ 3.1 rad/s -> **period ≈ 2.0 s**, ζ ≈ (|N'r|+|Y'v|)/(2ωn) ≈ 0.11.
+  -> **The sim's directional stiffness is ~5x too high** (ωn ≈ 7.2 rad/s) although β/δr was correct (ratio of two
+  equally too strong moments). Suspect: `rudder_lift_coef` 5.0 on vtail_area 38 ft² ([S]) and/or fuselage
+  contribution; yaw inertia (59 669 slug ft², CR-2144) is plausible. **New work package AP-11** (see plan).

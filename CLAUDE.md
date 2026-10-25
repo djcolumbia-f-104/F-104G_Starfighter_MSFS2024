@@ -24,10 +24,11 @@ fixes: flap lift formula (AP-10, SDK radians + add incidence) and flaps/gear tha
 without a hydraulic system in the template -> now electric).
 **T3-H climb potential (2026-10-25, `tools/analyse_climb.py`):** subsonic ✓ at 10 000/20 000 ft; supersonic
 -20 %/+30 % of excess thrust (≤ 800 lbf, opposite signs) -> accepted, revisit with T3-I.
-**Round F prepared (needs Build All + full restart):** speed brakes (S11e), yaw damper gain 0.3 (T3-J), AP pitch
-rate 5°/s; procedures in the cookbook.
-**Next step:** round F tests (speed brakes, T3-J), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
-supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
+**Round F (2026-10-25 evening):** speed brakes ✓ (ΔCD 0.046), AP pitch rate 5°/s ✓, yaw damper 0.3 harmless (no effect).
+**Finding: Dutch roll period 0.87 s vs. ~2.0 s (CR-2144) -> directional stiffness ~5x too high (AP-11).**
+**Next step:** AP-11 - read CR-2144 Table III-10/11 (PDF 63/64, Dutch roll ωn/ζ), then reduce Cnβ (vtail_area /
+rudder_lift_coef / fuselage) while keeping β/δr 0.32 (T3-E) - test with `tools/doublet_test.py`; then tune the yaw
+damper (T3-J), T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
