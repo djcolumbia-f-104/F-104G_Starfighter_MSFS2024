@@ -22,7 +22,9 @@ Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s
 **T3-D takeoff PASSED (2026-10-25, `tools/takeoff_test.py`, run 6):** liftoff 185 kt vs. FM 179 kt (+3.4 %) after two
 fixes: flap lift formula (AP-10, SDK radians + add incidence) and flaps/gear that never moved (hydraulic system_type
 without a hydraulic system in the template -> now electric).
-**Next step:** T3-H climb potential vs. D-6398 (level AB accelerations already logged in rounds A/C), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
+**T3-H climb potential (2026-10-25, `tools/analyse_climb.py`):** subsonic ✓ at 10 000/20 000 ft; supersonic
+-20 %/+30 % of excess thrust (≤ 800 lbf, opposite signs) -> accepted, revisit with T3-I.
+**Next step:** T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
 supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,

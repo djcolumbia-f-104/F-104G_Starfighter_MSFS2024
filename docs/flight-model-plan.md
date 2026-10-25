@@ -51,7 +51,7 @@ engine burning, N1 ≥ 60 %, fuel selector ALL, battery; prints weight, CG, elev
 | T3-E2 steady heading sideslip | as T3-E, opposite aileron holds wings level (closed-loop script) | aileron δa required at full rudder | δa/δr 0.27-0.47 (CR-2144 Table III-9 incl. rudder roll moment L'δr) ±30 % |
 | T3-F drag | idle deceleration as in T3-A, dV/dt | CD_sim = (T − m·dV/dt − W sinγ)/(q S) | CD vs. D-7137 Table 2 ±10 % (`analyse_drag.py`) — **passed 2026-10-25** (1.00/1.04) |
 | T3-G trim gradient | from T3-A data | elevator + trim vs. α | slope vs. CR-96008 −Cmα/Cmδe 0.67-1.05; intercept ≈ 0 (measured 1.06-1.08, −0.05°) |
-| T3-H climb | ISA (Clear Sky), takeoff with max AB, climb per D-6398 profile | time/altitude/Mach | D-6398 flight test data ±10 % |
+| T3-H climb | level max-AB accelerations at 10 000 and 20 000 ft as in D-6398 (`tools/analyse_climb.py`) | excess thrust Fn,ex(M) at 18 000 lb | D-6398 Fig. 6 ±10 % (band means); **2026-10-25: subsonic ✓, supersonic ±20-30 % (≤ 800 lbf) accepted** |
 | T3-I top speed | 36 000-40 000 ft, max AB, sink in from above, then level | Mach | FM: M 2.0 (engine temperature limit) |
 | T3-J dynamic stability | rudder doublet (Dutch roll), release 30° bank (spiral), pitch pulse | period, damping, doubling time | Dutch roll ~2.3 s at 260 kt (Cnβ 0.50); spiral > 20 s |
 | T3-K roll rate | full aileron at cruise speed (gear up ±9.75°) | p max | FM/CR-2144 Clδa |
@@ -101,6 +101,7 @@ contact points (AP-5) only act on the ground.
 | S11d | repeat T3-E2 with PI roll loop (script updated), constant speed, AILERON_LEFT_DEFLECTION; read CR-2144 lateral derivatives for cruise (PDF 55-65); then decide on roll due to sideslip (geometry: vtail_pos_vert/span, wing_dihedral) and tune the yaw damper separately (T3-J Dutch roll) | yes | **done** (round E): β/δr 0.32, δa/δr 0.39 within CR-2144 0.27-0.47 -> no change |
 | S11e | speed brakes (fuselage, FM data: area, deflection, drag/pitch effect) as spoilers in flight_model.cfg; test: deceleration at 400 kt with/without | yes | ΔCD vs. FM |
 | S10 | T3-D takeoff (scripted, `tools/takeoff_test.py`): runs 4/5 194 kt (flap lift formula + flaps never extended) -> AP-10 fixed; **run 6: 185 kt vs. FM 179 kt (+3.4 %) ✓**; next T3-H climb vs. D-6398 | yes | **done** |
+| S10b | T3-H excess thrust vs. D-6398 at 10 000/20 000 ft (flown after the takeoff): subsonic ✓, supersonic -20 % at 10 000 ft and +30 % at 20 000 ft (opposite signs, ≤ 5 % of thrust) -> no change; revisit with T3-I | yes | **done** |
 | S12 | supersonic trim: at M 1.15 trim −4° (near the −5° stop); real F-104 needs more nose-up at supersonic speed (aft shift of the neutral point) -> check with T3-I | yes | trim within range up to M 2 |
 
 ## 4. Findings from SDK, tutorials and tests (2026-10-25)

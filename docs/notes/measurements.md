@@ -301,3 +301,23 @@ Build 15:57 (electric flaps/gear, English comments), full sim restart 16:01 (T1 
 - AP handover in VS mode (AP_PANEL_VS_ON) worked: climb 3 150 ft/min. After the script (military + ALT hold at
   1 500 ft AGL) the jet accelerated to 600 kt IAS at ~3 000 ft -> throttle reduced by hand. To do: reduce power
   in the script after the handover.
+
+## 2026-10-25: T3-H excess thrust / climb potential vs. NASA TN D-6398 (level max-AB accelerations)
+Same sim session as T3-D run 6 (flown on after the takeoff). Ambient ~ISA-1 °C, weight 18 100 -> 16 200 lb (corrected
+to 18 000 lb via induced drag). Reference `docs/data/nasa_d6398_excess_thrust_lbf.csv` (read from Fig. 6(a)/(b),
+±300 lbf). New tool `tools/analyse_climb.py` (energy balance Fn,ex = W/g·dV/dt + W·sin γ). Logger reached only
+~0.7 Hz with 24 SimVars (asked for 3 Hz) - enough for band means.
+- **10 000 ft** (`..._T3H_accel10k.csv`, M 0.49 -> 1.23 in 65 s, AP drifted up to 11 300 ft): Fn,ex sim/NASA
+  M 0.56-1.05: 0.81-1.15, mostly 0.86-1.07 (band means within ±10 % except M 0.70: 0.84) ✓;
+  **M 1.07-1.19: 0.74-0.91 (about -800 lbf)**.
+- **20 000 ft** (`..._T3H_accel20k.csv`, M 0.67 -> 1.48, altitude held 19 900-20 000 ft): M 0.70-1.25: 0.88-1.09 ✓;
+  **M 1.30-1.40: 1.16-1.33 (about +500..+800 lbf)**.
+- Decomposition with `analyse_drag.py` (thrust is logged): supersonic drag at 10 000 ft +3..+7 % vs. D-7137, net
+  thrust at M 1.15 about -1.5 % -> the two small errors add up to -800 lbf of excess thrust (excess thrust is the small
+  difference of ~16 000 lbf thrust and ~13 000 lbf drag: 5 % of thrust = 25 % of excess thrust).
+- The supersonic deviations have **opposite signs at 10 000 and 20 000 ft**, so no single drag or thrust factor fixes
+  both; the model stays consistent with D-7137 (thrust ±1-4 %, drag 1.00-1.07). D-6398 itself states that predicted
+  climb potential matches the measurement only within 10 %, and its 20 000 ft data dip around M 1.4-1.5 (T2 reset).
+- **Verdict T3-H: subsonic/transonic passed (M 0.6-1.05 at 10 000 ft, M 0.7-1.25 at 20 000 ft); supersonic outside
+  ±10 % but within ±800 lbf (≤ 5 % of thrust) -> accepted for now, no change.** Revisit with T3-I (Mach 2 at
+  35 000-40 000 ft), where the D-6398 30 000/40 000 ft data (Fig. 6(c)/(d), PDF 29) can be added.

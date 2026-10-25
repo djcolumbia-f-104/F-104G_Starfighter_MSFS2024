@@ -1,0 +1,21 @@
+# Standard-day excess thrust Fn,ex = Fn - D (lbf) of the F-104G at maximum afterburner, n = 1, gross weight 18 000 lb,
+# no external stores, over Mach (rows) and altitude (columns, ft). Source: NASA TN D-6398, Figure 6(a)/(b), PDF 28.
+# Read from the plotted flight-test points (centre of the scatter, runs A and B), reading accuracy approx. +-300 lbf.
+# Empty = outside the flown Mach range.
+mach,h10000,h20000
+0.55,7800,
+0.60,9300,7000
+0.65,10500,7000
+0.70,11400,6600
+0.75,12200,6800
+0.80,12500,7400
+0.85,12400,8000
+0.90,11300,8400
+0.95,9700,7200
+1.00,7200,5600
+1.05,5800,4300
+1.10,4500,4100
+1.15,3700,3800
+1.20,3000,3500
+1.30,,2900
+1.40,,2300

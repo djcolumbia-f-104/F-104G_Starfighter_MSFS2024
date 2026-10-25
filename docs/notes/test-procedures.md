@@ -66,6 +66,14 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
 Pitfalls: positive AXIS_RUDDER_SET = nose left; loop runs at only ~3 Hz (reads wait for sim frames) -> low gains;
 `AP_ALT_HOLD_ON` holds the CURRENT altitude (never use it right after liftoff).
 
+## T3-H excess thrust (level max-AB acceleration, as D-6398)
+Best flown straight after T3-D (weight ~18 000 lb, close to the NASA weight). AP: `AP_ALT_VAR_SET_ENGLISH` 10000 (or
+20000), `AP_VS_VAR_SET_ENGLISH` 2500-4000, `AP_PANEL_VS_ON` (captures the altitude). Throttle so that the run starts at
+M ~0.5 (10 000 ft) / ~0.65 (20 000 ft) slightly below the target altitude. Logger 110-130 s, then `THROTTLE1_SET 16383`;
+stop at M 1.2 (10 000 ft, ~710 KIAS, limit 750) / M 1.45 (20 000 ft), throttle 0.
+Evaluation: `tools\.venv\Scripts\python.exe -I tools\analyse_climb.py . <csv>` (+ `analyse_drag.py` to split
+thrust and drag). Check AMBIENT_TEMPERATURE against ISA before the run (thrust depends on it).
+
 ## T3-E rudder (sideslip)
 1. **AP must be ON before positioning** (after a sim restart it is off: check `AUTOPILOT_MASTER`, send `AP_MASTER`,
    `AP_ALT_VAR_SET_ENGLISH 16000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`).
