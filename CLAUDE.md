@@ -178,5 +178,7 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
   (cleaned in `docs/data/*.csv`; markitdown tables are misaligned, always check against the scan).
 - `NASA_CR-2144`: F-104A inertia, derivatives, three-view (PDF 38-66, printed sideways).
 - `NASA_CR-96008` (Teper 1969): F-104 longitudinal derivatives for 5 flight conditions (PDF 80-85), see research.md.
+- NACA RM SL56H06 (1956, NTRS 20090026345, not stored): 0.04-scale F-104A model, Table I = full tail geometry
+  (fin 36.0 ft², LE sweeps wing 27.1°/htail 19.5°/fin 52.3°, ventral fins) -> `docs/aircraft-data.md`.
 - https://www.916-starfighter.de/documents.htm: articles, F-104D/S manuals; no geometry data.
 - Screenshots from Steam (F12) are in `C:\Program Files (x86)\Steam\userdata\1490757\760\remote\2537590\screenshots`.

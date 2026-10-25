@@ -16,7 +16,8 @@ Project variant: single-seat F-104G, engine J79-GE-11A.
 | Span (exact) | 21.94 ft | 6.69 m | confirmed, D-6398 Tab. 1 |
 | Wing aspect ratio | 2.45 | | confirmed, D-6398 Tab. 1 |
 | Wing anhedral | −10° | | confirmed, FM 6-2 / PDF 392 ("the 10 degrees negative wing dihedral") |
-| Leading-edge sweep | 26° | | provisional (Wikipedia) |
+| Leading-edge sweep | 27.1° (quarter chord 18.1°, 70.4 % chord 0°) | | confirmed, NACA RM SL56H06 Tab. I (F-104A); Wikipedia gave 26° |
+| Wing taper ratio / root chord / tip chord | 0.377 / 12.98 ft / 4.89 ft | 3.96 / 1.49 m | taper confirmed (RM SL56H06, D-6398 consistent); chords calculated from S, b, taper (theoretical, to the centreline) |
 | Airfoil | biconvex, 3.36 % thickness at root and tip | | provisional (Wikipedia) |
 | Fuselage: frontal area / length / fineness | 25.0 ft² / 51.25 ft / 9.09 | | confirmed, D-6398 Tab. 1 |
 | Horizontal tail: area / span / aspect ratio | 48.2 ft² / 11.91 ft / 2.95 | | confirmed, D-6398 Tab. 1 |
@@ -119,9 +120,39 @@ Ix/Iy/Iz = 3549 / 58 611 / 59 669 slug·ft² at 16 300 lb (CG 0.070 c̄);
 approach: 170 kt, α 2.3°, flaps 45° + BLC, CL 0.735, CD 0.263, CLα 3.44/rad, Cmα −0.64/rad, Cnβ 0.50/rad.
 Status: confirmed for the F-104A, guide value for the G (heavier, larger fin).
 
+## Tail geometry: NACA RM SL56H06 (F-104A wind-tunnel model, scale 0.04)
+Spearman et al., *Longitudinal and lateral stability characteristics of a 0.04-scale model of the Lockheed F-104A
+airplane at Mach numbers of 1.82 and 2.01*, NACA RM SL56H06, 1956 (declassified; NTRS 20090026345, downloaded
+2026-10-25, not in the repo). Table I (PDF 15), converted to full scale (lengths / 0.04, areas / 0.0016):
+
+| Item | Model | Full scale | Remark |
+|---|---|---|---|
+| Wing area / span / MAC | 0.3137 ft² / 10.48 in / 4.584 in | 196.1 ft² / 21.83 ft / 9.55 ft | matches D-6398, CR-2144 |
+| Wing LE sweep / taper / dihedral | 27.1° / 0.377 / −10° | same | 3.36 % modified circular arc |
+| Horizontal tail area / span / MAC | 0.0771 ft² / 5.72 in / 2.116 in | 48.2 ft² / 11.92 ft / 4.41 ft | matches D-6398 |
+| Horizontal tail LE sweep / taper | 19.5° / 0.311 | same | quarter chord 10.1°, midchord 0° |
+| **Vertical tail V2 (basic F-104A)**: area to theoretical root / span | 8.30 in² / 2.66 in | **36.0 ft² / 5.54 ft** | theoretical root 1.52 in (3.17 ft) above the fuselage reference line |
+| V2 root chord / tip chord / MAC / taper | 4.50 / 1.70 / 3.44 in, 0.378 | 9.38 / 3.54 / 7.17 ft | aspect ratio (panel) 0.85 |
+| V2 LE sweep / quarter-chord sweep | 52.3° / 34.9° | same | 4.25 % modified circular arc |
+| Vertical tail V3 ("enlarged", tested) | 11.7 in², span 3.61 in, LE 44.0° | 50.8 ft², 7.52 ft | wind-tunnel variant, not necessarily the G fin |
+| Ventral fins U1 / U2 / U3 / U4 | 5.8 / 3.5 / 2.2 / 1.6 in² | 25.2 / 15.2 / 9.5 / 6.9 ft² | report: U2 preferred (no ground-clearance restriction) |
+
+Use: the F-104G has a larger fin than the A (as F-104B/D; forum/secondary sources, no area found) -> fin area of the
+G between 36 ft² (A) and ~51 ft² (V3) [S]. The cfg uses `vtail_area` 38 ft², span 5.5 ft (close to V2) but
+`vtail_sweep` 40° (V2: LE 52.3°) and `htail_sweep` 10° (LE 19.5°; 10° is the quarter-chord value) and `wing_sweep`
+26° (27.1°). **Candidates for AP-11** (Dutch roll too fast): the fin itself is not oversized, so the excess
+directional stiffness must come from `rudder_lift_coef` 5.0 or the fuselage terms - correct the sweeps in the same
+round (they reduce the fin lift slope).
+Also from the report: "a considerable portion of the vertical-tail contribution to directional stability was
+required to overcome the large unstable yawing moment caused by the long fuselage" (conclusion 2).
+
 ## Still open
-- Root/tip chords, F-104G fin area: no source yet (CR-2144 drawing of the A gives ≈ 38 ft²).
-- Scale moments of inertia to the F-104G mass.
-- Flap effect (TAKEOFF/LAND, BLC) and slow flight below Mach 0.4.
-- CG limits (read FM 5-15 "Center of Gravity Limitations").
-- Takeoff and landing distances, approach speeds: FM appendix (Performance Data), Section II.
+- F-104G fin area: no G-specific source yet (A: 36.0 ft², NACA RM SL56H06; G larger, see above).
+- Scale moments of inertia to the F-104G mass: CR-2144 values are for 16 300 lb; the G at 18-20 000 lb is heavier
+  mainly through fuel near the CG, so Iy/Iz grow less than the mass ratio - keep CR-2144 values until a source is found.
+- Slow flight below Mach 0.4 (lift/drag tables start at M 0.4). Flap effect: done (AP-10, T3-D run 6).
+- CG limits: **FM 5-15 gives no numbers** ("With any combination of standard external load items the center of
+  gravity remains within limits"; no weight limitations with standard items) -> `CG_forward_limit`/`CG_aft_limit`
+  stay [S] (CR-2144 range 0.07-0.164 c̄).
+- Takeoff: liftoff speed FM Fig. A2-3 (PDF 457, used for T3-D); ground run Fig. A2-4 (PDF 458) not read yet.
+  Landing distances and approach speeds: FM appendix part "Landing" and Section II not located yet.
