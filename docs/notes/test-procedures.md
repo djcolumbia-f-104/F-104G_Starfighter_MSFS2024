@@ -55,6 +55,17 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
    `analyse_drag.py . <csv> <t_idle+3> <t_recovery>` (T3-F). AB fuel flow/thrust against
    `docs/data/nasa_d7137_*_maxab_*.csv` (calculation see measurements.md, round A).
 
+## T3-D takeoff (scripted)
+1. Jet on the runway: after a sim start from the world map (EDDM runway 26L), or reposition:
+   `msfs_set_aircraft_position(latitude=48.34472097713059, longitude=11.803858844132039, heading=263.4, on_ground=true)`,
+   then `THROTTLE1_SET 0`, `GEAR_DOWN`, `FLAPS_1` (TAKEOFF), `AUTOPILOT_OFF`, `ELEVATOR_TRIM_SET 7447` (= 5° nose up,
+   16383 = 11°); check with preflight.py (trim 5.00°, N1 ~67 %).
+2. `...simconnect-mcp\.venv\Scripts\python.exe -I tools\takeoff_test.py docs\data\flighttest_<date>_T3D_takeoff_runN.csv`
+   (defaults Vr 157 kt, θ 10.5°). Prints liftoff IAS, θ, ground roll; AP takes over in VS mode at 30 ft.
+3. Compare with FM Fig. A2-3: liftoff ≈ 155 + 4.43 kt per 1 000 lb above 14 000 lb (weight from preflight).
+Pitfalls: positive AXIS_RUDDER_SET = nose left; loop runs at only ~3 Hz (reads wait for sim frames) -> low gains;
+`AP_ALT_HOLD_ON` holds the CURRENT altitude (never use it right after liftoff).
+
 ## T3-E rudder (sideslip)
 1. **AP must be ON before positioning** (after a sim restart it is off: check `AUTOPILOT_MASTER`, send `AP_MASTER`,
    `AP_ALT_VAR_SET_ENGLISH 16000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`).

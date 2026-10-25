@@ -85,6 +85,14 @@ check("AP-6", "rudder_maxangle_scalar ≈ 0,32 (Klappenruder-Anteil, CR-2144), e
 check("AP-6", "rudder_lift_coef bleibt 5 (Seitenflosse = Richtungsstabilität, Runde B2)",
       (num(aero.get("rudder_lift_coef")) or 5.0) >= 4.9, info=f"ist {aero.get('rudder_lift_coef', '5.0')}")
 
+flaps, lcf = fm.get("flaps.0", {}), num(aero.get("lift_coef_flaps")) or 0
+for pos, soll in ((1, 0.30), (2, 0.62)):
+    v = [num(t) for t in flaps.get(f"flaps-position.{pos}", "0").split(",")]
+    v += [None] * (8 - len(v))
+    dcl = lcf * (num(flaps.get("lift_scalar")) or 1) * (v[3] or 1) * (v[0] or 0) / 57.29578
+    check("AP-10", f"Klappenstellung {pos}: ΔCL ≈ {soll} (lift_coef_flaps x lift scalar x rad), add incidence 1",
+          abs(dcl - soll) < 0.03 and v[7] == 1, info=f"ΔCL {dcl:.3f}, add incidence {v[7]}")
+
 cp = fm.get("contact_points", {})
 
 

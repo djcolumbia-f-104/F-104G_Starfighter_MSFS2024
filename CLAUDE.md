@@ -18,8 +18,10 @@ sideslip is strong, as in the real F-104 (FM 6-2) - the AP wing leveler cannot h
 destabilizing -> disabled in systems.f104.cfg. **T3-E2 passed (round E):** δa/δr 0.39, β/δr 0.32, both within CR-2144
 Table III-9 (0.27-0.47 / 0.32-0.42; the rudder's own rolling moment L'δr must be included). AP-6 done.
 Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s; even then the jet sinks ~6 500 ft).
-**Next step:** S10 takeoff test T3-D with the user, T3-H climb (ISA), T3-J yaw damper / Dutch roll, S11e speed
-brakes (not modelled yet), supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
+**T3-D takeoff (2026-10-25, `tools/takeoff_test.py`):** liftoff 194 kt vs. FM 174 kt -> flap lift fixed (AP-10, SDK
+radians formula + add incidence). **Needs Build All + full sim restart**, then repeat T3-D (procedure in the cookbook).
+**Next step:** repeat T3-D, then T3-H climb (ISA), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
+supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
@@ -146,6 +148,9 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
     (`use_gross_thrust_on_fuelflow`); AB TSFC only applies to the AB thrust increment.
   - Starting from the world map ignores .flt files (yaw damper off) -> send `YAW_DAMPER_ON`.
   - `htail_area = 0` becomes 0.1 ft² (warning in debug, harmless).
+  - Flaps: ΔCL = lift_coef_flaps x lift scalar x deflection in RADIANS; per-position `add incidence` (default 0.5)
+    adds only half at α 0 -> set it to 1 and scale per position (8 values in `flaps-position.i`).
+  - `AP_ALT_HOLD_ON` holds the current altitude; positive `AXIS_RUDDER_SET` = nose left.
 
 ## Python
 - Python 3.15.1 (default) is too new for many packages; project venv `tools\.venv` (3.13, markitdown, PyMuPDF).

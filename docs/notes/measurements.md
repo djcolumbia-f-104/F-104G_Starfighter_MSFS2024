@@ -254,3 +254,25 @@ Build + full sim restart with yaw damper off (T1 ✓, TgtClAOA0 0.0100 ✓, T2 �
   543 kt IAS. GEAR_DOWN and FLAPS_DOWN at ~217 kt moved the handles, but gear stayed 0 % and flaps 0° (no damage
   flags) - cause unknown, possibly the AP climb at ~8 000 ft/min pushed the speed over the limits. Test then flown clean.
 - The F-104 has fuselage speed brakes; not modelled yet (all spoiler values 0) -> new work package.
+
+## 2026-10-25: T3-D takeoff, runs 1-4 (scripted, `tools/takeoff_test.py`) - liftoff 20 kt too fast -> AP-10 flaps
+EDDM runway 26L start position (true heading 263.4°): lat 48.34472, lon 11.80386 (re-usable with
+`msfs_set_aircraft_position(on_ground=true)`). Wind ~250°/21 kt (headwind; IAS unaffected, ground roll shorter).
+Reference FM Fig. A2-3 (PDF 457, "Takeoff Airspeed Schedule"): normal liftoff ≈ 155 + 4.43 kt per 1 000 lb above
+14 000 lb -> **174 kt at 18 155 lb** (max. performance ~5 kt less, 50 ft ≈ +35 kt). Rotation ~20 kt below (FM 6-5).
+- Run 1: rudder axis sign wrong (positive AXIS_RUDDER_SET = nose LEFT) -> abort at 94 kt, jet in the grass.
+- Run 2: control loop only 2.3 Hz (each SimConnect read waits for a sim frame, ~70 ms) -> pitch loop oscillated,
+  crash after liftoff. Gains retuned for ~3 Hz.
+- Run 3 (`..._T3D_takeoff_run3.csv`, Vr 165, gentle pull): nose only 6-7° on the ground, liftoff 227-242 kt.
+- Run 4 (`..._T3D_takeoff_run4.csv`, 18 155 lb, Vr 157, θ target 10.5°): **liftoff 194 kt at θ 10.6°**, ground
+  roll 2 736 ft (headwind), max θ on ground 10.6° (tail at 12.3° ✓). Heading ±0.2° ✓. After liftoff the AP handover
+  with `AP_ALT_HOLD_ON` held the *current* altitude (39 ft) and put the jet back on the runway at 335 kt (script
+  error, fixed: VS mode +4 000 ft/min).
+- Analysis: CL at liftoff = 18 155/(127.6 psf x 196.1) = 0.725 (incl. tail download); FM liftoff needs CL 0.90.
+  Cause found in the SDK flap formula: ΔCL = lift_coef_flaps x lift scalar x deflection **in radians**, and
+  `add incidence` (default 0.5) applies only half of it at α 0. With lift_coef_flaps 0.62: TAKEOFF ≈ 0.13 at 10°,
+  LAND ≈ 0.28 at α 2.3° instead of the intended 0.62.
+- FM 1-73: TAKEOFF = leading and trailing edge flaps 15°, LAND = LE 30° / TE 45°, BLC only in LAND.
+- **AP-10 change (needs Build All + full restart):** per-position values in `[FLAPS.0]` with add incidence 1;
+  LAND lift/drag scalar 1.273 (ΔCL 0.62, ΔCD 0.12 as derived from CR-2144), TAKEOFF lift scalar 1.847 (ΔCL 0.30,
+  from FM liftoff speed: 0.90 - 0.565 at θ 10.6°). Prediction for the next run: liftoff ≈ 175-180 kt at θ ≈ 10.5°.

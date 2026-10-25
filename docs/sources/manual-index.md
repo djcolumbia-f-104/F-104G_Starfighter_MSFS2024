@@ -20,6 +20,9 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Fuel schematic (Fig. 1-32/1-33), Fuel Control Panels (Fig. 1-34) | 1-45 … 1-48 | 61 … 64 |
 | Fuel Quantity Data (Fig. 1-35) | 1-49 | 65 |
 | Electric Power Supply | 1-56 | 72 |
+| Control system, rudder/aileron limiters, APC, trim panel | 1-67 … 1-71 | 83 … 87 |
+| Wing flap system (TAKEOFF: LE+TE 15°; LAND: LE 30°/TE 45°; BLC only in LAND) | 1-71, 1-73 | 87, 89 |
+| Boundary layer control, speed brakes, landing gear | 1-74, 1-75 | 90, 91 |
 | End of Section IV | 4-151 | 373 |
 | Section V Operating Limitations: start | 5-1 | 375 |
 | Instrument markings (Fig. 5-1) | 5-2, 5-3 | 376, 377 |
@@ -33,5 +36,10 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Stability augmenters (Fig. 6-1), control surface deflections (rudder ±20°/±6°, trim ±4°; ailerons ±20°/±9.75°) | 6-3 | 393 |
 | Takeoff characteristics (trim 5° LED, full 17° only with trim 1-11° LED), stalls, APC | 6-5 | 395 |
 
-Not located yet: Section II (Normal Procedures), Section III (Emergency), Section IX, appendix Performance Data
-(probably from about PDF 430), index.
+| Appendix Part 1: airspeed/altimeter position error, standard atmosphere | A1-1 … A1-20 | 430 … 448 |
+| Appendix Part 2 Takeoff: contents | A2-1 | 449 |
+| Takeoff speed schedules (Fig. A2-3: liftoff IAS vs. weight) | A2-9 | 457 |
+| Takeoff ground run distance, refusal speed | A2-10, A2-11 | 458, 459 |
+
+Not located yet: Section II (Normal Procedures), Section III (Emergency), Section IX, appendix parts after takeoff,
+index.
