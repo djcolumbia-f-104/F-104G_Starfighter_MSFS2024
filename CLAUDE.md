@@ -19,10 +19,10 @@ sideslip is strong, as in the real F-104 (FM 6-2) - the AP wing leveler cannot h
 destabilizing -> disabled in systems.f104.cfg. **T3-E2 passed (round E):** δa/δr 0.39, β/δr 0.32, both within CR-2144
 Table III-9 (0.27-0.47 / 0.32-0.42; the rudder's own rolling moment L'δr must be included). AP-6 done.
 Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s; even then the jet sinks ~6 500 ft).
-**T3-D takeoff (2026-10-25, `tools/takeoff_test.py`):** liftoff 194 kt vs. FM 174-177 kt. Two causes fixed: flap lift
-formula (AP-10, SDK radians + add incidence) and **flaps/gear never moved** (hydraulic system_type without a hydraulic
-system in the template -> now electric). **Needs Build All + full sim restart**, then repeat T3-D (cookbook).
-**Next step:** repeat T3-D, then T3-H climb (ISA), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
+**T3-D takeoff PASSED (2026-10-25, `tools/takeoff_test.py`, run 6):** liftoff 185 kt vs. FM 179 kt (+3.4 %) after two
+fixes: flap lift formula (AP-10, SDK radians + add incidence) and flaps/gear that never moved (hydraulic system_type
+without a hydraulic system in the template -> now electric).
+**Next step:** T3-H climb potential vs. D-6398 (level AB accelerations already logged in rounds A/C), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
 supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,

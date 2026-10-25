@@ -290,3 +290,14 @@ the flap change had no effect. Then a short touchdown, sustained liftoff 211 kt;
   gear `gear_system_type = 0` (test-bed solution via circuit Gears_Motor; real gear is hydraulic). T0 rules AP-10 added.
   `takeoff_test.py` now checks the real flap angle before the run, reports the first liftoff, maps AP_PANEL_VS_ON
   directly and stops if an event is missing. Needs Build All + full restart.
+
+## 2026-10-25: T3-D run 6 - PASSED (flaps finally extended)
+Build 15:57 (electric flaps/gear, English comments), full sim restart 16:01 (T1 ✓). preflight: flaps trailing edge
+**15.00°** ✓, 19 337 lb -> FM Fig. A2-3 liftoff **179 kt**. `docs/data/flighttest_2026-10-25_T3D_takeoff_run6.csv`.
+- First liftoff 170 kt at θ 8.2° (the controller over-rotated: θ 6° while the command was 4°; FM 6-5 warns that a quick
+  stick input gives a "dynamic" nose-up), short touchdown, **sustained liftoff 185 kt** at θ 9-12°, ground roll
+  2 668 ft (~20 kt headwind). Max. θ on the ground 9.5° (tail 12.3°) ✓.
+- **185 kt vs. 179 kt = +3.4 % -> T3-D passed (±5 %)**; first liftoff -5 %. Before the flap fixes: 194 kt (runs 4/5).
+- AP handover in VS mode (AP_PANEL_VS_ON) worked: climb 3 150 ft/min. After the script (military + ALT hold at
+  1 500 ft AGL) the jet accelerated to 600 kt IAS at ~3 000 ft -> throttle reduced by hand. To do: reduce power
+  in the script after the handover.
