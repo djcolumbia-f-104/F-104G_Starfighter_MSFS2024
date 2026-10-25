@@ -12,12 +12,11 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
   known weakness), EGT at military ✓ (593 °C). All-moving tail (htail_area 0, elevator_lift_coef 4.1), trim range
   11°/5°, takeoff trim 5°, tail contact point 12.3°, CG verified. Autopilot holds altitude down to ~213 kt (≈ 1.27 Vs).
 - Test tools: check_cfg.py (T0/T1), preflight.py (T2), analyse_lift/drag.py (T3), screenshot.ps1, simlog.py.
-**Next step:** sim round D (step S11b in the plan): only `rudder_maxangle_scalar = 0.32` is new (MSFS rotates the
-whole fin by the rudder deflection -> β = δr; cause found). User: Build All + full sim restart, then T3-E per
-`docs/notes/test-procedures.md`. **How to test: `docs/notes/test-procedures.md` (cookbook).**
-**Open (in order):** S11 = AP-6 lateral-directional stability (rudder ~3x too effective, strong roll-off in
-sideslip; only geometry acts in the modern FM) -> one change per round; then S10 takeoff test T3-D with the user;
-check supersonic trim (at M 1.15 trim close to the lower stop).
+**Round D (2026-10-25):** rudder fixed with `rudder_maxangle_scalar = 0.32` (T3-E β/δr 0.34 ✓). Roll due to
+sideslip is strong, as in the real F-104 (FM 6-2) - the AP wing leveler cannot hold it.
+**Next step:** write `tools/sideslip_test.py` (closed-loop aileron via SimConnect, logs aileron needed at full
+rudder) and fly T3-E2 (target ≈ 17° aileron in approach config, CR-2144). Then S10 takeoff test T3-D with the
+user, T3-H climb (ISA), supersonic trim (S12). **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
 

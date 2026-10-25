@@ -47,7 +47,8 @@ engine burning, N1 ≥ 60 %, fuel selector ALL, battery; prints weight, CG, elev
 | T3-B cruise trim | superseded: htail_incidence stays 0 (see section 4); trim at α = 0 must be ≈ 0 (T3-G intercept) | T3-G | intercept \|δ₀\| ≤ 0.5° |
 | T3-C static run | parking brake, idle and military (short AB burst) | thrust, N1, FF, EGT | military 6 670 lbf ±2 %, idle 355-500 lbf, EGT ~595 °C |
 | T3-D takeoff run | runway, full AB, user rotates per FM (rotation ~20 kt below takeoff speed) | IAS at liftoff, pitch | liftoff ≤ 200 kt [S], no tail strike (12.3°) |
-| T3-E rudder | gear/flaps down, ~260 kt, full rudder, wings level | sideslip β, rudder δr, bank | β/δr = Cnδr/Cnβ = 0.32 (CR-2144) ±30 %, no roll-off |
+| T3-E rudder | gear/flaps down, ~250 kt, full rudder | sideslip β, rudder δr (RUDDER_DEFLECTION = unscaled command) | β/δr = Cnδr/Cnβ = 0.32 (CR-2144) ±30 % — **passed round D** (0.34) |
+| T3-E2 steady heading sideslip | as T3-E, opposite aileron holds wings level (closed-loop script) | aileron δa required at full rudder | ≈ Clβ·β/Clδa ≈ 17° (CR-2144 approach) ±30 % |
 | T3-F drag | idle deceleration as in T3-A, dV/dt | CD_sim = (T − m·dV/dt − W sinγ)/(q S) | CD vs. D-7137 Table 2 ±10 % (`analyse_drag.py`) — **passed 2026-10-25** (1.00/1.04) |
 | T3-G trim gradient | from T3-A data | elevator + trim vs. α | slope vs. CR-96008 −Cmα/Cmδe 0.67-1.05; intercept ≈ 0 (measured 1.06-1.08, −0.05°) |
 | T3-H climb | ISA (Clear Sky), takeoff with max AB, climb per D-6398 profile | time/altitude/Mach | D-6398 flight test data ±10 % |
@@ -69,7 +70,7 @@ engine burning, N1 ≥ 60 %, fuel selector ALL, battery; prints weight, CG, elev
 | AP-3 | `htail_incidence`: tutorial rule "cruise trim 0" does NOT fit trimmed NASA data -> stays 0 (−4.3 = crash, +4.3 = +0.05 lift); takeoff trim `elevator_trim_neutral = 5` [Q FM 6-5] | rounds B/B2/C | T3-A, T3-G | **done** |
 | AP-4 | recalibrate lift table | | | **not needed** (T3-A passed) |
 | AP-5 | tail contact points from CR-2144 three-view: nozzle −19.1/−0.4 ft, ventral fin −11.3/−1.9 ft -> tail strike 12.3° (was 7.6°) | CR-2144 PDF 41 | T0, later T3-D | **done** (T3-D open) |
-| AP-6 | lateral-directional: rudder ~3x too effective (β = δr), strong roll-off in sideslip. `rudder_lift_coef` must stay 5 (whole fin); `rudder_effectiveness` has no effect on the equilibrium; fix via `rudder_maxangle_scalar` 0.32 | CR-2144, SDK | T3-E, T3-J | **in progress** (round D) |
+| AP-6 | lateral-directional: rudder ~3x too effective (β = δr). `rudder_lift_coef` must stay 5 (whole fin); `rudder_effectiveness` has no effect on the equilibrium; fixed via `rudder_maxangle_scalar` 0.32. Roll due to sideslip: strong, as in the real aircraft; verify aileron required (T3-E2) | CR-2144, SDK, FM 6-2 | T3-E ✓, T3-E2, T3-J | **rudder done** (round D); T3-E2 open |
 | AP-7 | engine: FF via gross thrust ✓ (military 8 400 lb/h), AB TSFC 2.54 (in flight +1..+4 %, static −33 %), EGT via egt_peak_temperature 2187 R (military 593 °C ✓, idle 470 °C slightly high) | Stoelinga, D-7137 | T3-C | **done** (static AB fuel = known weakness) |
 | AP-8 | CG: sim 9.96 % MAC = hand calculation 10.1 % (without ammunition) -> no bug | CR-2144 | T2 | **done** |
 | AP-9 | displays: external HUD bar and test bed cockpit show piston values. Later with own cockpit (roadmap phase 4) | cockpit.cfg | visual | later |
@@ -94,8 +95,8 @@ contact points (AP-5) only act on the ground.
 | S9c/d | **sim round B2**: EGT ✓; +4.3 -> extra lift (T3-A ✗) -> back to 0; rudder_lift_coef 1.6 -> departure | yes | measurements.md |
 | S9e/f | **sim round C**: htail 0, takeoff trim 5°, rudder_lift_coef 5, rudder_effectiveness 0.32: T3-A ✓, T3-F ✓, T3-E ✗ (no effect, roll-off) | yes | measurements.md |
 | S11a | analysis without sim: β = δr exactly -> MSFS rotates the whole fin; fix rudder_maxangle_scalar 0.32 | no | done, T0 ✓ |
-| S11b | **sim round D**: ONLY rudder_maxangle_scalar changed. Tests: T3-E (yaw damper on as in round C), short T3-A regression; read whether RUDDER_DEFLECTION reports the scaled angle | yes | β/δr 0.32 ±30 %; roll-off? |
-| S11c | if roll-off remains: roll due to sideslip (Clβ) via geometry (vtail_pos_vert/span, wing_dihedral −10 [Q FM 6-2]) and ailerons (aileron_maxangle_scalar?); test yaw damper on/off separately; T3-J Dutch roll period vs. Cnβ | partly | Clβ vs. CR-2144 −0.175 |
+| S11b | **sim round D**: ONLY rudder_maxangle_scalar changed | yes | **done**: β/δr 0.34 ✓; roll-off remains but is real F-104 behaviour (FM 6-2, CR-2144 estimate) |
+| S11c | write `tools/sideslip_test.py` (closed-loop aileron, logs δa) and fly T3-E2; only if δa deviates: tune roll due to sideslip. Previously planned: if roll-off remains: roll due to sideslip (Clβ) via geometry (vtail_pos_vert/span, wing_dihedral −10 [Q FM 6-2]) and ailerons (aileron_maxangle_scalar?); test yaw damper on/off separately; T3-J Dutch roll period vs. Cnβ | partly | Clβ vs. CR-2144 −0.175 |
 | S10 | T3-D takeoff with the user (rotation, tail strike), then T3-H climb vs. D-6398 (ISA) | yes (user flies) | liftoff ≤ 200 kt, no tail strike |
 | S12 | supersonic trim: at M 1.15 trim −4° (near the −5° stop); real F-104 needs more nose-up at supersonic speed (aft shift of the neutral point) -> check with T3-I | yes | trim within range up to M 2 |
 

@@ -195,3 +195,19 @@ A real flap-type rudder (9 of 47 ft²): effective share Cnδr/Cnβ = 0.32 (CR-21
   vtail and rudder chord") -> **0.32** (round D). `elevator_maxangle_scalar` stays 1 (all-moving tail).
 - Prediction for round D: β/δr ≈ 0.32 (δr = deflection after the elasticity table); less sideslip -> less roll-off.
 - Open: whether RUDDER_DEFLECTION reports the scaled or unscaled angle (read in round D).
+
+## 2026-10-25: sim round D (only change: rudder_maxangle_scalar 0.32) - T3-E PASSED
+Build 13:48, sim restart 13:54 (T1 ✓). Data `docs/data/flighttest_2026-10-25_roundD_rudder.csv`
+(gear/flaps down, 240-255 kt, ~9 000 ft, yaw damper on, AP wing leveler).
+- RUDDER_DEFLECTION reports the **unscaled** command: 9.6-11.3° (elasticity at ~245 kt). Sideslip β 3.7-3.9°
+  -> **β/δr = 0.34** (target Cnδr/Cnβ = 0.32 per CR-2144, ±30 %) ✓. β again equals the *effective* deflection
+  (11.2° × 0.32 = 3.6°), confirming the single-surface explanation.
+- **Roll-off remains**: with β ≈ 3.8° constant the jet rolls at ~15-20°/s through inverted; the AP wing leveler
+  does not counter it. Estimate with CR-2144 (approach): Cl = Clβ·β = 0.175 × 0.066 = 0.0116; steady roll rate
+  without aileron p = Cl·2V/(|Clp|·b) ≈ 85°/s; aileron to hold wings level δa = Clβ·β/Clδa ≈ 17°.
+  -> **Strong roll due to sideslip is real F-104 behaviour** (FM 6-2: "relatively large rolling moment in a sideslip
+  condition"). The sim rolls slower than the estimate. Criterion "no roll-off" was wrong -> new test T3-E2: steady
+  heading sideslip with opposite aileron (closed loop), measure aileron required vs. ~17° (approach config).
+- Positioning lesson: after a sim restart the AP is OFF; positioning with gear/flaps down at ~300 kt (above the
+  240 kt flap limit) led to a dive from 9 000 to 2 000 ft. Procedure: AP on first, position clean at ≤ 225 kt IAS,
+  extend gear/flaps only after the AP has stabilized.

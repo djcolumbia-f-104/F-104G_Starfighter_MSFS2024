@@ -52,14 +52,18 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
    `docs/data/nasa_d7137_*_maxab_*.csv` (calculation see measurements.md, round A).
 
 ## T3-E rudder (sideslip)
-1. Position 9 000 ft, heading 270, airspeed 290 (TAS); `GEAR_DOWN`, `FLAPS_DOWN`, `THROTTLE1_SET 10200`,
-   `AP_ALT_VAR_SET_ENGLISH 9000`, `AP_WING_LEVELER_ON`, check the yaw damper (`AUTOPILOT_YAW_DAMPER`).
-2. Logger 40-50 s; after 6-8 s `AXIS_RUDDER_SET 16383` (full), hold 15-20 s, then `AXIS_RUDDER_SET 0`,
+1. **AP must be ON before positioning** (after a sim restart it is off: check `AUTOPILOT_MASTER`, send `AP_MASTER`,
+   `AP_ALT_VAR_SET_ENGLISH 9000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`, `YAW_DAMPER_ON`).
+2. Position **clean** at 9 000 ft, heading 270, airspeed 265 (TAS ≈ 225 kt IAS). Positioning sets α = 0
+   (g ≈ 0.3 at first) -> the AP needs ~30 s and may lose 1 000-2 000 ft and gain speed; wait until stable.
+3. Below 240 kt IAS: `GEAR_DOWN`, `FLAPS_DOWN` (never above the 240 kt flap limit - strong nose-down moment),
+   `THROTTLE1_SET` ~9 500-11 141 to hold ~250 kt.
+4. Logger 40-50 s; after 6 s `AXIS_RUDDER_SET 16383` (full), hold 15 s, then `AXIS_RUDDER_SET 0`,
    `GEAR_UP`, `FLAPS_UP`, `AP_HDG_HOLD_ON`.
-3. Evaluation (awk on the CSV): column 23 = INCIDENCE_BETA, 24 = RUDDER_DEFLECTION, 25 = PLANE_BANK_DEGREES.
-   Target β/δr ≈ 0.32 (CR-2144 approach), no roll-off beyond ~30° bank.
-   Caution: the AP wing leveler does NOT hold the wings against the roll due to sideslip -> for a true steady
-   heading sideslip feed in opposite aileron by hand with `AXIS_AILERONS_SET` (not automated yet, AP-6/S11).
+5. Evaluation (awk on the CSV): column 23 = INCIDENCE_BETA, 24 = RUDDER_DEFLECTION (unscaled command, before
+   rudder_maxangle_scalar), 25 = PLANE_BANK_DEGREES. Target β/δr ≈ 0.32 (CR-2144 approach).
+   The jet rolls away (real F-104 behaviour, FM 6-2); the AP wing leveler does NOT hold it. Recover after ~15 s.
+   For the aileron required (T3-E2) a closed-loop aileron script is needed (planned `tools/sideslip_test.py`).
 
 ## Cruise (trim in equilibrium)
 30 000 ft, airspeed 501 (TAS, ≈ M 0.85). Military is too much there (accelerates to M 0.98); equilibrium at about
