@@ -211,3 +211,20 @@ Build 13:48, sim restart 13:54 (T1 ✓). Data `docs/data/flighttest_2026-10-25_r
 - Positioning lesson: after a sim restart the AP is OFF; positioning with gear/flaps down at ~300 kt (above the
   240 kt flap limit) led to a dive from 9 000 to 2 000 ft. Procedure: AP on first, position clean at ≤ 225 kt IAS,
   extend gear/flaps only after the AP has stabilized.
+
+## 2026-10-25: round D part 2 - yaw damper problem and first T3-E2 (closed loop sideslip)
+- Positioning at 9 000 ft failed twice (dive to the ground in ~18 s ≈ free fall): positioning sets α = 0 and the
+  AP may only raise the nose at 2°/s (`max_pitch_velocity_lo_alt = 2`). At 16 500 ft the jet then rolled to 66° bank
+  with **2.5° rudder from the yaw damper** (no rudder input) and fell from 16 500 to ~7 500 ft. After `YAW_DAMPER_OFF`
+  the AP wing leveler rolled it back level immediately (60° -> 5° in 12 s). -> **yaw damper with my estimated gain 1.0
+  is destabilizing; disabled** (`yaw_damper_gain = 0`, systems.f104.cfg) until tuned (T3-J).
+- **T3-E2 with `tools/sideslip_test.py`** (yaw damper off, gear/flaps down, 263-338 kt, ~9 700 ft,
+  `docs/data/flighttest_2026-10-25_roundD_sideslip.csv`): the script found the axis signs itself (aileron +4000 ->
+  bank +2.1°, elevator +3000 -> pitch +4.0° = nose down) and held both axes without abort.
+  Full rudder: rudder 5.9° (elasticity at ~300 kt), **β 1.86° -> β/δr = 0.32 ✓** (without yaw damper, confirms
+  round D); aileron to stop the roll **-2.4°** (AILERON_AVERAGE_DEFLECTION, command ~35 %), steady bank ~14° (P-only
+  roll loop). CR-2144 estimate for this β: δa = Clβ·β/Clδa = 0.175 × 0.0325/0.039 ≈ 8.5°.
+  -> together with the free roll rate (15-20°/s vs. ~85°/s estimated) the **roll due to sideslip in the sim is weaker
+  than the CR-2144 estimate** (or roll damping/aileron power stronger). Data quality limited (speed drifted +75 kt,
+  P-only loop, approach-config derivatives applied at 300 kt) -> repeat with PI roll loop, AILERON_LEFT_DEFLECTION and
+  constant speed; compare with CR-2144 cruise derivatives (flight conditions 1-10, PDF 55-65).

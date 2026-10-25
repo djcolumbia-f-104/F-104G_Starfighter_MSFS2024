@@ -26,7 +26,9 @@ How the tests in `docs/flight-model-plan.md` are flown in practice. Everything v
   In `simlog.py`/`preflight.py` (Python-SimConnect) `NAME:1` is correct.
 - `msfs_watch_simvar` max. 30 s; parallel calls run at the same time (not one after another).
 - Toggle events (`TOGGLE_*`, `PARKING_BRAKES`, `AP_MASTER`) switch blindly -> read the state first.
-- The yaw damper is OFF after starting from the world map (.flt is ignored) -> send `YAW_DAMPER_ON`.
+- Yaw damper: disabled in the cfg since round D (gain 1.0 was destabilizing); do not send `YAW_DAMPER_ON` until tuned.
+- Positioning sets α = 0 (g ≈ 0.3) and the AP raises the nose only at 2°/s -> **position at 16 500 ft or higher**
+  (at 9 000 ft the jet hit the ground twice), AP must already be on.
 - `msfs_set_aircraft_position(airspeed=...)` is TRUE airspeed (480 -> ~370 kt IAS at 16 500 ft).
 - After positioning watch the g load for 5-10 s (`G_FORCE`); abort if g < 0.5 and altitude is dropping.
 - Throttle: `THROTTLE1_SET` 0 = idle, 11141 = military (68 %), 16383 = full afterburner.
@@ -43,7 +45,7 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
 ## T3-A / T3-F / T3-G deceleration run (lift, drag, trim gradient)
 1. `msfs_set_aircraft_position(latitude=48.25, longitude=11, altitude=16500, heading=270, airspeed=480)`
 2. Immediately: `GEAR_UP`, `FLAPS_UP`, `THROTTLE1_SET 16383`, `AP_ALT_VAR_SET_ENGLISH 16500`, `HEADING_BUG_SET 270`,
-   `AP_MASTER` (only if off!), `AP_ALT_HOLD_ON`, `AP_HDG_HOLD_ON`, `YAW_DAMPER_ON`.
+   `AP_MASTER` (only if off!), `AP_ALT_HOLD_ON`, `AP_HDG_HOLD_ON`.
 3. Check the g load, then start the logger for 220-240 s (`..._flug.csv`).
 4. Accelerate with AB to ~600 kt IAS (M ~1.15, about 30 s), then `THROTTLE1_SET 0`.
 5. Watch the airspeed every 10 s; at trim 11° (stop, ~213 kt) or when sinking: `THROTTLE1_SET 11141`.
@@ -53,9 +55,9 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
 
 ## T3-E rudder (sideslip)
 1. **AP must be ON before positioning** (after a sim restart it is off: check `AUTOPILOT_MASTER`, send `AP_MASTER`,
-   `AP_ALT_VAR_SET_ENGLISH 9000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`, `YAW_DAMPER_ON`).
-2. Position **clean** at 9 000 ft, heading 270, airspeed 265 (TAS ≈ 225 kt IAS). Positioning sets α = 0
-   (g ≈ 0.3 at first) -> the AP needs ~30 s and may lose 1 000-2 000 ft and gain speed; wait until stable.
+   `AP_ALT_VAR_SET_ENGLISH 16000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`).
+2. Position **clean** at 16 500 ft, heading 270, airspeed 330 (TAS ≈ 250 kt IAS). Positioning sets α = 0
+   (g ≈ 0.3 at first) -> the AP needs ~30 s and may lose several thousand ft; wait until stable, idle to < 240 kt.
 3. Below 240 kt IAS: `GEAR_DOWN`, `FLAPS_DOWN` (never above the 240 kt flap limit - strong nose-down moment),
    `THROTTLE1_SET` ~9 500-11 141 to hold ~250 kt.
 4. Logger 40-50 s; after 6 s `AXIS_RUDDER_SET 16383` (full), hold 15 s, then `AXIS_RUDDER_SET 0`,
@@ -68,3 +70,11 @@ Logger 55-60 s in the background: `...simconnect-mcp\.venv\Scripts\python.exe -I
 ## Cruise (trim in equilibrium)
 30 000 ft, airspeed 501 (TAS, ≈ M 0.85). Military is too much there (accelerates to M 0.98); equilibrium at about
 `THROTTLE1_SET` 9 000-9 300, the AP oscillates at first (g 0.7-0.95). Wait at least 60 s for stable flight before logging.
+
+## T3-E2 steady heading sideslip (closed loop)
+Configure as T3-E (gear/flaps down, ~250 kt, AP on, yaw damper off), then run
+`...simconnect-mcp\.venv\Scripts\python.exe -I tools\sideslip_test.py docs\data\flighttest_<date>_<round>_sideslip.csv 15 1.0`
+(foreground, ~35 s). The script switches the AP off, probes the axis signs, holds bank 0 (PI on aileron) and
+altitude (elevator), applies full rudder for 15 s, then releases the axes and re-engages the AP. Abort at |bank| > 45°
+or > 1 500 ft altitude loss. Keep the speed constant with the throttle beforehand (round D drifted 263 -> 338 kt).
+Evaluate per phase: β, rudder, aileron (AILERON_LEFT_DEFLECTION) vs. δa = Clβ·β/Clδa.
