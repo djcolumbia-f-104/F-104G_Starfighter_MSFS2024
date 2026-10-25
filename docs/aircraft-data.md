@@ -137,17 +137,37 @@ airplane at Mach numbers of 1.82 and 2.01*, NACA RM SL56H06, 1956 (declassified;
 | Vertical tail V3 ("enlarged", tested) | 11.7 in², span 3.61 in, LE 44.0° | 50.8 ft², 7.52 ft | wind-tunnel variant, not necessarily the G fin |
 | Ventral fins U1 / U2 / U3 / U4 | 5.8 / 3.5 / 2.2 / 1.6 in² | 25.2 / 15.2 / 9.5 / 6.9 ft² | report: U2 preferred (no ground-clearance restriction) |
 
-Use: the F-104G has a larger fin than the A (as F-104B/D; forum/secondary sources, no area found) -> fin area of the
-G between 36 ft² (A) and ~51 ft² (V3) [S]. The cfg uses `vtail_area` 38 ft², span 5.5 ft (close to V2) but
+## Surface areas F-104G: historicalfighters.com (secondary source)
+https://historicalfighters.com/f-104g-general-technical-data/ (read 2026-10-25; no original source cited, page does
+not state the "25 % larger" claim). Plausibility: its horizontal tail 48.21 ft² matches D-6398 (48.2 ft²) exactly,
+wing 196.1 ft² as well.
+
+| Surface | ft² | m² | cfg today |
+|---|---|---|---|
+| **Vertical stabilizer (fin)** | **47.77** | 4.44 | `vtail_area` 38 [S] |
+| Rudder | 5.48 | 0.51 | `rudder_area` 9 [S] |
+| Ventral fin | 5.81 | 0.54 | not modelled separately |
+| Horizontal stabilizer | 48.21 | 4.48 | 48.2 ✓ |
+| Ailerons (total) | 9.47 | 0.88 | `aileron_area` 12 [S] |
+| Trailing edge flaps (total) | 23.13 | 2.15 | – |
+| Leading edge flaps (total) | 17 | 1.58 | – |
+
+Status: provisional (secondary). Consistent with the G having a larger fin than the A (36.0 ft², NACA RM SL56H06):
+47.77/36.0 = 1.33, and between the A fin and the tested V3 (50.8 ft²). Unclear whether 47.77 ft² is the exposed area
+or measured to a theoretical root.
+
+Use: The cfg uses `vtail_area` 38 ft², span 5.5 ft (close to the A fin V2) but
 `vtail_sweep` 40° (V2: LE 52.3°) and `htail_sweep` 10° (LE 19.5°; 10° is the quarter-chord value) and `wing_sweep`
-26° (27.1°). **Candidates for AP-11** (Dutch roll too fast): the fin itself is not oversized, so the excess
-directional stiffness must come from `rudder_lift_coef` 5.0 or the fuselage terms - correct the sweeps in the same
-round (they reduce the fin lift slope).
+26° (27.1°). **Candidates for AP-11** (Dutch roll too fast): the fin in the cfg is even smaller than the G fin
+(38 vs. 47.77 ft²), so the excess directional stiffness must come from `rudder_lift_coef` 5.0 or the fuselage terms.
+In the AP-11 round: fin area 47.77, rudder 5.48, aileron 9.47 ft², sweeps per RM SL56H06, then reduce the fin lift
+slope until the Dutch roll period matches CR-2144 (and re-check β/δr = 0.32, T3-E, and aileron power).
 Also from the report: "a considerable portion of the vertical-tail contribution to directional stability was
 required to overcome the large unstable yawing moment caused by the long fuselage" (conclusion 2).
 
 ## Still open
-- F-104G fin area: no G-specific source yet (A: 36.0 ft², NACA RM SL56H06; G larger, see above).
+- F-104G fin area: 47.77 ft² from a secondary source (historicalfighters.com, see above); a primary source
+  (Lockheed report, FM) would still be good.
 - Scale moments of inertia to the F-104G mass: CR-2144 values are for 16 300 lb; the G at 18-20 000 lb is heavier
   mainly through fuel near the CG, so Iy/Iz grow less than the mass ratio - keep CR-2144 values until a source is found.
 - Slow flight below Mach 0.4 (lift/drag tables start at M 0.4). Flap effect: done (AP-10, T3-D run 6).
