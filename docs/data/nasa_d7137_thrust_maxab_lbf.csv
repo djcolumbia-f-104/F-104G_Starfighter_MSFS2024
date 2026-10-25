@@ -1,6 +1,6 @@
-# Nettoschub (lbf) bei maximalem Nachbrenner, Standardatmosphäre, über Höhe (Zeilen, ft) und Mach (Spalten).
-# Quelle: NASA TN D-7137, Table 3, S. 14 (PDF 16); vorhergesagte Werte aus Lockheed Rep. 16097 App. A.
-# Hinweis: Einbauschub (mit Einlaufverlusten), daher am Stand (11 200) unter dem unverbauten Wert aus dem FM (15 800).
+# Net thrust (lbf) at maximum afterburner, standard atmosphere, over altitude (rows, ft) and Mach (columns).
+# Source: NASA TN D-7137, Table 3, p. 14 (PDF 16); predicted values from Lockheed Rep. 16097 App. A.
+# Note: installed thrust (with inlet losses), hence static (11 200) below the uninstalled value from the FM (15 800).
 alt_ft,M0,M0.4,M0.6,M0.8,M1.0,M1.2,M1.4,M1.6,M1.8,M2.0
 0,11200,13640,15050,16770,19100,21550,23950,26350,28750,31150
 10000,7700,10050,11500,13200,15100,17200,20100,23000,26000,29000

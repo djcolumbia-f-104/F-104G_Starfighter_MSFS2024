@@ -1,7 +1,7 @@
-"""Rendert einen Ausschnitt einer PDF-Seite, optional gedreht (für quer gedruckte Tabellen).
+"""Renders a clip of a PDF page, optionally rotated (for tables printed sideways).
 
-Aufruf: pdf_clip.py <pdf> <ausgabe.png> <seite> [x0 y0 x1 y1] [--rot 90|180|270] [--dpi 170]
-Ausschnitt in Bruchteilen der Seite (0..1), Standard ganze Seite. Seite 1-basiert.
+Usage: pdf_clip.py <pdf> <output.png> <page> [x0 y0 x1 y1] [--rot 90|180|270] [--dpi 170]
+Clip in fractions of the page (0..1), default whole page. Page numbers are 1-based.
 """
 import sys
 

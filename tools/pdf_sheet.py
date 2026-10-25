@@ -1,7 +1,7 @@
-"""Kontaktabzug: mehrere PDF-Seiten als Raster in einem PNG (zum schnellen Durchblättern).
+"""Contact sheet: several PDF pages as a grid in one PNG (for quick browsing).
 
-Aufruf: pdf_sheet.py <pdf> <ausgabe.png> <erste_seite> [anzahl=12] [spalten=4]
-Seiten 1-basiert; jede Kachel ist mit der PDF-Seitennummer beschriftet.
+Usage: pdf_sheet.py <pdf> <output.png> <first_page> [count=12] [columns=4]
+Pages 1-based; each tile is labelled with its PDF page number.
 """
 import sys
 

@@ -1,8 +1,8 @@
-"""Listet die Parameter einer SDK-Referenzseite (docs/sdk-ref/*.md) kompakt auf.
+"""Lists the parameters of an SDK reference page (docs/sdk-ref/*.md) compactly.
 
-Aufruf: sdkref_params.py <datei.md> [abschnitt]
-Ausgabe je Parameter: Name | Typ | Pflicht | Kurzbeschreibung (gekürzt).
-Ohne <abschnitt> alle Abschnitte; sonst nur der passende (z. B. "AIRPLANE_GEOMETRY").
+Usage: sdkref_params.py <file.md> [section]
+Output per parameter: name | type | required | short description (truncated).
+Without <section> all sections; otherwise only the matching one (e.g. "AIRPLANE_GEOMETRY").
 """
 import re
 import sys

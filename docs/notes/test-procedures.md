@@ -6,7 +6,7 @@ How the tests in `docs/flight-model-plan.md` are flown in practice. Everything v
 ## 0. Before every sim round
 1. Changes only in `source/cfg/*.f104.cfg` (flight_model, engines, aircraft, cockpit, systems), then
    `powershell -ExecutionPolicy Bypass -File tools\build_cfg.ps1` and `tools\.venv\Scripts\python.exe -I tools\check_cfg.py .`
-   (T0: 0 errors ("FEHLER"); T1 warnings are fine as long as nothing is built).
+   (T0: 0 ERRORS; T1 warnings are fine as long as nothing is built).
 2. User: Dev Mode -> Project Editor -> **Build All** -> **quit and restart the sim completely** (normalization runs
    ONLY at sim start) -> flight on the **EDDM runway** from the world map -> "ready".
    For performance tests (takeoff, climb, top speed) choose the weather preset **Clear Sky (ISA)** (Microsoft

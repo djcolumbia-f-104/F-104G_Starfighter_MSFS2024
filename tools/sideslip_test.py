@@ -1,12 +1,12 @@
-"""Test T3-E2: stationärer Schiebeflug (Steady Heading Sideslip) mit Gegenquerruder, geregelt per SimConnect.
+"""Test T3-E2: steady heading sideslip with opposite aileron, closed loop via SimConnect.
 
-Aufruf (mit dem Python der simconnect-mcp-venv):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\sideslip_test.py <ausgabe.csv> [ruder_s=15] [ruder_anteil=1.0]
-Voraussetzung: Flugzeug fliegt ruhig im gewünschten Zustand (z. B. Fahrwerk/Klappen aus, ~250 kt) mit AP Höhenhaltung.
-Ablauf: AP aus -> Vorzeichen von Querruder/Höhenruder mit kleinen Prüfausschlägen bestimmen -> Regler halten
-Querlage 0 (Querruder) und Steigrate 0 (Höhenruder) -> 5 s ohne Seitenruder -> volles Seitenruder ruder_s Sekunden
--> 5 s ohne -> Achsen frei, AP wieder an. Abbruch bei |Querlage| > 45° oder > 1 500 ft Höhenverlust.
-Auswertung: Querruderausschlag (AILERON_AVERAGE_DEFLECTION) bei vollem Seitenruder vs. Clβ·β/Clδa (CR-2144).
+Usage (with the Python of the simconnect-mcp venv):
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\sideslip_test.py <output.csv> [rudder_s=15] [rudder_fraction=1.0]
+Precondition: aircraft flying steadily in the desired state (e.g. clean, ~310 kt) with AP altitude hold.
+Sequence: AP off -> determine the signs of aileron/elevator with small probe inputs -> loops hold bank 0 (aileron)
+and vertical speed 0 (elevator) -> 5 s without rudder -> full rudder for rudder_s seconds -> 5 s without
+-> axes released, AP back on. Abort at |bank| > 45° or > 1 500 ft altitude loss.
+Evaluation: aileron deflection (AILERON_LEFT_DEFLECTION) at full rudder vs. CR-2144 Table III-9 (measurements.md, round E).
 """
 import csv
 import math
@@ -43,7 +43,7 @@ def axis(name, v):
 
 
 def probe(name, key, amount, dur):
-    """Kleiner Prüfausschlag; liefert das Vorzeichen der Wirkung auf state[key] (+1/-1)."""
+    """Small probe input; returns the sign of the effect on state[key] (+1/-1)."""
     s0 = state()
     axis(name, amount)
     time.sleep(dur)
@@ -51,7 +51,7 @@ def probe(name, key, amount, dur):
     axis(name, 0)
     time.sleep(dur)
     d = s1[key] - s0[key]
-    print(f"Prüfausschlag {name} {amount:+d}: Δ{key} = {d:+.2f}")
+    print(f"probe {name} {amount:+d}: Δ{key} = {d:+.2f}")
     return 1 if d > 0 else -1
 
 
@@ -60,15 +60,15 @@ ap_on = aq.get("AUTOPILOT_MASTER") == 1
 if ap_on:
     ev["AUTOPILOT_OFF"]()
 time.sleep(0.5)
-# Vorzeichen: positiver Achswert -> Querlage +/-, Nicklage +/- (PLANE_PITCH_DEGREES: Nase hoch = negativ)
+# Signs: positive axis value -> bank +/-, pitch +/- (PLANE_PITCH_DEGREES: nose up = negative)
 s_ail = probe("AXIS_AILERONS_SET", "bank", 4000, 0.6)
 s_elev = probe("AXIS_ELEVATOR_SET", "pitch", 3000, 0.5)
 start = state()
 
-KP_BANK, KD_BANK = 400.0, 250.0          # Zählwerte je ° bzw. °/s
-KI_BANK = 150.0                          # Zählwerte je °·s (Runde D ohne I-Anteil: 14° bleibende Querlage)
+KP_BANK, KD_BANK = 400.0, 250.0          # counts per ° and per °/s
+KI_BANK = 150.0                          # counts per °·s (round D without integral term: 14° residual bank)
 integ_bank = 0.0
-KP_VS, KI_VS = 120.0, 40.0               # Zählwerte je ft/s bzw. ft
+KP_VS, KI_VS = 120.0, 40.0               # counts per ft/s and per ft
 phases = [(5.0, 0.0), (rudder_s, rudder_frac * FULL), (5.0, 0.0)]
 prev = state()
 alt_ref = prev["alt"]
@@ -87,10 +87,10 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             p = (s["bank"] - prev["bank"]) / dt
             vs = (s["alt"] - prev["alt"]) / dt
             integ = max(-200.0, min(200.0, integ + (s["alt"] - alt_ref) * dt))
-            # Gegenkopplung: Querruder gegen Querlage und Rollrate, Höhenruder gegen Steigrate und Höhenabweichung
+            # negative feedback: aileron against bank and roll rate, elevator against vertical speed and altitude error
             integ_bank = max(-30.0, min(30.0, integ_bank + s["bank"] * dt))
             cmd_ail = -s_ail * (KP_BANK * s["bank"] + KD_BANK * p + KI_BANK * integ_bank)
-            cmd_elev = s_elev * (KP_VS * vs + KI_VS * integ / 10.0)   # Nase hoch = Nicklage negativ -> s_elev
+            cmd_elev = s_elev * (KP_VS * vs + KI_VS * integ / 10.0)   # nose up = pitch negative -> s_elev
             axis("AXIS_AILERONS_SET", cmd_ail)
             axis("AXIS_ELEVATOR_SET", cmd_elev)
             w.writerow([round(s["t"] - t0, 2), k, round(s["ias"], 1), round(s["alt"]), round(s["bank"], 2),
@@ -99,7 +99,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             f.flush()
             prev = s
             if abs(s["bank"]) > 45 or s["alt"] < start["alt"] - 1500:
-                aborted = f"Abbruch: Querlage {s['bank']:.0f}°, Höhe {s['alt']:.0f} ft"
+                aborted = f"Abort: bank {s['bank']:.0f}°, altitude {s['alt']:.0f} ft"
                 break
             time.sleep(0.05)
         if aborted:
@@ -110,4 +110,4 @@ ev["AP_MASTER"]()
 ev["AP_ALT_HOLD_ON"]()
 ev["AP_WING_LEVELER_ON"]()
 sm.exit()
-print(aborted or "fertig", "->", out)
+print(aborted or "done", "->", out)

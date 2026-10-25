@@ -1,41 +1,41 @@
-# Build-Ausgabe des Project Editors
+# Build output of the Project Editor
 Packages/
 _PackageInt/
 
-# Python-Umgebung der Tools
+# Python environment of the tools
 tools/.venv/
 __pycache__/
 
-# Blender-Backups
+# Blender backups
 *.blend1
 *.blend2
 
-# Große Quell-PDFs nicht ins Repo
+# Large source PDFs stay out of the repo
 docs/sources/*.pdf
 
-# Build-Metadaten
+# Build metadata
 PackagesMetadata/
 
-# Lokale Diagnose mit fremder Datei (F-4J), nie einchecken
+# Local diagnosis with a third-party file (F-4J), never commit
 source/cfg/engines.f4ref.cfg
 
-# Umwandlung eines PDFs mit "keine Extraktion"-Flag: nur lokale Lesehilfe (CLAUDE.md)
+# Conversion of a PDF with a "no extraction" flag: local reading aid only (CLAUDE.md)
 docs/sources/J79_Engine_System_Stoelinga.md
 
-# Persönliche Einstellungen des Project Editors
+# Personal settings of the Project Editor
 F104G.xml.user
 
-# --- Öffentliches Repo: keine Fremdinhalte (Entscheidung 2026-10-25) ---
-# Prüfstand-Assets aus dem SDK-Beispiel SimpleAircraft (Microsoft), Lizenz für Weitergabe ungeklärt
+# --- Public repo: no third-party content (decision 2026-10-25) ---
+# Test bed assets from the SDK sample SimpleAircraft (Microsoft), redistribution licence unclear
 PackageSources/SimObjects/Airplanes/pete-f104g/common/model/
 PackageSources/SimObjects/Airplanes/pete-f104g/common/texture/
 PackageSources/SimObjects/Airplanes/pete-f104g/common/texture.base/
 PackageSources/SimObjects/Airplanes/pete-f104g/common/sound/
 PackageSources/SimObjects/Airplanes/pete-f104g/common/soundAI/
 PackageSources/SimObjects/Airplanes/pete-f104g/common/panel/
-# Kopien der Microsoft-SDK-Dokumentation (nur lokale Nachschlagehilfe)
+# Copies of the Microsoft SDK documentation (local reference only)
 docs/sdk-ref/
-# Laufzeitdaten anderer Werkzeuge
+# Runtime data of other tools
 .opencode/
 PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png
 PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png.xml

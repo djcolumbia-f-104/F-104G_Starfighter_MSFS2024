@@ -1,6 +1,6 @@
-# Erzeugt die cfg-Dateien in common/config aus source/cfg (F-104-Werte) und der SDK-Vorlage (SimpleAircraft).
-# Aufruf: powershell -File tools\build_cfg.ps1 [-Engine f104|minimal]
-#   -Engine minimal: Diagnose-Triebwerk (source/cfg/engines.minimal.cfg) statt des vollen J79.
+# Generates the cfg files in common/config from source/cfg (F-104 values) and the SDK template (SimpleAircraft).
+# Usage: powershell -File tools\build_cfg.ps1 [-Engine f104|minimal]
+#   -Engine minimal: diagnostic engine (source/cfg/engines.minimal.cfg) instead of the full J79.
 param([string]$Engine = 'f104')
 $ErrorActionPreference = 'Stop'
 $P   = Split-Path -Parent $PSScriptRoot
@@ -13,4 +13,4 @@ $Tpl = "C:\MSFS 2024 SDK\Samples\DevmodeProjects\SimObjects\Aircraft\SimpleAircr
 & $Py -I "$P\tools\merge_cfg.py" "-"                     "$P\source\cfg\engines.$Engine.cfg"   "$Cfg\engines.cfg"
 & $Py -I "$P\tools\merge_cfg.py" "$Tpl\cockpit.cfg"      "$P\source\cfg\cockpit.f104.cfg"      "$Cfg\cockpit.cfg"
 & $Py -I "$P\tools\merge_cfg.py" "$Tpl\systems.cfg"      "$P\source\cfg\systems.f104.cfg"      "$Cfg\systems.cfg"
-"Triebwerk: engines.$Engine.cfg"
+"Engine: engines.$Engine.cfg"

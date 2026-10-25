@@ -1,7 +1,7 @@
-"""Zeichnet SimVars zeitgleich in eine CSV auf (für Flugtests).
+"""Records SimVars into a CSV in real time (for flight tests).
 
-Aufruf (mit dem Python der simconnect-mcp-venv, die das Paket SimConnect enthält):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\simlog.py <ausgabe.csv> <sekunden> [hz]
+Usage (with the Python of the simconnect-mcp venv, which contains the SimConnect package):
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\simlog.py <output.csv> <seconds> [hz]
 """
 import csv
 import sys
@@ -10,7 +10,7 @@ import time
 from SimConnect import AircraftRequests, SimConnect
 
 VARS = [
-    ("INCIDENCE_ALPHA", "deg"),          # rad -> deg umgerechnet
+    ("INCIDENCE_ALPHA", "deg"),          # rad converted to deg
     ("AIRSPEED_INDICATED", "kt"),
     ("AIRSPEED_TRUE", "kt"),
     ("AIRSPEED_MACH", "mach"),
@@ -30,7 +30,7 @@ VARS = [
     ("AUTOPILOT_MASTER", "-"),
     ("TURB_ENG_N1:1", "pct"),
     ("ENG_FUEL_FLOW_PPH:1", "lb/h"),
-    ("ENG_EXHAUST_GAS_TEMPERATURE:1", "degC"),   # Rankine -> °C umgerechnet
+    ("ENG_EXHAUST_GAS_TEMPERATURE:1", "degC"),   # Rankine converted to °C
     ("INCIDENCE_BETA", "deg"),                   # rad -> deg
     ("RUDDER_DEFLECTION", "deg"),                # rad -> deg
     ("PLANE_BANK_DEGREES", "deg"),               # rad -> deg
@@ -60,4 +60,4 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         f.flush()
         time.sleep(1 / hz)
 sm.exit()
-print("fertig:", out)
+print("done:", out)

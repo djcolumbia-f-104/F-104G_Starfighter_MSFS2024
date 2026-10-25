@@ -1,7 +1,7 @@
-"""Rendert PDF-Seiten als PNG.
+"""Renders PDF pages as PNG.
 
-Aufruf: pdf_pages.py <pdf> <ausgabeordner> <seiten> [dpi]
-<seiten> 1-basiert, z. B. "1-12" oder "5,7,20-22".
+Usage: pdf_pages.py <pdf> <output folder> <pages> [dpi]
+<pages> 1-based, e.g. "1-12" or "5,7,20-22".
 """
 import os
 import sys

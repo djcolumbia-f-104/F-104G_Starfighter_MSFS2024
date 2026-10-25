@@ -31,7 +31,7 @@ Official test sequence (Microsoft "Testing the Aircraft") and best practices: `d
 ## 2. Test levels
 
 **T0 static** (`tools\.venv\Scripts\python.exe -I tools\check_cfg.py .`): rules from the SDK and sources, each
-assigned to a work package. An ERROR (FEHLER) means "work package open". New findings are added as new rules.
+assigned to a work package. An ERROR means "work package open". New findings are added as new rules.
 
 **T1 build**: also `check_cfg.py`: package cfg = generated cfg (build really done), `BuilderLogError.txt` not newer
 than the build.

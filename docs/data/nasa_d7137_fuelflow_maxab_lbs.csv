@@ -1,5 +1,5 @@
-# Kraftstoffdurchfluss (lb/s) bei maximalem Nachbrenner über Höhe (Zeilen, ft) und Mach (Spalten).
-# Quelle: NASA TN D-7137, Table 4, S. 14 (PDF 16).
+# Fuel flow (lb/s) at maximum afterburner over altitude (rows, ft) and Mach (columns).
+# Source: NASA TN D-7137, Table 4, p. 14 (PDF 16).
 alt_ft,M0,M0.4,M0.6,M0.8,M1.0,M1.2,M1.4,M1.6,M1.8,M2.0
 0,7.13,8.75,9.75,11.05,12.91,15.05,17.19,19.33,21.47,23.61
 10000,4.91,6.38,7.22,8.25,9.62,11.33,13.05,15.00,16.94,18.88

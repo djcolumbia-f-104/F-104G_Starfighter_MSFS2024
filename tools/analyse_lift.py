@@ -1,8 +1,8 @@
-"""Vergleicht den im Sim geflogenen Auftriebsbeiwert mit der NASA-Tabelle (TN D-7137 Table 1).
+"""Compares the lift coefficient flown in the sim with the NASA table (TN D-7137 Table 1).
 
-Aufruf: analyse_lift.py <projektordner> <flugtest.csv>  (CSV von tools/simlog.py)
-CL_sim = G * W / (0.5 * rho * V_TAS^2 * S); CL_nasa = Tabelle(alpha, Mach), Mach < 0.4 wie 0.4.
-Nur Punkte in der Luft, mit Klappen/Fahrwerk eingefahren.
+Usage: analyse_lift.py <project folder> <flighttest.csv>  (CSV from tools/simlog.py)
+CL_sim = G * W / (0.5 * rho * V_TAS^2 * S); CL_nasa = table(alpha, Mach), Mach < 0.4 treated as 0.4.
+Only points in the air with flaps/gear retracted.
 """
 import csv
 import os
@@ -39,8 +39,8 @@ def cl_nasa(alpha, mach):
 
 with open(path, encoding="utf-8") as f:
     data = list(csv.DictReader(f))
-TOL = 0.03  # Abnahme T3-A (docs/flight-model-plan.md): |Bandmittel CL_sim - CL_nasa| <= 0.03 bei M 0.4-0.95
-print(f"{'t':>6} {'IAS':>5} {'Mach':>5} {'alpha':>6} {'G':>5} {'CL_sim':>7} {'CL_nasa':>7} {'Verh.':>6} {'HR':>6} {'Trim':>6}")
+TOL = 0.03  # acceptance T3-A (docs/flight-model-plan.md): |band mean CL_sim - CL_nasa| <= 0.03 at M 0.4-0.95
+print(f"{'t':>6} {'IAS':>5} {'Mach':>5} {'alpha':>6} {'G':>5} {'CL_sim':>7} {'CL_nasa':>7} {'ratio':>6} {'elev':>6} {'trim':>6}")
 diffs, trim_pts, bands = [], [], {}
 for d in data:
     try:
@@ -58,26 +58,26 @@ for d in data:
     cl = g * w / (0.5 * rho * v * v * S)
     cn = cl_nasa(a, m)
     ratio = cl / cn if abs(cn) > 0.02 else float("nan")
-    hr = float(d.get("ELEVATOR_DEFLECTION[deg]") or "nan")      # erst ab simlog-Stand 2026-10-25
+    hr = float(d.get("ELEVATOR_DEFLECTION[deg]") or "nan")      # only in simlog versions from 2026-10-25
     tr = float(d.get("ELEVATOR_TRIM_POSITION[deg]") or "nan")
     if 0.4 <= m <= 0.95:
         diffs.append(cl - cn)
-        if abs(g - 1) < 0.15:                      # quasistationär (keine Abfang-/Positioniermanöver)
+        if abs(g - 1) < 0.15:                      # quasi-steady (no pull-outs/positioning manoeuvres)
             bands.setdefault(int(a), []).append(cl - cn)
-        if hr == hr and tr == tr and abs(g - 1) < 0.1 and abs(tr) < 9.9:   # nan-frei, ~1 g, nicht im Anschlag
+        if hr == hr and tr == tr and abs(g - 1) < 0.1 and abs(tr) < 9.9:   # no nan, ~1 g, not at the stop
             trim_pts.append((a, hr + tr))
     print(f"{float(d['t']):6.1f} {ias:5.0f} {m:5.2f} {a:6.2f} {g:5.2f} {cl:7.3f} {cn:7.3f} {ratio:6.2f} {hr:6.2f} {tr:6.2f}")
 if len(trim_pts) > 5:
-    # T3-G: gesamter Leitwerksausschlag (Höhenruder + Trimmung) über α; CR-96008: -Cmα/Cmδe = 0,67 (M 0,84) .. 1,05 (Start)
+    # T3-G: total tail deflection (elevator + trim) over α; CR-96008: -Cmα/Cmδe = 0.67 (M 0.84) .. 1.05 (takeoff)
     n = len(trim_pts)
     ma, md = sum(p[0] for p in trim_pts) / n, sum(p[1] for p in trim_pts) / n
     k = sum((a - ma) * (d - md) for a, d in trim_pts) / sum((a - ma) ** 2 for a, _ in trim_pts)
-    print(f"\nT3-G: Leitwerksausschlag (HR + Trim) = {md - k * ma:+.2f}° + {k:.2f} × α  ({n} Punkte, nur Trimmung < Anschlag)")
+    print(f"\nT3-G: tail deflection (elevator + trim) = {md - k * ma:+.2f}° + {k:.2f} × α  ({n} points, trim below the stop only)")
 if diffs:
     worst = max(diffs, key=abs)
-    # Abnahme über 1°-Bandmittel (>= 3 Punkte, |g-1| < 0,15): Einzelpunkte streuen in Übergängen (Runde A/C 2026-10-25)
+    # acceptance on 1° band means (>= 3 points, |g-1| < 0.15): single points scatter in transitions (rounds A/C 2026-10-25)
     means = {b: sum(v) / len(v) for b, v in bands.items() if len(v) >= 3}
     wb, wm = max(means.items(), key=lambda kv: abs(kv[1])) if means else (0, 0.0)
-    print(f"\nT3-A: {len(diffs)} Punkte M 0.4-0.95, mittl. Abw. {sum(diffs) / len(diffs):+.3f}, größter Einzelpunkt {worst:+.3f};"
-          f" größtes Bandmittel {wm:+.3f} (α {wb}-{wb + 1}°, {len(means)} Bänder)"
-          f" -> {'BESTANDEN' if means and abs(wm) <= TOL else 'NICHT BESTANDEN'} (Toleranz {TOL})")
+    print(f"\nT3-A: {len(diffs)} points M 0.4-0.95, mean dev. {sum(diffs) / len(diffs):+.3f}, largest single point {worst:+.3f};"
+          f" largest band mean {wm:+.3f} (α {wb}-{wb + 1}°, {len(means)} bands)"
+          f" -> {'PASSED' if means and abs(wm) <= TOL else 'FAILED'} (tolerance {TOL})")

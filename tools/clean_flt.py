@@ -1,8 +1,8 @@
-"""Entfernt Kolbenmotor-Zustände ([Engine Parameters.*], [Propeller.*]) aus den .flt-Dateien des Prüfstands.
+"""Removes piston engine states ([Engine Parameters.*], [Propeller.*]) from the test bed's .flt files.
 
-Aufruf: clean_flt.py <flt-ordner>
-Hintergrund: Die .flt-Dateien stammen vom Kolbenmotor-Beispiel des SDK. Sie setzten das J79 beim Laden auf
-46 % (Startbahn) bzw. 150 % Drehzahl mit Magnetzündern -> unmöglicher Anfangszustand, Triebwerk sprang nie an.
+Usage: clean_flt.py <flt folder>
+Background: the .flt files come from the SDK's piston engine sample. On loading they set the J79 to
+46 % (runway) or 150 % rpm with magnetos -> impossible initial state, the engine never started.
 """
 import os
 import re
@@ -22,4 +22,4 @@ for name in sorted(os.listdir(folder)):
         if not skip:
             out.append(line)
     open(path, "w", encoding="utf-8", newline="\r\n").write("\n".join(out).rstrip() + "\n")
-    print(f"{name}: {removed} Abschnitt(e) entfernt")
+    print(f"{name}: {removed} section(s) removed")

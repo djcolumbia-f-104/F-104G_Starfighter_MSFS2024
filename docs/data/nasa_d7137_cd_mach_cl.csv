@@ -1,5 +1,5 @@
-# CD der F-104G über Mach (Zeilen) und CL (Spalten). Quelle: NASA TN D-7137, Table 2, S. 13 (PDF 15).
-# Bezugsfläche S = 196.1 ft^2. Abgeglichen mit dem Scan.
+# CD of the F-104G over Mach (rows) and CL (columns). Source: NASA TN D-7137, Table 2, p. 13 (PDF 15).
+# Reference area S = 196.1 ft^2. Checked against the scan.
 mach,CL0,CL0.10,CL0.15,CL0.20,CL0.25,CL0.30,CL0.35,CL0.40,CL0.45,CL0.50
 0,0.0160,0.0175,0.0195,0.0222,0.0258,0.0308,0.0378,0.0462,0.0562,0.0673
 0.800,0.0160,0.0175,0.0195,0.0222,0.0258,0.0308,0.0378,0.0462,0.0562,0.0673

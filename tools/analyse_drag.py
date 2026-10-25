@@ -1,10 +1,10 @@
-"""Test T3-F: Widerstandsbeiwert im Sim aus einem Verzögerungslauf vs. NASA TN D-7137 Table 2.
+"""Test T3-F: drag coefficient in the sim from a deceleration run vs. NASA TN D-7137 Table 2.
 
-Aufruf: analyse_drag.py <projektordner> <flugtest.csv> [t_von t_bis]   (CSV von tools/simlog.py)
-Bahnbilanz: m·dV/dt = T_netto - D - W·sin γ  ->  D = T_netto - m·dV/dt - W·sin γ,  CD = D / (q·S).
-T_netto = TURB_ENG_JET_THRUST (Bruttoschub minus Einlaufwiderstand); Schubachse ≈ Bahn (cos(α+2,5°) ≈ 1).
-dV/dt und γ aus wahrer Fahrt und Höhe (zentrale Differenzen über ±2 Punkte), CL wie analyse_lift.py.
-Nur Punkte in der Luft, Klappen/Fahrwerk ein, Gashebel konstant. Abnahme: |CD_sim/CD_nasa - 1| <= 10 %.
+Usage: analyse_drag.py <project folder> <flighttest.csv> [t_from t_to]   (CSV from tools/simlog.py)
+Flight path balance: m·dV/dt = T_net - D - W·sin γ  ->  D = T_net - m·dV/dt - W·sin γ,  CD = D / (q·S).
+T_net = TURB_ENG_JET_THRUST (gross thrust minus ram drag); thrust axis ≈ flight path (cos(α+2.5°) ≈ 1).
+dV/dt and γ from true airspeed and altitude (central differences over ±2 points), CL as in analyse_lift.py.
+Only points in the air, flaps/gear up, throttle constant. Acceptance: |CD_sim/CD_nasa - 1| <= 10 %.
 """
 import csv
 import os
@@ -51,7 +51,7 @@ with open(path, encoding="utf-8") as f:
             continue
 
 print(f"{'t':>6} {'IAS':>5} {'Mach':>5} {'alpha':>6} {'CL':>6} {'T_net':>7} {'dV/dt':>6} {'γ°':>5} "
-      f"{'CD_sim':>7} {'CD_nasa':>7} {'Verh.':>6}")
+      f"{'CD_sim':>7} {'CD_nasa':>7} {'ratio':>6}")
 ratios = []
 for i in range(2, len(data) - 2):
     a, d, b = data[i - 2], data[i], data[i + 2]
@@ -65,7 +65,7 @@ for i in range(2, len(data) - 2):
     dt = b["t"] - a["t"]
     v = d["AIRSPEED_TRUE[kt]"] * KT
     dvdt = (b["AIRSPEED_TRUE[kt]"] - a["AIRSPEED_TRUE[kt]"]) * KT / dt
-    sin_g = (b["PLANE_ALTITUDE[ft]"] - a["PLANE_ALTITUDE[ft]"]) / dt / v   # aus Höhe, unabhängig von VS-Einheit
+    sin_g = (b["PLANE_ALTITUDE[ft]"] - a["PLANE_ALTITUDE[ft]"]) / dt / v   # from altitude, independent of the VS unit
     w = d["TOTAL_WEIGHT[lb]"]
     q = 0.5 * d["AMBIENT_DENSITY[slug/ft3]"] * v * v
     thrust = d["TURB_ENG_JET_THRUST:1[lbf]"]
@@ -83,9 +83,9 @@ if ratios:
     for lo, hi in ((0.4, 0.6), (0.6, 0.8), (0.8, 0.95), (0.95, 1.2)):
         sel = [r for m, r in ratios if lo <= m < hi]
         if sel:
-            print(f"M {lo:.2f}-{hi:.2f}: CD_sim/CD_nasa Mittel {sum(sel) / len(sel):.2f} (n={len(sel)})")
+            print(f"M {lo:.2f}-{hi:.2f}: CD_sim/CD_nasa mean {sum(sel) / len(sel):.2f} (n={len(sel)})")
     sel = [r for m, r in ratios if 0.4 <= m <= 0.95]
     if sel:
         mean = sum(sel) / len(sel)
-        print(f"T3-F: {len(sel)} Punkte M 0.4-0.95, Mittel {mean:.2f} -> "
-              f"{'BESTANDEN' if abs(mean - 1) <= TOL else 'NICHT BESTANDEN'} (Toleranz ±{TOL:.0%})")
+        print(f"T3-F: {len(sel)} points M 0.4-0.95, mean {mean:.2f} -> "
+              f"{'PASSED' if abs(mean - 1) <= TOL else 'FAILED'} (tolerance ±{TOL:.0%})")

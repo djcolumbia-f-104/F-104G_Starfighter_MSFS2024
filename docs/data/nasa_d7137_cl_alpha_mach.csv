@@ -1,5 +1,5 @@
-# CL der F-104G über Anstellwinkel (Zeilen, Grad) und Mach (Spalten). Quelle: NASA TN D-7137, Table 1, S. 13 (PDF 15).
-# Bezugsfläche S = 196.1 ft^2. Abgeglichen mit dem Scan.
+# CL of the F-104G over angle of attack (rows, degrees) and Mach (columns). Source: NASA TN D-7137, Table 1, p. 13 (PDF 15).
+# Reference area S = 196.1 ft^2. Checked against the scan.
 alpha_deg,M0.4,M0.6,M0.8,M0.9,M1.0,M1.2,M1.4,M1.6,M1.8,M2.0
 0,0.010,0.010,0.010,0.010,-0.010,-0.020,0.040,0.032,0.020,0.010
 2,0.100,0.100,0.118,0.145,0.140,0.125,0.155,0.132,0.110,0.090

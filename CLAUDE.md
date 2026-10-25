@@ -1,7 +1,8 @@
 # F-104G Starfighter for MSFS 2024: project notes
 
 From-scratch aircraft add-on: Lockheed F-104G Starfighter for Microsoft Flight Simulator 2024.
-**Communicate with the user (pete) in German.** Repository docs are in English; code and cfg comments are German.
+**Communicate with the user (pete) in German.** The whole repository is in English (docs, code, cfg comments, script
+output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 

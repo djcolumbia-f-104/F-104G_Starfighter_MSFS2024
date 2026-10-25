@@ -1,8 +1,8 @@
-"""Prüft die erzeugten cfg-Dateien und den Build-Stand (Testebenen T0 und T1, siehe docs/flight-model-plan.md).
+"""Checks the generated cfg files and the build state (test levels T0 and T1, see docs/flight-model-plan.md).
 
-Aufruf: check_cfg.py <projektordner>     (mit tools\\.venv; nach build_cfg.ps1 bzw. nach Build All im Sim)
-Jede Regel trägt die Nummer ihres Arbeitspakets (AP-x). FEHLER = Ziel noch nicht erreicht, WARNUNG = prüfen.
-Rückgabewert 1, wenn mindestens ein FEHLER auftritt.
+Usage: check_cfg.py <project folder>     (with tools\\.venv; after build_cfg.ps1 or after Build All in the sim)
+Each rule carries the number of its work package (AP-x). ERROR = target not reached yet, WARNING = check it.
+Exit code 1 if at least one ERROR occurs.
 """
 import os
 import re
@@ -16,7 +16,7 @@ LOG = os.path.join(os.environ.get("APPDATA", ""), "Microsoft Flight Simulator 20
 
 
 def load(path):
-    """-> {abschnitt: {schlüssel: wert}} (Kleinschreibung, Kommentare entfernt)"""
+    """-> {section: {key: value}} (lower case, comments removed)"""
     data, sec = {}, None
     for line in open(path, encoding="utf-8-sig"):
         line = line.split(";", 1)[0].strip()
@@ -37,7 +37,7 @@ def num(v):
 
 
 def curve(v):
-    """1D-Kurve 'x:y, x:y' -> [(x, y)] oder None bei Formatfehler"""
+    """1D curve 'x:y, x:y' -> [(x, y)] or None on a format error"""
     try:
         return [tuple(float(t) for t in p.split(":")) for p in v.split(",")]
     except (AttributeError, ValueError):
@@ -47,7 +47,7 @@ def curve(v):
 results = []
 
 
-def check(ap, text, ok, level="FEHLER", info=""):
+def check(ap, text, ok, level="ERROR", info=""):
     results.append(("OK" if ok else level, ap, text, info))
 
 
@@ -55,56 +55,56 @@ fm = load(os.path.join(CFG, "flight_model.cfg"))
 eng = load(os.path.join(CFG, "engines.cfg"))
 geo, aero, tune = fm.get("airplane_geometry", {}), fm.get("aerodynamics", {}), fm.get("flight_tuning", {})
 
-# --- T0: Regeln aus SDK-Referenz/Tutorials und Quellen ---
-check("AP-1", "modern_fm_only = 1 (sonst hängt das Flugmodell von den Sim-Optionen ab)",
-      num(tune.get("modern_fm_only")) == 1, info=f"ist {tune.get('modern_fm_only')}")
-check("AP-1", "lift_coef_at_drag_zero gesetzt (Pflicht laut SDK; Polare D-7137 -> 0)",
-      "lift_coef_at_drag_zero" in aero, info=f"ist {aero.get('lift_coef_at_drag_zero')}")
-check("AP-1", "wing_camber != 0 (0 wird laut Tutorial 'Fine Tuning' still durch 1 ersetzt)",
-      num(geo.get("wing_camber")) not in (None, 0), info=f"ist {geo.get('wing_camber')}")
-check("AP-1", "aero_center_lift = 0 (25 % MAC = Datum = Modellnullpunkt)",
+# --- T0: rules from the SDK reference/tutorials and sources ---
+check("AP-1", "modern_fm_only = 1 (otherwise the flight model depends on the sim options)",
+      num(tune.get("modern_fm_only")) == 1, info=f"is {tune.get('modern_fm_only')}")
+check("AP-1", "lift_coef_at_drag_zero set (mandatory per SDK; D-7137 polar -> 0)",
+      "lift_coef_at_drag_zero" in aero, info=f"is {aero.get('lift_coef_at_drag_zero')}")
+check("AP-1", "wing_camber != 0 (per tutorial 'Fine Tuning' 0 is silently replaced by 1)",
+      num(geo.get("wing_camber")) not in (None, 0), info=f"is {geo.get('wing_camber')}")
+check("AP-1", "aero_center_lift = 0 (25 % MAC = datum = model origin)",
       num(aero.get("aero_center_lift")) == 0 and num(aero.get("compute_aero_center")) == 0,
-      info=f"ist {aero.get('aero_center_lift')}")
+      info=f"is {aero.get('aero_center_lift')}")
 legacy = {k: num(aero.get(k)) for k in ("lift_coef_delta_elevator", "lift_coef_horizontal_incidence",
                                         "lift_coef_pitch_rate", "lift_coef_daoa")}
-check("AP-1b", "FSX-Altterme des Auftriebs = 0 (A/B-Test, ob MSFS sie noch nutzt)",
-      all(v in (None, 0) for v in legacy.values()), level="WARNUNG",
+check("AP-1b", "FSX legacy lift terms = 0 (A/B test whether MSFS still uses them)",
+      all(v in (None, 0) for v in legacy.values()), level="WARNING",
       info=", ".join(f"{k.replace('lift_coef_', '')} {v}" for k, v in legacy.items() if v))
-check("AP-2", "Pendelleitwerk: htail_area = 0, ganze Fläche 48.2 ft² im elevator_area (Tutorial 'Tail Geometry')",
+check("AP-2", "all-moving tail: htail_area = 0, whole area 48.2 ft² in elevator_area (tutorial 'Tail Geometry')",
       num(geo.get("htail_area")) == 0 and abs((num(geo.get("elevator_area")) or 0) - 48.2) < 0.5,
       info=f"htail {geo.get('htail_area')}, elevator {geo.get('elevator_area')}")
-check("AP-2", "elevator_lift_coef 3.0-4.4 (CR-96008 CLδe x S/S_h; CR-2144 2.8) statt Standard 5.0",
-      3.0 <= (num(aero.get("elevator_lift_coef")) or 5.0) <= 4.4, info=f"ist {aero.get('elevator_lift_coef', '5.0 (Standard)')}")
-check("AP-3", "htail_incidence = 0 (Normalisierung bei α=0; Trimm bei α=0 ist 0, Runde A/B2), Starttrimm 5° (FM 6-5)",
+check("AP-2", "elevator_lift_coef 3.0-4.4 (CR-96008 CLδe x S/S_h; CR-2144 2.8) instead of default 5.0",
+      3.0 <= (num(aero.get("elevator_lift_coef")) or 5.0) <= 4.4, info=f"is {aero.get('elevator_lift_coef', '5.0 (default)')}")
+check("AP-3", "htail_incidence = 0 (normalization at α=0; trim at α=0 is 0, rounds A/B2), takeoff trim 5° (FM 6-5)",
       num(geo.get("htail_incidence")) == 0 and num(geo.get("elevator_trim_neutral")) == 5,
       info=f"htail {geo.get('htail_incidence')}, trim_neutral {geo.get('elevator_trim_neutral')}")
-check("AP-2b", "Trimmbereich Nase hoch >= 11° (FM 6-5)", (num(geo.get("elevator_trim_up_limit")) or 0) >= 11)
-check("AP-6", "rudder_maxangle_scalar ≈ 0,32 (Klappenruder-Anteil, CR-2144), elevator_maxangle_scalar 1 (Pendelleitwerk)",
+check("AP-2b", "trim range nose up >= 11° (FM 6-5)", (num(geo.get("elevator_trim_up_limit")) or 0) >= 11)
+check("AP-6", "rudder_maxangle_scalar ≈ 0.32 (flap-type rudder share, CR-2144), elevator_maxangle_scalar 1 (all-moving tail)",
       abs((num(tune.get("rudder_maxangle_scalar")) or 1) - 0.32) < 0.05 and (num(tune.get("elevator_maxangle_scalar")) or 1) == 1,
       info=f"rudder {tune.get('rudder_maxangle_scalar')}, elevator {tune.get('elevator_maxangle_scalar')}")
-check("AP-6", "rudder_lift_coef bleibt 5 (Seitenflosse = Richtungsstabilität, Runde B2)",
-      (num(aero.get("rudder_lift_coef")) or 5.0) >= 4.9, info=f"ist {aero.get('rudder_lift_coef', '5.0')}")
+check("AP-6", "rudder_lift_coef stays 5 (vertical tail = directional stability, round B2)",
+      (num(aero.get("rudder_lift_coef")) or 5.0) >= 4.9, info=f"is {aero.get('rudder_lift_coef', '5.0')}")
 
 flaps, lcf = fm.get("flaps.0", {}), num(aero.get("lift_coef_flaps")) or 0
-for pos, soll in ((1, 0.30), (2, 0.62)):
+for pos, target in ((1, 0.30), (2, 0.62)):
     v = [num(t) for t in flaps.get(f"flaps-position.{pos}", "0").split(",")]
     v += [None] * (8 - len(v))
     dcl = lcf * (num(flaps.get("lift_scalar")) or 1) * (v[3] or 1) * (v[0] or 0) / 57.29578
-    check("AP-10", f"Klappenstellung {pos}: ΔCL ≈ {soll} (lift_coef_flaps x lift scalar x rad), add incidence 1",
-          abs(dcl - soll) < 0.03 and v[7] == 1, info=f"ΔCL {dcl:.3f}, add incidence {v[7]}")
+    check("AP-10", f"flap position {pos}: ΔCL ≈ {target} (lift_coef_flaps x lift scalar x rad), add incidence 1",
+          abs(dcl - target) < 0.03 and v[7] == 1, info=f"ΔCL {dcl:.3f}, add incidence {v[7]}")
 
 hyd = num(load(os.path.join(CFG, "systems.cfg")).get("hydraulic_system", {}).get("normal_pressure")) or 0
-check("AP-10", "Klappen elektrisch (FM 1-73: AC-Motoren); hydraulisch nur mit Hydrauliksystem (T3-D Lauf 5)",
+check("AP-10", "flaps electric (FM 1-73: AC motors); hydraulic only with a hydraulic system (T3-D run 5)",
       num(flaps.get("system_type")) == 0, info=f"system_type {flaps.get('system_type')}")
-check("AP-10", "Fahrwerk nicht hydraulisch, solange [HYDRAULIC_SYSTEM] keinen Druck hat (Runde E)",
+check("AP-10", "gear not hydraulic as long as [HYDRAULIC_SYSTEM] has no pressure (round E)",
       num(fm.get("contact_points", {}).get("gear_system_type")) != 1 or hyd > 0,
-      info=f"gear_system_type {fm.get('contact_points', {}).get('gear_system_type')}, Hydraulikdruck {hyd}")
+      info=f"gear_system_type {fm.get('contact_points', {}).get('gear_system_type')}, hydraulic pressure {hyd}")
 
 cp = fm.get("contact_points", {})
 
 
 def point(n):
-    """point.N -> (z, y) in ft oder None"""
+    """point.N -> (z, y) in ft or None"""
     v = cp.get(f"point.{n}", "")
     parts = [p.strip() for p in v.split(",")]
     try:
@@ -120,31 +120,31 @@ if main:
               for n in range(3, 10) if (p := point(n)) and p[0] < main[0] - 3}
     if angles:
         n, a = min(angles.items(), key=lambda kv: kv[1])
-        check("AP-5", "Aufsetzwinkel Heck um das Hauptrad 11-15° (CR-2144 Dreiseitenansicht)", 11 <= a <= 15,
-              info=f"{a:.1f}° an point.{n}")
+        check("AP-5", "tail strike angle about the main wheel 11-15° (CR-2144 three-view)", 11 <= a <= 15,
+              info=f"{a:.1f}° at point.{n}")
 
 for name, maxn in (("lift_coef_aoa_table", 47), ("lift_coef_mach_table", 17), ("drag_coef_zero_lift_mach_tab", 47)):
     c = curve(aero.get(name))
-    check("AP-0", f"{name}: 1D-Format, x aufsteigend, <= {maxn} Einträge",
+    check("AP-0", f"{name}: 1D format, x ascending, <= {maxn} entries",
           c is not None and len(c) <= maxn and all(a[0] < b[0] for a, b in zip(c, c[1:])),
-          info=f"{len(c) if c else 'Formatfehler'} Einträge")
+          info=f"{len(c) if c else 'format error'} entries")
 nd = eng.get("turbineenginedata", {}).get("uncorrected_commanded_ne_table")
 if nd is not None:
-    check("AP-0", "uncorrected_commanded_Ne_table im nD-Format ('x, x :: y, y')", "::" in nd)
+    check("AP-0", "uncorrected_commanded_Ne_table in nD format ('x, x :: y, y')", "::" in nd)
 
-# --- T1: Build-Stand ---
+# --- T1: build state ---
 for f in ("flight_model.cfg", "engines.cfg", "aircraft.cfg", "systems.cfg", "../flt/runway.FLT"):
     src, pkg = os.path.join(CFG, f), os.path.join(PKG, f)
     same = os.path.exists(pkg) and open(src, "rb").read() == open(pkg, "rb").read()
-    check("T1", f"Paket enthält aktuelle {f} (Build All nach build_cfg.ps1 gemacht)", same, level="WARNUNG")
+    check("T1", f"package contains the current {f} (Build All done after build_cfg.ps1)", same, level="WARNING")
 if os.path.exists(LOG):
     newest = max(os.path.getmtime(os.path.join(PKG, f)) for f in os.listdir(PKG))
-    check("T1", "BuilderLogError.txt nicht neuer als der letzte Build (sonst Log lesen!)",
+    check("T1", "BuilderLogError.txt not newer than the last build (otherwise read the log!)",
           os.path.getmtime(LOG) < newest - 5)
 
 w = max(len(r[2]) for r in results)
 for status, ap, text, info in results:
     print(f"{status:8} {ap:5} {text:{w}}  {info if status != 'OK' else ''}".rstrip())
-n = sum(r[0] == "FEHLER" for r in results)
-print(f"\n{len(results)} Prüfungen, {n} FEHLER, {sum(r[0] == 'WARNUNG' for r in results)} WARNUNGEN")
+n = sum(r[0] == "ERROR" for r in results)
+print(f"\n{len(results)} checks, {n} ERRORS, {sum(r[0] == 'WARNING' for r in results)} WARNINGS")
 sys.exit(1 if n else 0)
