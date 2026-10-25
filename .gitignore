@@ -1,0 +1,43 @@
+# Build-Ausgabe des Project Editors
+Packages/
+_PackageInt/
+
+# Python-Umgebung der Tools
+tools/.venv/
+__pycache__/
+
+# Blender-Backups
+*.blend1
+*.blend2
+
+# Große Quell-PDFs nicht ins Repo
+docs/sources/*.pdf
+
+# Build-Metadaten
+PackagesMetadata/
+
+# Lokale Diagnose mit fremder Datei (F-4J), nie einchecken
+source/cfg/engines.f4ref.cfg
+
+# Umwandlung eines PDFs mit "keine Extraktion"-Flag: nur lokale Lesehilfe (CLAUDE.md)
+docs/sources/J79_Engine_System_Stoelinga.md
+
+# Persönliche Einstellungen des Project Editors
+F104G.xml.user
+
+# --- Öffentliches Repo: keine Fremdinhalte (Entscheidung 2026-10-25) ---
+# Prüfstand-Assets aus dem SDK-Beispiel SimpleAircraft (Microsoft), Lizenz für Weitergabe ungeklärt
+PackageSources/SimObjects/Airplanes/pete-f104g/common/model/
+PackageSources/SimObjects/Airplanes/pete-f104g/common/texture/
+PackageSources/SimObjects/Airplanes/pete-f104g/common/texture.base/
+PackageSources/SimObjects/Airplanes/pete-f104g/common/sound/
+PackageSources/SimObjects/Airplanes/pete-f104g/common/soundAI/
+PackageSources/SimObjects/Airplanes/pete-f104g/common/panel/
+# Kopien der Microsoft-SDK-Dokumentation (nur lokale Nachschlagehilfe)
+docs/sdk-ref/
+# Laufzeitdaten anderer Werkzeuge
+.opencode/
+PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png
+PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png.xml
+PackageDefinitions/pete-aircraft-f104g/ContentInfo/Thumbnail.jpg
+PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.jpg

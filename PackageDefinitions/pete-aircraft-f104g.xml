@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AssetPackage Version="0.1.0">
+	<ItemSettings>
+		<ContentType>AIRCRAFT</ContentType>
+		<Title>Lockheed F-104G Starfighter</Title>
+		<Manufacturer>Lockheed</Manufacturer>
+		<Creator>pete</Creator>
+	</ItemSettings>
+	<Flags>
+		<VisibleInStore>false</VisibleInStore>
+		<CanBeReferenced>true</CanBeReferenced>
+	</Flags>
+	<PackageOrderHint>CUSTOM_SIMOBJECTS</PackageOrderHint>
+	<AssetGroups>
+		<AssetGroup Name="ContentInfo">
+			<Type>Copy</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageDefinitions\pete-aircraft-f104g\ContentInfo</AssetDir>
+			<OutputDir>ContentInfo\pete-aircraft-f104g\</OutputDir>
+		</AssetGroup>
+		<AssetGroup Name="pete-f104g">
+			<Type>ModularSimObject</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageSources\SimObjects\Airplanes\pete-f104g\</AssetDir>
+			<OutputDir>SimObjects\Airplanes\pete-f104g\</OutputDir>
+		</AssetGroup>
+	</AssetGroups>
+</AssetPackage>

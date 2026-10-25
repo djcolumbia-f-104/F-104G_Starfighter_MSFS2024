@@ -1,0 +1,197 @@
+# Measurements in the sim (test bed)
+
+Measured via SimConnect (MCP `simconnect`). Location EDDM, 1 460 ft, 2.9 °C, 28.54 inHg (δ ≈ 0.954, θ ≈ 0.958).
+Note: `msfs_get_simvars_bulk` sometimes returned delayed values; `msfs_watch_simvar` is more reliable.
+File names `docs/data/flighttest_*.csv` are the raw logs (tools/simlog.py).
+
+## 2026-10-24: static run, parking brake
+| Setting | Throttle | N1 / rpm | Thrust (TURB ENG JET THRUST) | Fuel flow | EGT | Target | Verdict |
+|---|---|---|---|---|---|---|---|
+| Idle (old table) | 0 % | 67.0 % / 4 997 | 1 482 lbf | 1 206 lb/h | 241 °C | ~355 lbf installed (500 uninstalled, Stoelinga) | ✗ -> table corrected |
+| Idle (new table) | 0 % | 67.0 % / 4 999 | 610 lbf | 1 202 lb/h | 241 °C | ~355-500 lbf | ~ (cold day: N1c 68.4 % in the steep part of the table) |
+| Military | 68 % | 100.3 % / 7 479 | 6 654 lbf | 9 758 lb/h | 337 °C | ~6 670 lbf installed | ✓ thrust; EGT too low (target 590 °C) |
+| Max afterburner | 100 % | 100.3 % | 10 516 -> 10 642 lbf | 9 796 lb/h | 338 °C | NASA 11 200 lbf (sea level) x δ 0.954 ≈ 10 690 | ✓ (-0.5 %) |
+
+## 2026-10-24: takeoff run (Claude: brakes/throttle, user: stick)
+EDDM runway 26, 1 460 ft, ~3 °C, wind 190°/10 kt (crosswind!), 19 330 lb, CG 6.9 % MAC, flaps TAKEOFF.
+- Full afterburner from standstill: steady acceleration ~10 kt/s (175 kt after 19.6 s, 249 kt after 30 s)
+  -> net force ~10 150 lbf, matches static thrust 10 640 lbf. **Thrust ok.**
+- Liftoff only at ~270-290 kt (expected ~200 kt). The nose responded (user). Suspicion: tail strikes at ~7.5°.
+- Gear still down at 292 kt (above the 260/295 kt limit); then uncontrolled flight/crash.
+- User: rudder felt "strange" on the takeoff run, aircraft hard to keep on the runway (10 kt crosswind).
+
+## 2026-10-24: lift in flight (deceleration run with autopilot, idle)
+16 500 ft, flaps/gear up, data: `docs/data/flighttest_2026-10-24_deceleration.csv`, `tools/analyse_lift.py`.
+| IAS | Mach | α | CL sim | CL NASA (TN D-7137) | Ratio |
+|---|---|---|---|---|---|
+| 485 kt | 0.96 | 0.8° | 0.131 | 0.053 | 2.5 |
+| 355 kt | 0.71 | 2.5° | 0.243 | 0.144 | 1.7 |
+| 273 kt | 0.56 | 4.6° | 0.374 | 0.249 | 1.5 |
+| 229 kt | 0.47 | 6.8° | 0.500 | 0.366 | 1.4 |
+| 215 kt | 0.43 | 8.4° | 0.594 | 0.457 | 1.3 |
+-> The sim has **more** lift than NASA: offset ~+0.08 at α = 0, slope ~0.060/° instead of ~0.055/°.
+Below ~215 kt the autopilot did not hold altitude (α stuck at 8.4°), descent ~1 000 ft, caught with military power.
+Idle deceleration from 485 to 215 kt in ~60 s.
+
+## Open items from the 2026-10-24 measurements (status 2026-10-25 in brackets)
+- AB fuel flow missing: 9 796 lb/h at full AB instead of ~25 700 lb/h (NASA). [AP-7: solved in flight via gross
+  thrust fuel flow; static still -33 %]
+- EGT too low: 337 °C at military instead of 590 °C. [solved via egt_peak_temperature]
+- Parking brake does not hold full afterburner (aircraft started rolling). Static runs up to military.
+- Part throttle between idle and military is only estimated linearly in the thrust table.
+
+## 2026-10-25: T3-A baseline (deceleration run with elevator/trim)
+Positioned via MCP (48.25 N 11.0 E, 16 500 ft, heading 270), gear/flaps up, AP altitude + heading, AB to 486 kt,
+then idle. Build with `aero_center_lift = 0`. Data: `docs/data/flighttest_2026-10-25_baseline.csv`.
+| IAS | Mach | α | CL sim | CL NASA | Elevator | Trim |
+|---|---|---|---|---|---|---|
+| 394 kt | 0.79 | 1.3° | 0.174 | 0.079 | 0 | 1.8° |
+| 322 kt | 0.65 | 2.7° | 0.261 | 0.145 | 0 | 3.4° |
+| 267 kt | 0.55 | 4.4° | 0.368 | 0.234 | 0 | 5.4° |
+| 227 kt | 0.47 | 6.1° | 0.470 | 0.329 | 0 | 7.4° |
+| 199 kt | 0.40 | 8.5° | 0.602 | 0.459 | 0 | 10.0° (stop) |
+- **T3-A failed:** mean deviation +0.129 (tolerance 0.03). Reproduces yesterday exactly:
+  CL_sim ≈ 0.085 + 1.14 × CL_table (yesterday 0.074 + 1.14).
+- **The AP flies with trim only** (elevator stays 0). Trim runs to `elevator_trim_limit = 10` [S] -> below ~200 kt
+  the AP cannot pull further, α stays at 8.5°, descent. **Cause of the AP problem.**
+- Trim and α correlate 0.999 -> trim vs. table contribution not separable from this run.
+- After positioning 2 313 lb of fuel were missing (≈ both tip tanks, 2 × 175 gal); did not recur in later runs.
+- At M 0.99 CL matched (0.114 vs. 0.119).
+
+## 2026-10-25: T3-A after AP-1 (modern_fm_only, lift_coef_at_drag_zero = 0, wing_camber 0.1) - INVALID
+Same procedure as the baseline; data `docs/data/flighttest_2026-10-25_ap1.csv`. Tip tanks full this time
+(19 080 lb instead of 16 690 lb).
+- T3-A failed, unchanged: mean deviation +0.129. **Later found invalid**: only the flight was restarted, so the
+  old normalization was still active (see below).
+- Deviation by α band (baseline / AP-1): 0-1° +0.082/+0.080 · 2-3° +0.115/+0.107 · 4-5° +0.132/+0.131 ·
+  6-7° +0.133/+0.141 · 8-9° +0.135/+0.143. Same curve for both runs despite 2 400 lb difference.
+- The deviation does not grow with trim: constant ~0.13-0.14 between α 4° and 9° while trim goes 5° -> 10°.
+
+## 2026-10-25: Dev Mode "Debug Aircraft Sim Curves" (normalizer) after AP-1
+Screenshot `20261025111743_1.jpg` (Steam), flight at 16 554 ft, M 0.63, α ≈ 3°, 8.4 t.
+| Quantity | Raw | Target (Tgt) | Final | Factor |
+|---|---|---|---|---|
+| Cl at AOA0 | 0.0563 | **0.0910** | 0.0912 | oCl 0.01 |
+| dCl/dα at AOA0 (/rad) | 2.7898 | 3.2496 | 3.2516 | nCl 1.27 |
+| Cd at AOA0 | 0.0683 | 0.0490 | 0.0489 | nCd 0.68 |
+| dCd/dα at AOA0 | 0.7053 | 0.6838 | 0.6833 | dCdf 0.78 |
+Further lines: CD0 = 1.0 × 0.0160; k = 0.1941; PlnCd0AOA (with gear, HT, VT, ailerons) 0.0541;
+Cd0 shares: wing 0.0272, fuselage 0.0184, HT 0.0069, VT 0.0016. Sim Info: "Cur Cl=0.299 Cd=0.0616".
+- **Normalizer target at α = 0 is 0.091, our table says 0.010.** Difference 0.081 = measured offset at small α.
+- Target slope 3.25/rad ≈ table × Mach factor -> slope matches.
+- "Cur Cl = 0.299" at α ≈ 3° confirms our measurement (table: ~0.16).
+- Hypothesis H1: TgtClAOA0 = empty_weight / (q(cruise_speed, sea level density) · S) = 0.0925 ≈ 0.091.
+
+## 2026-10-25: AP-1c test of hypothesis H1 (cruise_speed 490 -> 700) - REFUTED
+Screenshot `20261025114445_1.jpg`, on the ground at EDDM after build + flight restart (T1 ✓).
+- TgtClAOA0 still 0.0910, all values unchanged -> cruise_speed does not set the target. cruise_speed back to 490.
+- Caveat at the time: normalization might only run once per session (confirmed next).
+
+## 2026-10-25: normalizer after a COMPLETE sim restart (build with AP-1 + AP-1b)
+Sim start 11:53:59, screenshot via `tools/screenshot.ps1`. On the ground at EDDM, flaps 50 %.
+| Quantity | Raw | Target | Final | Factor |
+|---|---|---|---|---|
+| Cl at AOA0 | -0.0149 | **0.0100** | 0.0100 | oCl 0.01 |
+| dCl/dα (/rad) | 3.0182 | 2.9917 | 2.9910 | nCl 1.01 |
+| Cd at AOA0 | 0.0358 | 0.0160 | 0.0160 | nCd 0.44 |
+| dCd/dα | 0.6850 | 0.4993 | 0.4997 | dCdf 0.65 |
+- **Target = table (0.010).** Before (session from ~08:00, build with wing_camber 0 -> internally 1° and FSX legacy
+  terms) 0.091.
+- **MSFS normalizes only at sim start.** Restarting the flight, a new flight from the menu and package reload
+  (Aircraft Selector/Build) all show the old normalization.
+- Not separated: camber (0 -> internally 1° vs. 0.1°) or FSX legacy terms.
+
+## 2026-10-25: T3-A after AP-1 + AP-1b WITH sim restart - PASSED
+Data `docs/data/flighttest_2026-10-25_ap1b_restart.csv`. Same procedure (16 500 ft, AB to 603 kt / M 1.14, then idle).
+- **T3-A passed:** mean deviation -0.001, largest band mean -0.021.
+- By α band: 1-2° -0.016 · 2-3° -0.022 · 3-4° -0.013 · 4-5° -0.006 · 5-6° +0.008 · 6-7° +0.010 · 7-8° +0.009 ·
+  8-9° +0.005 · 9-10° +0.005 (baseline: +0.08 to +0.14). At M 1.14 (α 1.3°): 0.087 vs. NASA 0.081.
+- **The extra lift came from the old normalization**, not from the table.
+- New: the jet accelerates much faster with AB (573 kt after 25 s instead of ~490 kt); normalizer nCd 0.44 instead
+  of 0.68 -> drag check (new test T3-F).
+
+## 2026-10-25: T3-F drag (evaluation `tools/analyse_drag.py`, no sim)
+Flight path balance D = T_net - m·dV/dt - W·sin γ (T_net = TURB_ENG_JET_THRUST, negative at idle = ram drag),
+CD = D/(qS), compared with TN D-7137 Table 2 at the same Mach and CL. Idle segment t 3-92 s.
+| | M 0.4-0.6 | M 0.6-0.8 | M 0.8-0.95 | M 0.95-1.2 | Mean M 0.4-0.95 |
+|---|---|---|---|---|---|
+| after AP-1/1b + restart (`..._ap1b_restart.csv`) | 0.93 | 1.04 | 1.05 | 1.05 | **1.00 -> passed** |
+| baseline, old normalization (`..._baseline.csv`, t 3-75) | 1.59 | 2.27 | 2.67 | - | 1.91 -> failed |
+- The old normalization also had almost double drag.
+- At high CL (0.4-0.5, α 8-9°) ratio 0.92 -> induced drag slightly low there, within tolerance.
+
+## 2026-10-25: sim round A (AP-2 all-moving tail, AP-2b trim 11°, AP-5 tail points, AP-7 fuel via gross thrust)
+Build 12:13, sim restart 12:24 (T1 ✓). Normalizer: TgtClAOA0 0.0100, Fin 0.0099, nCl 0.98, nCd 0.43.
+**T3-C static run** (EDDM, `flighttest_2026-10-25_roundA_static.csv`):
+| | N1 | Thrust | Fuel flow | EGT | Target |
+|---|---|---|---|---|---|
+| Idle | 67.0 % | 427 lbf ✓ | 566 lb/h | 264 °C | 355-500 lbf |
+| Military | 100.1 % | 6 628 lbf ✓ | 8 400 lb/h ✓ | 352 °C ✗ | 6 670 lbf, 8 400 lb/h, ~595 °C |
+**Afterburner in flight** (`flighttest_2026-10-25_roundA_flight.csv`, 14 500-15 000 ft, full AB):
+| M | Thrust sim / NASA Table 3 | FF sim / NASA Table 4 |
+|---|---|---|
+| 0.96 | 12 804 / 13 007 (-2 %) | 25 773 / 28 898 (-11 %) |
+| 1.03 | 13 563 / 13 853 (-2 %) | 27 782 / 31 062 (-11 %) |
+| 1.13 | 14 234 / 14 784 (-4 %) | 30 180 / 33 530 (-10 %) |
+-> **AB thrust in flight confirmed.** AB fuel flow -11 % -> AB TSFC 2.29 x 1.11 = 2.54.
+**T3-A**: passed by band criterion (largest band mean -0.027); single outlier -0.255 from a recovery manoeuvre.
+**T3-G**: tail deflection = 1.07 x α (before AP-2: 1.13; CR-96008 expects 0.67-1.05). AP holds altitude to ~214 kt
+(trim 11° at the stop, α 10.5°; before 225 kt/10°).
+**Cruise** M ~0.87, 30 000 ft: AP oscillated (g 0.7-0.95); point α 4.07° / trim 4.28° matches T3-G.
+**T3-E rudder** (8 000 ft, gear/flaps down, 255-275 kt, full deflection, `..._roundA_rudder.csv`, yaw damper off):
+rudder only 6-8° (elasticity table), sideslip 5.8-7.9° -> **β/δr ≈ 1.0**, CR-2144 approach 0.32.
+Roll-off to 89° bank despite wing leveler. Vertical tail measured in CR-2144 ≈ 38 ft² (= previous estimate).
+
+## 2026-10-25: sim round B (htail_incidence -4.3, rudder_lift_coef 1.6 + yaw damper, EGT factor, AB TSFC 2.54) - ABORTED
+Build 12:41, sim restart 12:43 (T1 ✓ incl. systems.cfg/.flt). Normalizer target 0.0100 ✓; the sim reports
+"Warning! htail_area = 0.1 sft" (0 becomes 0.1 ft², harmless). Takeoff trim 0.70° ✓ (elevator_trim_neutral works).
+- **Yaw damper** OFF after starting from the world map although .flt has YawDamper=True -> switched on with
+  `YAW_DAMPER_ON`. The .flt start states are apparently not used when starting from the menu.
+- **Static run** (`..._roundB_static.csv`): idle 425 lbf/564 lb/h/264 °C, military 6 625 lbf/8 403 lb/h/353 °C.
+  **egt_tuning_constant 1.39 had no effect** (turbine: EGT = ITT remapped to egt_peak_temperature) -> egt_peak 2187 R.
+  Short static AB burst: 10 580 lbf ✓ (NASA 11 200 x δ), FF 17 330 lb/h instead of ~25 700.
+- **Crash with htail_incidence -4.3** (`..._roundB_flight.csv`): after positioning g = -0.55, dive from 16 500 ft to the
+  ground in 28 s, trim 3.5 -> 6.5° not enough; second attempt at 295 kt crashed despite 11° trim. -> **Sign wrong:
+  positive htail_incidence acts like nose-up trim.**
+- **AB in flight** (dive, M 1.06-1.29, 11 400-4 000 ft) with AB TSFC 2.54: FF +6..+10 %, thrust +5..+8 % vs. NASA;
+  FF/thrust +1..+4 % ✓. The static deviation (-33 %) fits: AB TSFC applies only to the AB thrust increment.
+
+## 2026-10-25: sim round B2 (htail_incidence +4.3, egt_peak 2187 R, rudder_lift_coef 1.6, yaw damper)
+Build 12:51, sim restart 12:52 (T1 ✓). Takeoff trim 0.70°, yaw damper via YAW_DAMPER_ON.
+- **EGT ✓**: military 593 °C (target 590-600), idle 470 °C (Stoelinga 120-420, slightly high).
+- **htail_incidence +4.3** (`..._roundB2_flight.csv`): stable after positioning, trim -0.26° at M ~0.8/16 500 ft;
+  AP holds altitude to ~200 kt (trim 7.5°), stop 11° at 193 kt. **T3-A failed: largest band mean +0.057**;
+  deviation by α: +0.066 (0-1°) ... +0.047 (4-5°) ... 0.000 (10-11°) ... -0.024 (14-15°), tracks the trim.
+  T3-G: deflection = -4.06° + 1.06 x α. At M ~1.15 trim -4.0° (near the lower stop -5°).
+  **Interpretation:** MSFS normalizes at α = 0 with the tail at htail_incidence. With 0 (round A) the trimmed flight
+  at α = 0 is exactly there (intercept 0.00°) -> lift is right everywhere. With +4.3 the tail load in trimmed flight
+  differs -> extra lift. The tutorial rule "cruise trim 0" does not fit trimmed NASA data. -> **htail_incidence 0.**
+- **T3-E with rudder_lift_coef 1.6 + yaw damper** (`..._roundB2_rudder.csv`, 9 000 ft, gear/flaps down, 210-230 kt):
+  rudder 15°, **β 30°, departure, inverted, crash.** rudder_lift_coef is the lift slope of the whole fin
+  (SDK: "yaw stability") -> directional stability halved. -> back to 5.0.
+- AP holds altitude with htail 0 to ~214 kt ≈ 1.27 x Vs clean (169 kt) -> realistic for an autopilot; AP-2b closed.
+
+## 2026-10-25: sim round C (htail_incidence 0, takeoff trim 5°, rudder_lift_coef 5.0, rudder_effectiveness 0.32, yaw damper)
+Build 13:03, sim restart 13:05 (T1 ✓). Takeoff trim 5.00° ✓.
+- **T3-A passed**: band means -0.024 ... +0.009; T3-G -0.05° + 1.08 x α (as in round A).
+- **T3-F passed**: CD_sim/CD_nasa 1.04 (M 0.4-0.6: 1.00; 0.6-0.8: 1.05; 0.8-0.95: 1.10).
+- AP holds altitude to ~213 kt (as in round A).
+- **T3-E**: rudder 5.5-7.9° (as in round A), β 6.6-11.6° -> β/δr 1.2-1.5, roll over inverted, crash.
+  rudder_effectiveness 0.32 without measurable effect -> removed again. Yaw damper on at the same time -> not separable.
+  SDK: all lateral coefficients of the template (roll_moment_slip_angle, yaw_moment_slip_angle, yaw_moment_delta_rudder,
+  side_force_slip_angle, ...) are unused in the modern FM; directional stability and roll due to sideslip come from
+  geometry (vertical tail, wing_dihedral, fuselage_lateral_cx).
+- **T3-A criterion changed:** acceptance on 1° band means (>= 3 points, |g-1| < 0.15) instead of single points.
+  Re-evaluated: baseline ✗ (+0.139), after AP-1b ✓ (-0.021), round A ✓ (-0.027), round B2 ✗ (+0.057), round C ✓ (-0.024).
+
+## 2026-10-25: rudder analysis (no sim) - cause of β/δr ≈ 1 found
+Round A (`..._roundA_rudder.csv`, no yaw damper): β follows the rudder exactly (t 16.8 s: 5.82/5.92°;
+18.3 s: 5.84/5.87°; 22.8 s: 6.59/6.59°; 24.3 s: 7.09/7.11°). MSFS simulates fin + rudder as ONE surface whose whole
+incidence follows the rudder deflection -> equilibrium when the fin is back in line with the airflow: β = δr.
+A real flap-type rudder (9 of 47 ft²): effective share Cnδr/Cnβ = 0.32 (CR-2144).
+- `rudder_effectiveness` only scales rudder_lift_coef (force of the whole fin) -> does not change the equilibrium
+  (hence no effect in round C).
+- `rudder_maxangle_scalar` scales the effective deflection (SDK: "< 1, effective deflection aligned with the overall
+  vtail and rudder chord") -> **0.32** (round D). `elevator_maxangle_scalar` stays 1 (all-moving tail).
+- Prediction for round D: β/δr ≈ 0.32 (δr = deflection after the elasticity table); less sideslip -> less roll-off.
+- Open: whether RUDDER_DEFLECTION reports the scaled or unscaled angle (read in round D).
