@@ -32,6 +32,8 @@ How the tests in `docs/flight-model-plan.md` are flown in practice. Everything v
 - `msfs_set_aircraft_position(airspeed=...)` is TRUE airspeed (480 -> ~370 kt IAS at 16 500 ft).
 - After positioning watch the g load for 5-10 s (`G_FORCE`); abort if g < 0.5 and altitude is dropping.
 - Throttle: `THROTTLE1_SET` 0 = idle, 11141 = military (68 %), 16383 = full afterburner.
+- Round E: after the post-positioning dive, GEAR_DOWN/FLAPS_DOWN at ~217 kt moved the handles but gear/flaps stayed
+  retracted (cause unknown) -> check GEAR_TOTAL_PCT_EXTENDED and TRAILING_EDGE_FLAPS_LEFT_ANGLE, not only the handles.
 - Crash detection is off; after a crash the jet keeps sliding on the ground -> simply reposition.
 - `PLANE_PITCH_DEGREES`: nose up = negative. `ELEVATOR_TRIM_POSITION`: nose up = positive.
 - simlog column `VERTICAL_SPEED[ft/min]`: unit uncertain -> compute the flight path angle from the altitude change.
@@ -77,4 +79,6 @@ Configure as T3-E (gear/flaps down, ~250 kt, AP on, yaw damper off), then run
 (foreground, ~35 s). The script switches the AP off, probes the axis signs, holds bank 0 (PI on aileron) and
 altitude (elevator), applies full rudder for 15 s, then releases the axes and re-engages the AP. Abort at |bank| > 45°
 or > 1 500 ft altitude loss. Keep the speed constant with the throttle beforehand (round D drifted 263 -> 338 kt).
-Evaluate per phase: β, rudder, aileron (AILERON_LEFT_DEFLECTION) vs. δa = Clβ·β/Clδa.
+Evaluate per phase (second half): β, rudder, aileron (AILERON_LEFT_DEFLECTION); targets β/δr and δa/δr from
+CR-2144 Table III-9 (see measurements.md round E), solved with the rudder's own rolling moment L'δr.
+Round E variant (works well): clean, ~310 kt at 15 800 ft with `THROTTLE1_SET` ~6 200.

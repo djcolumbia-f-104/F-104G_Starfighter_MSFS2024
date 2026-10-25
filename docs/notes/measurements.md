@@ -228,3 +228,29 @@ Build 13:48, sim restart 13:54 (T1 ✓). Data `docs/data/flighttest_2026-10-25_r
   than the CR-2144 estimate** (or roll damping/aileron power stronger). Data quality limited (speed drifted +75 kt,
   P-only loop, approach-config derivatives applied at 300 kt) -> repeat with PI roll loop, AILERON_LEFT_DEFLECTION and
   constant speed; compare with CR-2144 cruise derivatives (flight conditions 1-10, PDF 55-65).
+
+## 2026-10-25: round E - T3-E2 repeated (clean, constant speed) - PASSED, roll due to sideslip matches CR-2144
+Build + full sim restart with yaw damper off (T1 ✓, TgtClAOA0 0.0100 ✓, T2 ✓). Data
+`docs/data/flighttest_2026-10-25_roundE_sideslip.csv` (clean, ~15 600 ft, 325-344 kt IAS ≈ M 0.67, PI roll loop).
+- Full rudder: RUDDER_DEFLECTION -5.76° (elasticity at ~335 kt), **β 1.83° -> β/δr = 0.32 ✓**.
+- Aileron to hold the bank **-2.25°** (AILERON_LEFT_DEFLECTION), steady bank -2.8° (PI loop holds it constant).
+- **Corrected reference** (CR-2144 Table III-9, lateral dimensional derivatives, PDF 62): solve the steady
+  sideslip balance with p = r = 0 for δr = 1:
+  N'β·β + N'δa·δa + N'δr = 0 and L'β·β + L'δa·δa + L'δr = 0. The earlier estimates (8.5°, 17°) ignored the
+  **rolling moment of the rudder itself** (L'δr: tall fin above the CG), which cancels most of the roll due to sideslip.
+
+  | F/C | H, M | β/δr | δa/δr |
+  |---|---|---|---|
+  | 1 (approach) | SL, 0.257 | 0.32 | 0.27 |
+  | 2 | SL, 0.80 | 0.42 | 0.39 |
+  | 4 | 15 000 ft, 0.90 | 0.33 | 0.47 |
+  | **sim round E** | 15 600 ft, 0.67 | **0.32** | **0.39** |
+
+  -> sim within the CR-2144 range for both ratios, assuming CR-2144 δa is the deflection of one aileron (not
+  checked yet: if it is the sum of both, the reference halves to 0.13-0.23 and the sim needs ~2x too much aileron).
+  **No change to roll due to sideslip.** AP-6 rudder
+  and T3-E2 done; the free roll-off in round D is plausible (no aileron, β 3.8° with rudder roll included).
+- Observation: positioned at 16 500 ft / 330 kt TAS clean, the jet again sank to 9 900 ft (AP 2°/s) and reached
+  543 kt IAS. GEAR_DOWN and FLAPS_DOWN at ~217 kt moved the handles, but gear stayed 0 % and flaps 0° (no damage
+  flags) - cause unknown, possibly the AP climb at ~8 000 ft/min pushed the speed over the limits. Test then flown clean.
+- The F-104 has fuselage speed brakes; not modelled yet (all spoiler values 0) -> new work package.

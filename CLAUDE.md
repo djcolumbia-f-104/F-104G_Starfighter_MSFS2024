@@ -14,11 +14,12 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 - Test tools: check_cfg.py (T0/T1), preflight.py (T2), analyse_lift/drag.py (T3), screenshot.ps1, simlog.py.
 **Round D (2026-10-25):** rudder fixed with `rudder_maxangle_scalar = 0.32` (T3-E β/δr 0.34 ✓). Roll due to
 sideslip is strong, as in the real F-104 (FM 6-2) - the AP wing leveler cannot hold it.
-**Round D part 2:** `tools/sideslip_test.py` (closed-loop sideslip) works; roll due to sideslip is weaker than the
-CR-2144 estimate; yaw damper (gain 1.0) was destabilizing -> disabled in systems.f104.cfg (needs Build All + restart).
-Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s).
-**Next step:** S11d in the plan (repeat T3-E2 with PI loop at constant speed, read CR-2144 lateral derivatives for
-cruise PDF 55-65), then S10 takeoff test T3-D with the user, T3-H climb (ISA), supersonic trim (S12).
+**Round D part 2 / round E:** `tools/sideslip_test.py` (closed-loop sideslip) works; yaw damper (gain 1.0) was
+destabilizing -> disabled in systems.f104.cfg. **T3-E2 passed (round E):** δa/δr 0.39, β/δr 0.32, both within CR-2144
+Table III-9 (0.27-0.47 / 0.32-0.42; the rudder's own rolling moment L'δr must be included). AP-6 done.
+Positioning only at ≥ 16 500 ft (α = 0 after positioning, AP pitches at 2°/s; even then the jet sinks ~6 500 ft).
+**Next step:** S10 takeoff test T3-D with the user, T3-H climb (ISA), T3-J yaw damper / Dutch roll, S11e speed
+brakes (not modelled yet), supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).

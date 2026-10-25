@@ -56,8 +56,20 @@ Sea level, V = 287 ft/s = 170 kt, α₀ = 2.3°, stabilizer δs = −7.1°. All 
 (δd = differential/spoiler effect per CR-2144; δa = ailerons.)
 Used so far: Cnδr/Cnβ = 0.32 as target for the rudder test T3-E; Cnβ for the Dutch roll estimate (T3-J).
 
+## Lateral-directional dimensional derivatives (PDF 62, Table III-9, body axes, per rad, primed)
+| F/C | H | M | L'β | N'β | L'δa | N'δa | L'δr | N'δr | L'p | N'r |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | SL | 0.257 | -20.9 | 2.68 | 4.76 | 0.266 | 5.35 | -0.923 | -1.38 | -0.157 |
+| 2 | SL | 0.80 | -146 | 13.6 | 49.6 | 3.51 | 41.5 | -7.07 | -4.64 | -0.498 |
+| 4 | 15 000 ft | 0.90 | -134 | 9.91 | 34.7 | 2.64 | 27.6 | -4.49 | -3.63 | -0.350 |
+| 5 | 35 000 ft | 0.60 | -32.3 | 1.06 | 6.35 | 0.407 | 6.66 | -1.18 | -0.374 | -0.0809 |
+| 6 | 35 000 ft | 0.90 | -58.1 | 4.98 | 14.8 | 1.01 | 11.2 | -1.91 | -1.77 | -0.169 |
+| 7 | 35 000 ft | 1.20 | -115 | 11.9 | 19.4 | 1.49 | 13.1 | -2.09 | -2.27 | -0.292 |
+Flight conditions (PDF 55, Table III-2): F/C 4 = 465 KCAS, α 4.8°; F/C 6 = 311 KCAS, α 2.5°; W 16 300 lb.
+Steady sideslip (p = r = 0) per unit rudder: β/δr = 0.32-0.42, δa/δr = 0.27-0.47 (used for T3-E2, round E).
+Open: whether δa is one aileron or the sum (Fig. III-3: 2.14°/in lateral stick).
+
 ## Not yet used
-- Derivatives over Mach and altitude for flight conditions 1-10 (plots PDF 44-54, tables III-2 to III-12 on PDF
-  55-65, printed sideways; read with `tools/pdf_clip.py --rot 90`). **Includes lateral-directional derivatives at
-  cruise/high speed -> useful for AP-6 (rudder, roll due to sideslip).**
+- Remaining tables III-3 to III-12 (PDF 56-65, sideways, `tools/pdf_clip.py --rot 90`): longitudinal dimensional
+  derivatives, transfer functions, handling qualities parameters (Dutch roll period/damping -> T3-J).
 - Control system (gearing, feel, dampers): Fig. III-3, PDF 42.
