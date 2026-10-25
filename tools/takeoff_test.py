@@ -6,7 +6,7 @@ Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, tr
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
 the runway heading -> from vr_kt pull the pitch to theta_target at 3°/s (rotate ~20 kt below liftoff speed, FM 6-5)
 -> after liftoff from 30 ft AP in vertical speed mode (+4 000 ft/min), from 50 ft gear up, from 400 ft flaps up,
-from 1 500 ft above ground military power and altitude hold.
+from 1 500 ft above ground reduced power (throttle 7000) and altitude hold.
 Abort (idle + brake) at a heading deviation > 10° on the ground or 90 s without liftoff.
 Tail strike guard: on the ground the target pitch is limited to 11° (ground contact at 12.3°, AP-5).
 Evaluation: liftoff IAS, ground roll, max. pitch on the ground (printed at the end + CSV).
@@ -174,7 +174,8 @@ with open(out, "w", newline="", encoding="utf-8") as f:
 for n in ("AXIS_RUDDER_SET", "AXIS_ELEVATOR_SET"):
     axis(n, 0)
 if not aborted:
-    ev["THROTTLE1_SET"](11141)
+    # reduced power: with military + ALT hold the jet reached 600 KIAS at 3 000 ft (run 6)
+    ev["THROTTLE1_SET"](7000)
     ev["HEADING_BUG_SET"](int(round(hdg0)) % 360)
     ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or 0) + 3000)
     if aq.get("AUTOPILOT_MASTER") != 1:

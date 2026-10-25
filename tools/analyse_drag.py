@@ -52,7 +52,7 @@ with open(path, encoding="utf-8") as f:
 
 print(f"{'t':>6} {'IAS':>5} {'Mach':>5} {'alpha':>6} {'CL':>6} {'T_net':>7} {'dV/dt':>6} {'γ°':>5} "
       f"{'CD_sim':>7} {'CD_nasa':>7} {'ratio':>6}")
-ratios = []
+ratios, brake_dcd = [], []
 for i in range(2, len(data) - 2):
     a, d, b = data[i - 2], data[i], data[i + 2]
     if not (t_from <= d["t"] <= t_to):
@@ -74,6 +74,13 @@ for i in range(2, len(data) - 2):
     cl = d["G_FORCE[g]"] * w / (q * S)
     mach = d["AIRSPEED_MACH[mach]"]
     cn = cd_nasa(mach, cl)
+    brake = d.get("SPOILERS_HANDLE_POSITION[pct]", 0)              # only in simlog versions from round F
+    if brake > 99:
+        brake_dcd.append(cd - cn)                                  # speed brakes fully out: ΔCD over the clean polar
+        print(f"{d['t']:6.1f} {d['AIRSPEED_INDICATED[kt]']:5.0f} {mach:5.2f}  speed brakes out: ΔCD {cd - cn:+.4f}")
+        continue
+    if brake > 1:
+        continue                                                   # brakes moving
     ratios.append((mach, cd / cn))
     print(f"{d['t']:6.1f} {d['AIRSPEED_INDICATED[kt]']:5.0f} {mach:5.2f} {d['INCIDENCE_ALPHA[deg]']:6.2f} {cl:6.3f} "
           f"{thrust:7.0f} {dvdt:6.1f} {sin_g * 57.3:5.1f} {cd:7.4f} {cn:7.4f} {cd / cn:6.2f}")
@@ -89,3 +96,7 @@ if ratios:
         mean = sum(sel) / len(sel)
         print(f"T3-F: {len(sel)} points M 0.4-0.95, mean {mean:.2f} -> "
               f"{'PASSED' if abs(mean - 1) <= TOL else 'FAILED'} (tolerance ±{TOL:.0%})")
+if brake_dcd:
+    m = sum(brake_dcd) / len(brake_dcd)
+    print(f"Speed brakes (S11e): ΔCD mean {m:+.4f} (n={len(brake_dcd)}), target 0.042 ±20 % -> "
+          f"{'PASSED' if abs(m / 0.042 - 1) <= 0.2 else 'FAILED'}")

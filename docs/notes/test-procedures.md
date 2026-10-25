@@ -74,6 +74,19 @@ stop at M 1.2 (10 000 ft, ~710 KIAS, limit 750) / M 1.45 (20 000 ft), throttle 0
 Evaluation: `tools\.venv\Scripts\python.exe -I tools\analyse_climb.py . <csv>` (+ `analyse_drag.py` to split
 thrust and drag). Check AMBIENT_TEMPERATURE against ISA before the run (thrust depends on it).
 
+## S11e speed brakes (round F)
+Clean, ~16 500 ft, ~400 KIAS, AP ALT hold, throttle constant (e.g. 9000). Logger 60 s (simlog now records
+SPOILERS_HANDLE_POSITION in % and AMBIENT_TEMPERATURE). After 15 s `SPOILERS_ON` (or `SPOILERS_SET 16383`), after
+another 20 s `SPOILERS_OFF`; keep the throttle unchanged. Evaluation: `analyse_drag.py . <csv>` prints ΔCD for the
+points with brakes fully out (target 0.042 ±20 %) and CD_sim/CD_nasa for the clean points. Watch for a pitch change.
+
+## T3-J Dutch roll / yaw damper (round F)
+Clean, ~16 500 ft, ~350 KIAS, AP ALT + wing leveler (no HDG). Logger 40 s per run. Rudder doublet:
+`AXIS_RUDDER_SET 16383` for ~1 s, `-16383` for ~1 s, `0`. Run 1 yaw damper off, run 2 after `YAW_DAMPER_ON`
+(read AUTOPILOT_YAW_DAMPER first, toggle events switch blindly). Evaluate INCIDENCE_BETA (column 23): period,
+cycles to half amplitude. Target: CR-2144 Dutch roll (handling qualities table III-10/11, PDF 63/64) without SAS,
+"completely damped" with SAS (FM 6-3). Also hold 30° bank for 20 s with the yaw damper on: no roll-off.
+
 ## T3-E rudder (sideslip)
 1. **AP must be ON before positioning** (after a sim restart it is off: check `AUTOPILOT_MASTER`, send `AP_MASTER`,
    `AP_ALT_VAR_SET_ENGLISH 16000`, `AP_ALT_HOLD_ON`, `AP_WING_LEVELER_ON`).

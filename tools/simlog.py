@@ -34,10 +34,13 @@ VARS = [
     ("INCIDENCE_BETA", "deg"),                   # rad -> deg
     ("RUDDER_DEFLECTION", "deg"),                # rad -> deg
     ("PLANE_BANK_DEGREES", "deg"),               # rad -> deg
+    ("SPOILERS_HANDLE_POSITION", "pct"),         # speed brakes (S11e); library returns 0..1 -> x 100
+    ("AMBIENT_TEMPERATURE", "degC"),             # thrust depends on it (T3-H)
 ]
 RAD = {"INCIDENCE_ALPHA", "PLANE_PITCH_DEGREES", "ELEVATOR_DEFLECTION", "ELEVATOR_TRIM_POSITION",
        "INCIDENCE_BETA", "RUDDER_DEFLECTION", "PLANE_BANK_DEGREES"}
 RANKINE = {"ENG_EXHAUST_GAS_TEMPERATURE:1"}
+PCT_OVER_100 = {"SPOILERS_HANDLE_POSITION"}
 
 out, seconds = sys.argv[1], float(sys.argv[2])
 hz = float(sys.argv[3]) if len(sys.argv) > 3 else 2.0
@@ -55,6 +58,8 @@ with open(out, "w", newline="", encoding="utf-8") as f:
                 v = v * 57.29578
             elif v is not None and name in RANKINE:
                 v = (v - 491.67) * 5 / 9
+            elif v is not None and name in PCT_OVER_100:
+                v = v * 100
             row.append(v)
         w.writerow(row)
         f.flush()

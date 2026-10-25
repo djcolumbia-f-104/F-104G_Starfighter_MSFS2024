@@ -24,7 +24,9 @@ fixes: flap lift formula (AP-10, SDK radians + add incidence) and flaps/gear tha
 without a hydraulic system in the template -> now electric).
 **T3-H climb potential (2026-10-25, `tools/analyse_climb.py`):** subsonic ✓ at 10 000/20 000 ft; supersonic
 -20 %/+30 % of excess thrust (≤ 800 lbf, opposite signs) -> accepted, revisit with T3-I.
-**Next step:** T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
+**Round F prepared (needs Build All + full restart):** speed brakes (S11e), yaw damper gain 0.3 (T3-J), AP pitch
+rate 5°/s; procedures in the cookbook.
+**Next step:** round F tests (speed brakes, T3-J), T3-J yaw damper / Dutch roll, S11e speed brakes (FM 1-75, PDF 91),
 supersonic trim (S12). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,

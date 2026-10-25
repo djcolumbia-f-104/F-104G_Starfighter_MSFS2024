@@ -321,3 +321,11 @@ to 18 000 lb via induced drag). Reference `docs/data/nasa_d6398_excess_thrust_lb
 - **Verdict T3-H: subsonic/transonic passed (M 0.6-1.05 at 10 000 ft, M 0.7-1.25 at 20 000 ft); supersonic outside
   ±10 % but within ±800 lbf (≤ 5 % of thrust) -> accepted for now, no change.** Revisit with T3-I (Mach 2 at
   35 000-40 000 ft), where the D-6398 30 000/40 000 ft data (Fig. 6(c)/(d), PDF 29) can be added.
+
+## 2026-10-25: round F prepared (not flown yet)
+Changes (cfg value comparison against the previous commit: only these keys): speed brakes as spoilers
+(`spoiler_limit`/`air_spoiler_limit` 52, `spoiler_handle_available` 1, `spoiler_extension_time` 2,
+`drag_coef_spoilers`/`drag_coef_air_spoilers` 0.046, lift 0); systems: `yaw_damper_gain` 0.3,
+`yaw_damper_rudder_gain` 1.0, `max_pitch_velocity_lo_alt`/`hi_alt` 5/4 °/s. The clean flight model is unchanged
+(spoilers only act when extended, the yaw damper only after YAW_DAMPER_ON). takeoff_test.py ends with throttle 7000
+instead of military; simlog.py logs SPOILERS_HANDLE_POSITION and AMBIENT_TEMPERATURE.
