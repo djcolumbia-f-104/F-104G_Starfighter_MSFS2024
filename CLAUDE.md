@@ -35,7 +35,8 @@ SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enoug
 sim restart** (normalization; debug Sim Curves TgtClAOA0 vs. FinClAOA0 shows it, T3-L 2026-10-26).
 **S12 done (2026-10-26):** trim 1.2° at M 1.27 / 16 500 ft, 2.0° at M 1.8 / 40 000 ft - far from the stops.
 **T3-L approach configuration PASSED (2026-10-26):** TE + new LE flaps; CL 0.855 at α 4.1° (CR-2144 0.845), trim 5.6°.
-**Next step:** low-altitude approach + landing (landing distance FM Fig. A8-3..A8-6), then 3D model planning (AP-9). Open: CR-2144 δa definition (one aileron or sum).
+**First scripted landing (2026-10-26, MCP `landing`):** touchdown 162 KIAS (FM 166-171), ground roll 3 158 ft (FM ≈ 2 850).
+**Next step:** smooth the landing script (throttle loop), then 3D model planning (AP-9). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).

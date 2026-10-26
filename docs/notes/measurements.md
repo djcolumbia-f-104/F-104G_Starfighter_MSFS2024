@@ -467,3 +467,13 @@ Debug "Sim Curves" with LAND flaps: TgtClAOA0 0.6286, **FinClAOA0 0.6156** (-2 %
 At 14 000-15 000 ft military is not enough for ~200 KIAS with gear + LAND flaps (speed decays to 155 kt); the FM
 approach (~88 % rpm) is at low altitude - a low-altitude approach/landing test is still open.
 **Verdict T3-L (approach configuration): lift and trim passed.** Open: landing at low altitude, landing distance.
+
+## 2026-10-26: T3-L landing 1 (scripted, 	ools/landing_test.py) - first landing, distance plausible
+Start 6 NM out on a 3° glide path (aim 1 000 ft past the threshold), gear + LAND flaps, AP HDG (bug steered by the
+cross-track error) + AP VS (glide path) + throttle loop on the FM final approach speed (17 859 lb -> 184 KIAS).
+Log ..._T3L_landing1.csv (2.1 Hz). Flare at 50 ft AGL; **touchdown 162 KIAS** (FM Fig. A8-2 normal 166-171, -2.5 %),
+sink 565 ft/min, pitch 8.0°, 399 ft past the threshold, 78 ft right of the centreline. **Ground roll 3 158 ft**
+(speed brakes, full wheel brakes only below 150 KIAS). FM Fig. A8-4 (no chute, LAND flaps, anti-skid, hard braking):
+≈ 2 850 ft at 17 900 lb, 1 500 ft field, std temp, no wind -> +11 % (later braking) ✓.
+Approach quality: IAS oscillated 160-220 kt and the jet was up to 570 ft below the path (throttle loop too slow, AP VS
+lag) -> tune the script (throttle gain, earlier configuration) before using touchdown values as a strict test.
