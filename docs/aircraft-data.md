@@ -198,3 +198,10 @@ required to overcome the large unstable yawing moment caused by the long fuselag
   the final turn (high drag with LAND flaps).
 - Pilot report (Rolf Stünkel, migflug.com): basic approach 175 kt with full flaps + 5 kt per 1 000 lb fuel above 1 000 lb;
   BLC worth about 40 kt (forum recollection); loss of BLC drops the nose.
+- **Landing technique** (FM 2-25, PDF 157): carry power on the approach; in the flare reduce thrust smoothly to
+  82-83 % rpm, idle when the main gear touches (abrupt reduction -> roll-off and sink). Normal landing speed range
+  155-160 KIAS (Fig. 2-7 weight 16 100 lb, +5 kt per 1 000 lb). After touchdown: idle, lower the nose wheel, nose wheel
+  steering, **drag chute as soon as the nose wheel is down** (nose-down moment, so only with all three gear on the
+  ground; 18-ft chute, Fig. A8-3; deploy ≤ 180 KIAS MB-7G / 205 KIAS BS-4000, FM 5-5). Speed brakes: not needed in the
+  pattern, allowed in the roundout, not during the ground roll. Max. crosswind 25 kt (chute: 25 kt at 90°, 35 kt at 45°).
+  Holding off to lower speeds -> wing drop and tail dragging.

@@ -113,7 +113,7 @@ check("AP-10", "gear not hydraulic as long as [HYDRAULIC_SYSTEM] has no pressure
       info=f"gear_system_type {fm.get('contact_points', {}).get('gear_system_type')}, hydraulic pressure {hyd}")
 
 sb_dcd = (num(aero.get("drag_coef_air_spoilers")) or 0) * (num(geo.get("air_spoiler_limit")) or 0) / 57.29578
-check("S11e", "speed brakes: ΔCD ≈ 0.042 at 52° (8.25 ft² flat plate, drag x rad), no lift change, handle available",
+check("S11e", "speed brakes in the air: ΔCD ≈ 0.042 at 52° (8.25 ft² flat plate, drag x rad), no lift change, handle available",
       abs(sb_dcd - 0.042) < 0.004 and num(aero.get("lift_coef_air_spoilers")) == 0
       and num(geo.get("spoiler_handle_available")) == 1, info=f"ΔCD {sb_dcd:.4f}")
 ap = load(os.path.join(CFG, "systems.cfg")).get("autopilot", {})

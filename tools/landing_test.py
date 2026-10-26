@@ -5,7 +5,8 @@ Usage (with the Python of the simconnect-mcp venv):
 Sequence: gear down + LAND flaps, reposition on the extended centreline start_nm before the threshold on the glide
 path -> AP heading hold (heading bug steered from the cross-track error) + AP vertical speed (glide path) + throttle
 loop on the FM final approach speed (Fig. A8-2: 170 KIAS up to 15 000 lb, +5 kt per 1 000 lb) -> flare: 60 ft AGL
-VS -300 ft/min, 15 ft throttle idle -> touchdown: AP off, speed brakes, wheel brakes -> stop.
+VS -300 ft/min, thrust to ~83 % N1 (FM 2-25) -> touchdown: idle, AP off, nose down, after 2 s drag chute (ground spoiler
+drag, cfg) + hard wheel braking -> stop.
 Go-around (full AB, AP VS +3000, flaps TAKEOFF) if |cross-track| > 300 ft or |bank| > 30° below 500 ft AGL, or
 glide path error > 300 ft below 400 ft AGL.
 Results: touchdown IAS, sink rate, pitch, distance past the threshold; ground roll to a stop; CSV log.
@@ -105,13 +106,17 @@ while time.time() - t0 < 600:
             # glide path: nominal VS for the ground speed, corrected by the path error (1 ft/min per 0.25 ft, ±800)
             vs_cmd = -gs_kt * 101.27 * math.tan(glide) - max(-800, min(800, 4.0 * path_err))
             ev("AP_VS_VAR_SET_ENGLISH", int(vs_cmd))
-            thr = max(0.0, min(11141.0, thr + 40.0 * (v_app - ias) * dt * 3))
+            # PI throttle with feed-forward (run 1: pure integrator 120/kt/s oscillated 160-220 kt)
+            err = v_app - ias
+            res["i_spd"] = max(-60.0, min(60.0, res.get("i_spd", 0.0) + err * dt))
+            thr = max(2000.0, min(11141.0, 9000.0 + 250.0 * err + 25.0 * res["i_spd"]))
             if agl < 60:
                 phase = "flare"
                 ev("AP_VS_VAR_SET_ENGLISH", -300)
                 print(f"flare at {agl:.0f} ft AGL, {ias:.0f} KIAS, {s:.0f} ft from the threshold, path error {path_err:+.0f} ft")
-        if phase == "flare" and agl < 15:
-            thr = 0.0
+        if phase == "flare":
+            # FM 2-25: smooth thrust reduction to 82-83 % rpm in the flare, idle only when the main gear touches
+            thr = max(0.0, min(11141.0, thr + 300.0 * (83.0 - g("TURB_ENG_N1:1")) * dt))
         ev("THROTTLE1_SET", int(thr))
         # localizer: heading bug = runway heading - 0.05°/ft cross-track (±15°)
         ev("HEADING_BUG_SET", int(round(HDG - max(-15, min(15, 0.05 * c)))) % 360)
@@ -130,15 +135,19 @@ while time.time() - t0 < 600:
             if g("AUTOPILOT_MASTER") == 1:
                 ev("AP_MASTER")
             ev("THROTTLE1_SET", 0)
-            ev("SPOILERS_ON")
+            res["t_td"] = t
             print(f"TOUCHDOWN {ias:.0f} KIAS, sink {res['td']['vs']:.0f} ft/min, pitch {res['td']['pitch']:.1f}°, "
                   f"{s:.0f} ft past the threshold, {c:+.0f} ft off the centreline")
         res["last_vs"] = vs
     elif phase == "rollout":
         roll += gs_kt * 1.68781 * dt
-        ev("AXIS_ELEVATOR_SET", 4000)                                # hold the nose wheel down
+        ev("AXIS_ELEVATOR_SET", 4000)                                # FM 2-25: lower the nose wheel at once
+        if not res.get("chute") and t - res["t_td"] > 2.0:              # nose wheel down -> drag chute
+            ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
+            res["chute"] = ias
+            print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
         ev("AXIS_RUDDER_SET", int(max(-8000, min(8000, -700 * ((HDG - g("PLANE_HEADING_DEGREES_TRUE") * DEG + 180) % 360 - 180) - 3 * c))))
-        if ias < 150:
+        if True:                                                      # FM A8-3/A8-4: hard braking during the stop
             ev("AXIS_LEFT_BRAKE_SET", 16383)
             ev("AXIS_RIGHT_BRAKE_SET", 16383)
         if gs_kt < 3:
