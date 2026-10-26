@@ -345,3 +345,12 @@ only ~1 400 ft (before: up to 6 500 ft) ✓.
   -> **The sim's directional stiffness is ~5x too high** (ωn ≈ 7.2 rad/s) although β/δr was correct (ratio of two
   equally too strong moments). Suspect: `rudder_lift_coef` 5.0 on vtail_area 38 ft² ([S]) and/or fuselage
   contribution; yaw inertia (59 669 slug ft², CR-2144) is plausible. **New work package AP-11** (see plan).
+
+## 2026-10-26: AP-11 iteration 1 prepared (Dutch roll)
+Correction of round F: CR-2144 Table III-12 (PDF 65, SAS off) gives the Dutch roll directly: F/C 4 (15 000 ft,
+M 0.9) **period 1.41 s**, 1/C(1/2) 1.24 (0.81 cycles to half amplitude); F/C 2 (SL, M 0.8) 1.40 s. The earlier 2.0 s
+(ωn = sqrt(N'β) only) was too crude. Sim 0.87 s -> directional stiffness about **2.6x** too high (not 5x); damping in
+the sim (ratio 0.31/cycle) is close to CR-2144 (0.43/cycle).
+Changes (value diff: exactly these 5 keys): fin of the G vtail_area 38 -> 50, vtail_span 5.5 -> 7.3, vtail_sweep
+40 -> 45 (D-6398 three-view, RM SL56H06 V3, historicalfighters.com); rudder_lift_coef 5.0 -> 1.7; rudder_maxangle_scalar
+0.32 -> 0.24 (keep β/δr 0.32). Test: doublet (period target 1.4 s ±15 %), T3-E2 sideslip (β/δr 0.32, δa/δr 0.27-0.47).

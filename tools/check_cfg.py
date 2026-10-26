@@ -79,11 +79,14 @@ check("AP-3", "htail_incidence = 0 (normalization at α=0; trim at α=0 is 0, ro
       num(geo.get("htail_incidence")) == 0 and num(geo.get("elevator_trim_neutral")) == 5,
       info=f"htail {geo.get('htail_incidence')}, trim_neutral {geo.get('elevator_trim_neutral')}")
 check("AP-2b", "trim range nose up >= 11° (FM 6-5)", (num(geo.get("elevator_trim_up_limit")) or 0) >= 11)
-check("AP-6", "rudder_maxangle_scalar ≈ 0.32 (flap-type rudder share, CR-2144), elevator_maxangle_scalar 1 (all-moving tail)",
-      abs((num(tune.get("rudder_maxangle_scalar")) or 1) - 0.32) < 0.05 and (num(tune.get("elevator_maxangle_scalar")) or 1) == 1,
+check("AP-11", "rudder_maxangle_scalar 0.15-0.35 (flap-type rudder share, tuned for β/δr 0.32), elevator_maxangle_scalar 1",
+      0.15 <= (num(tune.get("rudder_maxangle_scalar")) or 1) <= 0.35 and (num(tune.get("elevator_maxangle_scalar")) or 1) == 1,
       info=f"rudder {tune.get('rudder_maxangle_scalar')}, elevator {tune.get('elevator_maxangle_scalar')}")
-check("AP-6", "rudder_lift_coef stays 5 (vertical tail = directional stability, round B2)",
-      (num(aero.get("rudder_lift_coef")) or 5.0) >= 4.9, info=f"is {aero.get('rudder_lift_coef', '5.0')}")
+check("AP-11", "rudder_lift_coef 1.2-3.0 (whole fin = directional stiffness; 5.0 gave Dutch roll 0.87 s vs. 1.41 s)",
+      1.2 <= (num(aero.get("rudder_lift_coef")) or 5.0) <= 3.0, info=f"is {aero.get('rudder_lift_coef', '5.0')}")
+check("AP-11", "fin geometry of the G: vtail_area 45-55 ft², vtail_sweep 43-47° (D-6398 three-view, RM SL56H06 V3)",
+      45 <= (num(geo.get("vtail_area")) or 0) <= 55 and 43 <= (num(geo.get("vtail_sweep")) or 0) <= 47,
+      info=f"area {geo.get('vtail_area')}, sweep {geo.get('vtail_sweep')}")
 
 flaps, lcf = fm.get("flaps.0", {}), num(aero.get("lift_coef_flaps")) or 0
 for pos, target in ((1, 0.30), (2, 0.62)):
