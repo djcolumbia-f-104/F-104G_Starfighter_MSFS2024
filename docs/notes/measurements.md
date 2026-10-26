@@ -428,3 +428,9 @@ CR-2144 extrapolated to α 8.8°: CL ≈ 1.12 -> effective LAND increment ≈ 0.
 TAKEOFF before AP-10's empirical factor) -> LAND lift scalar 1.273 -> 2.0 [M]. T0 target updated (nominal 0.97).
 Also: position at 8 000 ft / 250 kt TAS dived to 1 300 ft AGL (ALT hold apparently not active) -> watchdog on
 AUTOPILOT_ALTITUDE_LOCK added; approach tests at >= 12 000 ft until verified.
+
+## 2026-10-26: T3-L approach run 3 (lift scalar 2.0, add aft feet 3.5) - worse
+Log ..._T3L_approach3.csv, 19 000 lb, from 14 000 ft: CL 0.82 at α 10.2°, CD 0.50, trim at the 11° stop already at
+223 KIAS, flight path down to -22°, aborted at 2 900 ft AGL. More flap lift = more nose-down moment (flap lift centre far
+aft of the CG) = more tail download, net CL even lower. Run 1 -> 2 showed ~2° trim per 3.5 ft -> add aft feet 3.5 -> 7
+(flap lift centre near the CG). Note: the MSFS AP only trims (elevator stays 0), a pilot would add stick.
