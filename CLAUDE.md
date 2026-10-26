@@ -13,6 +13,10 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    idle at touchdown, nose down, chute after 2 s, hard braking). Compare touchdown IAS with FM 155-160 KIAS @ 16 100 lb
    (+5 kt/1 000 lb) and the ground roll with FM Fig. A8-3 (with chute, PDF 550) - read that chart carefully first
    (A8-4 without chute ≈ 2 850 ft @ 17 900 lb; landing 1 without chute: 3 158 ft). Tune drag_coef_spoilers if needed.
+1b. Idea from pete (YouTube training video): flap blowing - the BLC blows engine bleed air over the LAND flaps (FM 1-74,
+   2-24/25: lift depends on engine rpm, effective above ~80 %, approach at ~88 %). Our LAND ΔCL (CR-2144) includes BLC
+   at approach power, but the rpm dependence is NOT modelled (lift should drop at idle, e.g. in the flare/go-around).
+   Search the web for the video/BLC data; possible implementation later (e.g. flaps lift via a power-dependent scalar).
 2. Then: 3D model planning (AP-9) or remaining items (yaw SAS logic, CR-2144 δa definition, .gitignore `.opencode`
    line added by another tool - user decides).
 State: flight model validated against NASA/FM for lift, drag, thrust to M 1.8, takeoff, climb, lateral/Dutch roll,
