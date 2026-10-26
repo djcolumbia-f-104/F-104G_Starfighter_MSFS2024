@@ -186,4 +186,15 @@ required to overcome the large unstable yawing moment caused by the long fuselag
   gravity remains within limits"; no weight limitations with standard items) -> `CG_forward_limit`/`CG_aft_limit`
   stay [S] (CR-2144 range 0.07-0.164 c̄).
 - Takeoff: liftoff speed FM Fig. A2-3 (PDF 457, used for T3-D); ground run Fig. A2-4 (PDF 458) not read yet.
-  Landing distances and approach speeds: FM appendix part "Landing" and Section II not located yet.
+  Landing: see below.
+
+## Landing (FM Section II and appendix Part 8)
+- **Landing speed schedule** (Fig. A8-2, PDF 549, flight test): LAND flaps final approach 170 KIAS up to 15 000 lb,
+  +5 kt per 1 000 lb (210 kt at 23 000 lb); normal touchdown 152 -> 192 kt. TAKEOFF flaps: final 190 -> 255 kt, minimum
+  touchdown 160 -> 224 kt (15 000-27 500 lb). No flaps: final 225 -> 290 kt, touchdown 190 -> 254 kt.
+- **Typical landing pattern** (Fig. 2-7, PDF 158, 16 100 lb): LAND flaps at 240-210 KIAS (~88 % rpm), base >= 200 KIAS,
+  final >= 190 KIAS, roll-out on final >= 6 000 ft from the runway at ~300 ft; flat powered approach at ~88 % rpm,
+  engine >= 83 % (BLC lift depends on engine airflow); at heavy weight even military may not hold the descent rate in
+  the final turn (high drag with LAND flaps).
+- Pilot report (Rolf Stünkel, migflug.com): basic approach 175 kt with full flaps + 5 kt per 1 000 lb fuel above 1 000 lb;
+  BLC worth about 40 kt (forum recollection); loss of BLC drops the nose.

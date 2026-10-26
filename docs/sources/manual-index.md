@@ -20,6 +20,11 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Fuel schematic (Fig. 1-32/1-33), Fuel Control Panels (Fig. 1-34) | 1-45 … 1-48 | 61 … 64 |
 | Fuel Quantity Data (Fig. 1-35) | 1-49 | 65 |
 | Electric Power Supply | 1-56 | 72 |
+| Section II: minimum turning radius, takeoff, typical takeoff (Fig. 2-5) | 2-14 … 2-21 | 150 … 155 |
+| Section II: descent, before landing, final approach (≥ 190 KIAS, ≥ 83 % rpm), landing, BLC, landing technique (flat powered approach ~88 % rpm) | 2-22 … 2-25 | 155 … 157 |
+| Typical landing pattern (Fig. 2-7, 16 100 lb: LAND flaps 240-210 KIAS, base ≥ 200, final ≥ 190 KIAS, +5 kt/1 000 lb) | 2-26, 2-27 | 158, 159 |
+| Section VI: stability augmenters (Fig. 6-2), speed brakes (mild nose-up trim below M 1.75) | 6-4 | 394 |
+| Section VI: APC (stick shaker/kicker, vanes, kicker inoperative with LAND flaps or gear down) | 6-6 | 396 |
 | Control system, rudder/aileron limiters, APC, trim panel | 1-67 … 1-71 | 83 … 87 |
 | Wing flap system (TAKEOFF: LE+TE 15°; LAND: LE 30°/TE 45°; BLC only in LAND) | 1-71, 1-73 | 87, 89 |
 | Boundary layer control, speed brakes, landing gear | 1-74, 1-75 | 90, 91 |
@@ -40,6 +45,9 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Appendix Part 2 Takeoff: contents | A2-1 | 449 |
 | Takeoff speed schedules (Fig. A2-3: liftoff IAS vs. weight) | A2-9 | 457 |
 | Takeoff ground run distance, refusal speed | A2-10, A2-11 | 458, 459 |
+| Appendix Part 6 Miles per pound (range) | A6-… | 520 … 537 |
+| Appendix Part 7 Descent | A7-1 … | 539 … 543 |
+| Appendix Part 8 Landing: landing speed schedule (Fig. A8-2), landing distances with/without drag chute | A8-1 … A8-10 | 545 … 554 |
+| Appendix Part 9 Combat performance: max. thrust level flight acceleration (time/distance/fuel vs. Mach per altitude), max. thrust climb | A9-1 … | 555 … 607+ |
 
-Not located yet: Section II (Normal Procedures), Section III (Emergency), Section IX, appendix parts after takeoff,
-index.
+Not located yet: Section III (Emergency, starts about PDF 167), Section IX, index.

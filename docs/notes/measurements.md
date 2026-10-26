@@ -407,3 +407,14 @@ OAT -11 °C ≈ ISA+8, 19 200 lb). Log docs/data/flighttest_2026-10-26_S12_trim1
   only lateral values).
 - Note: after position the AP wing leveler did not hold a -20° bank; AP_HDG_HOLD_ON rolled the jet level ->
   position(lateral='hdg') is the safer default for longitudinal tests.
+
+## 2026-10-26: T3-L approach configuration, run 1 (too slow) - LAND flap pitching moment too strong
+Positioned 8 000 ft, gear down at 247 KIAS, LAND flaps at 226 KIAS, military (64 % lever, N1 95-98 %).
+Log docs/data/flighttest_2026-10-26_T3L_approach.csv (30 s with flaps/gear): **177 KIAS, 18 400 lb: α 9.45°, CL 0.887,
+CD 0.382, trim at the 11° nose-up stop, elevator 0 (the MSFS AP flies with trim only), flight path -8°** -> AP could not
+hold the altitude; recovered with flaps up + AB.
+- Flown too slow: FM (Fig. A8-2/2-7) final approach at 18 400 lb ≈ 200 KIAS; 177 kt is near touchdown speed.
+- Still, relative to CR-2144 (approach CL 0.735 at α 2.3°, CLα 3.44/rad -> CL 0.887 at α ≈ 4.8°) the sim needs ~4.6°
+  more α, and CR-2144 trims with δs -7.1° (nose up) while the sim runs out of trim -> the flap lift acts too far aft
+  (large nose-down moment, large tail download). Change: LAND dd aft feet 0 -> +3.5 [S] (flap lift centre forward).
+  Retest at FM final approach speed (≈ 200 KIAS at 18 400 lb), ~88 % rpm, target trim < 11°, α ≈ 5°.
