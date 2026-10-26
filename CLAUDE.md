@@ -34,7 +34,8 @@ still starts the flight). Runs with the simconnect-mcp venv Python; each action 
 SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enough (AP-11). **Lift/flap changes need a FULL
 sim restart** (normalization; debug Sim Curves TgtClAOA0 vs. FinClAOA0 shows it, T3-L 2026-10-26).
 **S12 done (2026-10-26):** trim 1.2° at M 1.27 / 16 500 ft, 2.0° at M 1.8 / 40 000 ft - far from the stops.
-**Next step:** landing T3-L (find approach speeds/landing distance in the FM first), then 3D model planning (AP-9 cockpit/HUD values). Open: CR-2144 δa definition (one aileron or sum).
+**T3-L approach configuration PASSED (2026-10-26):** TE + new LE flaps; CL 0.855 at α 4.1° (CR-2144 0.845), trim 5.6°.
+**Next step:** low-altitude approach + landing (landing distance FM Fig. A8-3..A8-6), then 3D model planning (AP-9). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
@@ -163,6 +164,9 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
     (`use_gross_thrust_on_fuelflow`); AB TSFC only applies to the AB thrust increment.
   - Starting from the world map ignores .flt files (yaw damper off) -> send `YAW_DAMPER_ON`.
   - `htail_area = 0` becomes 0.1 ft² (warning in debug, harmless).
+  - Flaps are modelled as an INCIDENCE increment of the flapped wing section (≈ 0.62 x angle x lift scalar): above
+    ~30 (angle x scalar) the section stalls -> no flap lift (T3-L). Split large flap lift onto TE + LE flaps ([FLAPS.1]).
+    Check with debug Sim Curves: TgtClAOA0 vs. FinClAOA0 with the flaps out.
   - Flaps: ΔCL = lift_coef_flaps x lift scalar x deflection in RADIANS; per-position `add incidence` (default 0.5)
     adds only half at α 0 -> set it to 1 and scale per position (8 values in `flaps-position.i`).
   - `AP_ALT_HOLD_ON` holds the current altitude; positive `AXIS_RUDDER_SET` = nose left. Python-SimConnect lacks some

@@ -454,3 +454,16 @@ section is fully stalled** -> no flap lift, high drag, nose-down moment. This ex
 Change (needs full restart): TE flaps TAKEOFF 0.84 / LAND 0.6 (+~17°), new LE flaps [FLAPS.1] (type 2, 15°/30°,
 span 0.95, system lift scalar 1.01, drag scalar 0); targets TAKEOFF 0.30, LAND 0.62 unchanged; add aft feet back to 0.
 New T0 rule: TE LAND angle x lift scalar <= 30. Re-test T3-D (takeoff) and T3-L after the restart.
+
+## 2026-10-26: T3-L run 6 - LAND flap lift PASSED (TE + LE flap split), T3-D re-check
+Build + full restart (T1 ✓, preflight ✓). Takeoff re-check (..._T3D_takeoff_run7.csv, 19 004 lb, FM 177 kt): first
+liftoff 173 kt at 7.6°, sustained 187 kt at 10.6°, ground roll 3 049 ft - same as run 6 (TAKEOFF split unchanged).
+Approach (..._T3L_approach6.csv, 18 400 lb, from 15 500 ft): altitude held (-1 100 ft instead of -9 000 ft).
+| IAS | α | CL sim | CL CR-2144 (0.735 @ 2.3°, 3.44/rad) | trim | CD |
+|---|---|---|---|---|---|
+| 186 kt | 4.1° | 0.855 | 0.845 ✓ | 5.6° | 0.27 (polar 0.30) |
+| 155 kt | 9.3° | 1.145 | 1.155 ✓ | 11° | 0.38 |
+Debug "Sim Curves" with LAND flaps: TgtClAOA0 0.6286, **FinClAOA0 0.6156** (-2 %), nCl 2.19 ✓.
+At 14 000-15 000 ft military is not enough for ~200 KIAS with gear + LAND flaps (speed decays to 155 kt); the FM
+approach (~88 % rpm) is at low altitude - a low-altitude approach/landing test is still open.
+**Verdict T3-L (approach configuration): lift and trim passed.** Open: landing at low altitude, landing distance.
