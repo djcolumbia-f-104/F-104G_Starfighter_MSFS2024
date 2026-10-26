@@ -6,7 +6,19 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-25 afternoon) <<<
+## >>> CONTINUE HERE (state 2026-10-26 evening) <<<
+**TOMORROW START HERE (note for 2026-10-27):**
+1. User: Build All + FULL sim restart (pending: drag chute = ground spoiler drag 0.76, commit b2a6208), F-104 on the
+   EDDM runway. Then MCP `f104`: `check_build`, `preflight`, `landing` (script now follows FM 2-25: flare at ~83 % N1,
+   idle at touchdown, nose down, chute after 2 s, hard braking). Compare touchdown IAS with FM 155-160 KIAS @ 16 100 lb
+   (+5 kt/1 000 lb) and the ground roll with FM Fig. A8-3 (with chute, PDF 550) - read that chart carefully first
+   (A8-4 without chute ≈ 2 850 ft @ 17 900 lb; landing 1 without chute: 3 158 ft). Tune drag_coef_spoilers if needed.
+2. Then: 3D model planning (AP-9) or remaining items (yaw SAS logic, CR-2144 δa definition, .gitignore `.opencode`
+   line added by another tool - user decides).
+State: flight model validated against NASA/FM for lift, drag, thrust to M 1.8, takeoff, climb, lateral/Dutch roll,
+speed brakes, trim, LAND/TAKEOFF flaps (TE + LE flaps, T3-L), first scripted landing. Details below and in
+`docs/notes/measurements.md` (newest entries at the end).
+
 **Achieved (all evidence in `docs/notes/measurements.md`, sim rounds A/B/B2/C):**
 - Lift T3-A ✓ (1° band means within ±0.03 of NASA TN D-7137), drag T3-F ✓ (1.00-1.04 x NASA), static thrust ✓
   and afterburner thrust in flight ✓ (-2..-4 %), military fuel flow ✓, AB fuel flow in flight ✓ (static -33 %,
@@ -36,7 +48,7 @@ sim restart** (normalization; debug Sim Curves TgtClAOA0 vs. FinClAOA0 shows it,
 **S12 done (2026-10-26):** trim 1.2° at M 1.27 / 16 500 ft, 2.0° at M 1.8 / 40 000 ft - far from the stops.
 **T3-L approach configuration PASSED (2026-10-26):** TE + new LE flaps; CL 0.855 at α 4.1° (CR-2144 0.845), trim 5.6°.
 **First scripted landing (2026-10-26, MCP `landing`):** touchdown 162 KIAS (FM 166-171), ground roll 3 158 ft (FM ≈ 2 850).
-**Next step:** smooth the landing script (throttle loop), then 3D model planning (AP-9). Open: CR-2144 δa definition (one aileron or sum).
+**Next step:** see TOMORROW START HERE above. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
