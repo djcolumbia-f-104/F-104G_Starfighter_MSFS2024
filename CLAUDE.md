@@ -26,17 +26,12 @@ without a hydraulic system in the template -> now electric).
 -20 %/+30 % of excess thrust (≤ 800 lbf, opposite signs) -> accepted, revisit with T3-I.
 **Round F (2026-10-25 evening):** speed brakes ✓ (ΔCD 0.046), AP pitch rate 5°/s ✓, yaw damper 0.3 harmless (no effect).
 **Finding: Dutch roll period 0.87 s vs. ~2.0 s (CR-2144) -> directional stiffness ~5x too high (AP-11).**
-**Automation idea (pete, 2026-10-25, to try first next session):** (1) does reloading the aircraft (instead of a full
-sim restart) re-run the normalization? (2) script: kill sim -> `steam://rungameid/2537590` -> wait for SimConnect ->
-`msfs_load_flight`; (3) `fspackagetool.exe` build with the sim closed; (4) GUI clicks via AutoHotkey if needed.
-n8n is not suitable (no desktop control). Preferred: own small project MCP server (Python FastMCP, `tools/mcp_f104/`)
-wrapping restart_sim, check_build (T0/T1), preflight, takeoff/doublet/sideslip tests and analyse_* with compact
-results only (saves most tokens); do not modify the third-party simconnect-mcp.
-**AP-11 done (2026-10-26):** G fin 50 ft²/7.3 ft/45°, rudder_lift_coef 2.0, rudder_maxangle_scalar 0.32 -> Dutch roll
-1.48 s (CR-2144 1.41 s), β/δr 0.35, δa/δr 0.41. **Lateral cfg changes need only Build All + aircraft reload.**
-**T3-J (2026-10-26):** MSFS yaw damper unusable (0.3 no effect, 1.0 -> departure and crash) -> off; natural damping
-close to CR-2144 SAS off. Own SAS logic (WASM/XML) later.
-**T3-I (2026-10-26):** 40 000 ft ISA: thrust 0.98-1.01 and drag 0.94-1.07 x D-7137 up to M 1.8 ✓; Mach 2 reachable; trim 2° at M 1.8.
+**Project MCP server `f104` (2026-10-26, `tools/mcp_f104/server.py`, registered in `.mcp.json`) - USE IT for the
+test loop, it returns only key figures:** `check_build`, `build_cfg`, `preflight`, `sim_state`, `position` (AP verified
+before/after, re-arms ALT hold -> sinks only ~300 ft), `runway_start`, `takeoff`, `doublet`, `sideslip`, `accel_run`,
+`log`, `analyse(lift|drag|climb)`, `sim_event`, `restart_sim` (kill + Steam start, waits for SimConnect; the user
+still starts the flight). Runs with the simconnect-mcp venv Python; each action is a subprocess with its own short
+SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enough (AP-11).
 **Next step:** supersonic trim at low altitude (S12), landing T3-L, own MCP server for the test loop. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
@@ -115,6 +110,8 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
   Crop text with pymupdf (pixels x 0.75 = page coordinates).
 - `clean_flt.py <flt folder>`: removes piston engine states from .flt files.
 - `build_cfg.ps1 -Engine minimal`: diagnostic engine (required parameters only).
+- `mcp_f104/server.py` + `mcp_f104/sim_actions.py`: project MCP server (see CONTINUE HERE).
+- `doublet_test.py`, `sideslip_test.py`, `takeoff_test.py`, `analyse_climb.py`: T3-J, T3-E2, T3-D, T3-H/I.
 - `C:\MSFS 2024 SDK\Tools\bin\fspackagetool.exe` attaches to the running sim and waits -> do not use;
   build via Dev Mode in the sim.
 

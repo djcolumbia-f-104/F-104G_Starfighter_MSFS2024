@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "f104": {
+      "command": "C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe",
+      "args": ["-I", "C:\\Users\\pete\\Documents\\F-104G_MSFS2024\\tools\\mcp_f104\\server.py"]
+    }
+  }
+}
