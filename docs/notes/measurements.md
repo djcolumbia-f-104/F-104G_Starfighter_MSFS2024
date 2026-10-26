@@ -434,3 +434,12 @@ Log ..._T3L_approach3.csv, 19 000 lb, from 14 000 ft: CL 0.82 at α 10.2°, CD 0
 223 KIAS, flight path down to -22°, aborted at 2 900 ft AGL. More flap lift = more nose-down moment (flap lift centre far
 aft of the CG) = more tail download, net CL even lower. Run 1 -> 2 showed ~2° trim per 3.5 ft -> add aft feet 3.5 -> 7
 (flap lift centre near the CG). Note: the MSFS AP only trims (elevator stays 0), a pilot would add stick.
+
+## 2026-10-26: T3-L runs 2-4 invalid for the flap changes - lift normalization needs a FULL sim restart
+Screenshot of "Debug Aircraft Sim Curves" with LAND flaps out (run 4 state): **TgtClAOA0 0.9832** (= 0.01 + new flap
+ΔCL 0.97 from the cfg) but **FinClAOA0 0.2233**, RawClAOA0 0.0116, nCl 1.98. The sim had been started before all
+of today's flap changes (add aft feet 3.5/7, lift scalar 2.0) and was only reloaded -> flaps still used the old
+normalization. Lateral values (AP-11) do take effect on reload, lift/flap values do NOT.
+Stall debug window with flaps out: "Middle wing AOA -14.2°" (flap section). Drag check: with
+lift_coef_at_drag_zero_flaps default 0 the polar gives CD 0.263 at CL 0.735 incl. gear = CR-2144 exactly -> keep.
+Next: full sim restart, check FinClAOA0 with flaps in the debug window, then repeat the approach (≈ 200 KIAS).

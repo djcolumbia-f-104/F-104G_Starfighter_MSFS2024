@@ -31,7 +31,8 @@ test loop, it returns only key figures:** `check_build`, `build_cfg`, `preflight
 before/after, re-arms ALT hold -> sinks only ~300 ft), `runway_start`, `takeoff`, `doublet`, `sideslip`, `accel_run`,
 `log`, `analyse(lift|drag|climb)`, `sim_event`, `restart_sim` (kill + Steam start, waits for SimConnect; the user
 still starts the flight). Runs with the simconnect-mcp venv Python; each action is a subprocess with its own short
-SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enough (AP-11).
+SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enough (AP-11). **Lift/flap changes need a FULL
+sim restart** (normalization; debug Sim Curves TgtClAOA0 vs. FinClAOA0 shows it, T3-L 2026-10-26).
 **S12 done (2026-10-26):** trim 1.2° at M 1.27 / 16 500 ft, 2.0° at M 1.8 / 40 000 ft - far from the stops.
 **Next step:** landing T3-L (find approach speeds/landing distance in the FM first), then 3D model planning (AP-9 cockpit/HUD values). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
