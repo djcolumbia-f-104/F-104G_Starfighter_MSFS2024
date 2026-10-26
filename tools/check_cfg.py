@@ -89,13 +89,22 @@ check("AP-11", "fin geometry of the G: vtail_area 45-55 ft², vtail_sweep 43-47�
       info=f"area {geo.get('vtail_area')}, sweep {geo.get('vtail_sweep')}")
 
 flaps, lcf = fm.get("flaps.0", {}), num(aero.get("lift_coef_flaps")) or 0
-for pos, target in ((1, 0.30), (2, 0.97)):   # LAND: 0.62 effective needs 0.97 nominal (T3-L run 2)
-    v = [num(t) for t in flaps.get(f"flaps-position.{pos}", "0").split(",")]
-    v += [None] * (8 - len(v))
-    dcl = lcf * (num(flaps.get("lift_scalar")) or 1) * (v[3] or 1) * (v[0] or 0) / 57.29578
-    check("AP-10", f"flap position {pos}: ΔCL ≈ {target} (lift_coef_flaps x lift scalar x rad), add incidence 1",
-          abs(dcl - target) < 0.03 and v[7] == 1, info=f"ΔCL {dcl:.3f}, add incidence {v[7]}")
+systems = [fm[s] for s in sorted(fm) if s.startswith("flaps.")]      # TE (FLAPS.0) + LE (FLAPS.1) flaps
 
+
+def pos(sec, i):
+    v = [num(t) for t in sec.get(f"flaps-position.{i}", "0").split(",")]
+    return v + [None] * (8 - len(v))
+
+
+for i, target in ((1, 0.30), (2, 0.62)):
+    dcl = sum(lcf * (num(sec.get("lift_scalar")) or 1) * (pos(sec, i)[3] or 1) * (pos(sec, i)[0] or 0) / 57.29578
+              for sec in systems)
+    check("AP-10", f"flap position {i}: ΔCL ≈ {target} over all flap systems (lift_coef_flaps x scalars x rad), add incidence 1",
+          abs(dcl - target) < 0.03 and all(pos(sec, i)[7] == 1 for sec in systems), info=f"ΔCL {dcl:.3f}")
+inc = (pos(flaps, 2)[0] or 0) * (pos(flaps, 2)[3] or 1) * (num(flaps.get("lift_scalar")) or 1)
+check("AP-10", "TE LAND angle x lift scalar <= 30 (MSFS incidence increment ~0.62 x this; more stalls the section, T3-L)",
+      inc <= 30, info=f"is {inc:.0f}")
 hyd = num(load(os.path.join(CFG, "systems.cfg")).get("hydraulic_system", {}).get("normal_pressure")) or 0
 check("AP-10", "flaps electric (FM 1-73: AC motors); hydraulic only with a hydraulic system (T3-D run 5)",
       num(flaps.get("system_type")) == 0, info=f"system_type {flaps.get('system_type')}")

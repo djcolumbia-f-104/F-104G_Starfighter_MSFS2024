@@ -443,3 +443,14 @@ normalization. Lateral values (AP-11) do take effect on reload, lift/flap values
 Stall debug window with flaps out: "Middle wing AOA -14.2°" (flap section). Drag check: with
 lift_coef_at_drag_zero_flaps default 0 the polar gives CD 0.263 at CL 0.735 incl. gear = CR-2144 exactly -> keep.
 Next: full sim restart, check FinClAOA0 with flaps in the debug window, then repeat the approach (≈ 200 KIAS).
+
+## 2026-10-26: T3-L run 5 (after a full restart) and root cause of the LAND flap problem
+Full restart did not change anything (FinClAOA0 0.2233 again, approach as run 4: CL 0.92 at α 11.3°) -> the
+normalization hypothesis was wrong. Comparison with TAKEOFF flaps at 226 KIAS (debug screenshots): TAKEOFF RawClAOA0
+0.159, TgtClAOA0 0.3093, **FinClAOA0 0.3095 ✓**, flapped "middle" wing section incidence +17.1° (Cl0AOA 17.8°).
+LAND: middle section Cl0AOA 60°, wing AOA -14.2°, RawClAOA0 0.0116 -> **MSFS turns flap angle x lift scalar into an
+incidence increment of the flapped section (~0.62 x angle x scalar); at LAND (45° x 1.273..2.0 = +35..60°) the
+section is fully stalled** -> no flap lift, high drag, nose-down moment. This explains runs 1-5.
+Change (needs full restart): TE flaps TAKEOFF 0.84 / LAND 0.6 (+~17°), new LE flaps [FLAPS.1] (type 2, 15°/30°,
+span 0.95, system lift scalar 1.01, drag scalar 0); targets TAKEOFF 0.30, LAND 0.62 unchanged; add aft feet back to 0.
+New T0 rule: TE LAND angle x lift scalar <= 30. Re-test T3-D (takeoff) and T3-L after the restart.
