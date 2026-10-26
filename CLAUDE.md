@@ -32,7 +32,8 @@ before/after, re-arms ALT hold -> sinks only ~300 ft), `runway_start`, `takeoff`
 `log`, `analyse(lift|drag|climb)`, `sim_event`, `restart_sim` (kill + Steam start, waits for SimConnect; the user
 still starts the flight). Runs with the simconnect-mcp venv Python; each action is a subprocess with its own short
 SimConnect connection. Lateral cfg changes: Build All + aircraft reload is enough (AP-11).
-**Next step:** supersonic trim at low altitude (S12), landing T3-L, own MCP server for the test loop. Open: CR-2144 δa definition (one aileron or sum).
+**S12 done (2026-10-26):** trim 1.2° at M 1.27 / 16 500 ft, 2.0° at M 1.8 / 40 000 ft - far from the stops.
+**Next step:** landing T3-L (find approach speeds/landing distance in the FM first), then 3D model planning (AP-9 cockpit/HUD values). Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).

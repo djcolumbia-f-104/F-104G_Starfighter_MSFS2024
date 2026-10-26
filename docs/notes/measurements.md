@@ -396,3 +396,14 @@ docs/data/nasa_d6398_excess_thrust_lbf.csv; nalyse_drag.py now has supersonic b
 - Mach 2: not reached within the 240 s limit (M 1.80, excess thrust ~2 400 lbf, ~45 s more needed) -> reachable.
 - Trim: 9.7° at M 1.0, 5.7° at M 1.08, 2.0° at M 1.8 (nose up positive) - far from the 5° nose-down stop at 40 000 ft.
 **Verdict T3-I: thrust/drag up to M 1.8 passed; Mach 2 reachable; excess thrust vs. D-6398 within -30 % (source difference).**
+
+## 2026-10-26: S12 supersonic trim at 16 500 ft - PASSED (first run with the f104 MCP server)
+Build with yaw damper off (T1 ✓), aircraft reload. position + ccel_run (M 0.86 -> 1.30 in 70 s, 16 400 ft,
+OAT -11 °C ≈ ISA+8, 19 200 lb). Log docs/data/flighttest_2026-10-26_S12_trim16k.csv.
+- Trim (nose up +): M 0.87 3.0°, M 1.07 1.9°, M 1.18 1.5°, M 1.27 1.2° -> far from the 5° nose-down stop. The round A
+  concern (-4° at M 1.15) predates the htail_incidence/elevator fixes; with 2.0° at M 1.8 / 40 000 ft (T3-I) S12 is done.
+- Regression after AP-11 (same log): T3-F drag 1.05 (M 0.4-0.95) ✓, 0.99 at M 1.2-1.4; T3-G tail deflection
+  1.10 × α ✓; T3-A largest band mean -0.032 (tolerance 0.03, mean -0.018) - marginal, within scatter (AP-11 changed
+  only lateral values).
+- Note: after position the AP wing leveler did not hold a -20° bank; AP_HDG_HOLD_ON rolled the jet level ->
+  position(lateral='hdg') is the safer default for longitudinal tests.
