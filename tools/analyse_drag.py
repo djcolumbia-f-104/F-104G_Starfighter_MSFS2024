@@ -87,7 +87,7 @@ for i in range(2, len(data) - 2):
 
 if ratios:
     print()
-    for lo, hi in ((0.4, 0.6), (0.6, 0.8), (0.8, 0.95), (0.95, 1.2)):
+    for lo, hi in ((0.4, 0.6), (0.6, 0.8), (0.8, 0.95), (0.95, 1.2), (1.2, 1.4), (1.4, 1.6), (1.6, 1.8), (1.8, 2.1)):
         sel = [r for m, r in ratios if lo <= m < hi]
         if sel:
             print(f"M {lo:.2f}-{hi:.2f}: CD_sim/CD_nasa mean {sum(sel) / len(sel):.2f} (n={len(sel)})")

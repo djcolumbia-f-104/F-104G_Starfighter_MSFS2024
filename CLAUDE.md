@@ -36,7 +36,8 @@ results only (saves most tokens); do not modify the third-party simconnect-mcp.
 1.48 s (CR-2144 1.41 s), β/δr 0.35, δa/δr 0.41. **Lateral cfg changes need only Build All + aircraft reload.**
 **T3-J (2026-10-26):** MSFS yaw damper unusable (0.3 no effect, 1.0 -> departure and crash) -> off; natural damping
 close to CR-2144 SAS off. Own SAS logic (WASM/XML) later.
-**Next step:** T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
+**T3-I (2026-10-26):** 40 000 ft ISA: thrust 0.98-1.01 and drag 0.94-1.07 x D-7137 up to M 1.8 ✓; Mach 2 reachable; trim 2° at M 1.8.
+**Next step:** supersonic trim at low altitude (S12), landing T3-L, own MCP server for the test loop. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).

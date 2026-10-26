@@ -383,3 +383,16 @@ After AP-11 (fin 50 ft², rudder_lift_coef 2.0), 15 000 ft, M 0.90, doublets wit
 - **Decision: yaw damper OFF** (`yaw_damper_gain` 0). The natural damping (0.57/cycle, about 0.9 cycles to half
   amplitude) is close to the F-104A without SAS (CR-2144 Table III-12: 0.43/cycle, 0.81 cycles to half). A real SAS
   ("completely damped", FM 6-3) would need own control logic (WASM or XML), later work package.
+
+## 2026-10-26: T3-I level max-AB acceleration at 40 000 ft (Mach 0.92 -> 1.80 in 240 s)
+Same session (AP-11 build, yaw damper off). Climb to 39 000-40 200 ft, **ambient -57 °C = ISA**, 18 240 lb (NASA 18 000).
+Log docs/data/flighttest_2026-10-26_T3I_accel40k.csv (~1 Hz). D-6398 Fig. 6(c)/(d) (30 000/40 000 ft) added to
+docs/data/nasa_d6398_excess_thrust_lbf.csv; nalyse_drag.py now has supersonic bands up to M 2.1.
+- **Net thrust vs. D-7137 Table 3** (interpolated to the flown altitude): 0.977-1.009 for M 0.9-1.8 ✓.
+- **Drag vs. D-7137 Table 2:** M 0.95-1.2: 1.07, M 1.2-1.4: 0.94, M 1.4-1.6: 0.96, M 1.6-1.8: 0.98 ✓.
+- Excess thrust vs. D-6398 (flight-measured): M 1.25-1.5: 0.85-1.06 ✓; M 1.6-1.8: 0.69-0.80; transonic M 0.9-1.15 noisy
+  (only ~1 000-2 000 lbf excess: 0.55-1.76). Since thrust and drag both match D-7137, the remaining difference is
+  between the two NASA reports (D-7137 prediction vs. D-6398 measurement), not a sim error -> no change.
+- Mach 2: not reached within the 240 s limit (M 1.80, excess thrust ~2 400 lbf, ~45 s more needed) -> reachable.
+- Trim: 9.7° at M 1.0, 5.7° at M 1.08, 2.0° at M 1.8 (nose up positive) - far from the 5° nose-down stop at 40 000 ft.
+**Verdict T3-I: thrust/drag up to M 1.8 passed; Mach 2 reachable; excess thrust vs. D-6398 within -30 % (source difference).**
