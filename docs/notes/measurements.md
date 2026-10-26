@@ -372,3 +372,14 @@ Values: rudder_lift_coef / rudder_maxangle_scalar, fin area ft². Logs `flightte
 Damping slightly weaker than CR-2144 (SAS off) - the yaw damper (T3-J) can add it. Pitfall: in iteration 2 the
 first AP_MASTER toggle did not leave the AP on after the reload -> the jet dived to 6 100 ft; always read
 AUTOPILOT_MASTER after positioning.
+
+## 2026-10-26: T3-J yaw damper - not usable, switched off
+After AP-11 (fin 50 ft², rudder_lift_coef 2.0), 15 000 ft, M 0.90, doublets with YAW_DAMPER_ON:
+- gain 0.3 (`..._T3J_yd03.csv`): period 1.39 s, ratio 0.62/cycle (off: 0.57) -> no effect.
+- gain 1.0 (`..._T3J_yd10.csv`): period 1.48 s, ratio 0.58/cycle -> no effect in the doublet, bank stable for 30 s.
+  **~15 s later the jet departed by itself** (next log `..._T3J_yd10b.csv` starts at β -42°, bank 132°, yaw rate
+  267°/s; crashed). Same behaviour as round D (yaw damper rolled the jet to 66°). RUDDER_DEFLECTION read 0 during the
+  free oscillation (the yaw damper rudder command does not show in this SimVar, or it is not applied).
+- **Decision: yaw damper OFF** (`yaw_damper_gain` 0). The natural damping (0.57/cycle, about 0.9 cycles to half
+  amplitude) is close to the F-104A without SAS (CR-2144 Table III-12: 0.43/cycle, 0.81 cycles to half). A real SAS
+  ("completely damped", FM 6-3) would need own control logic (WASM or XML), later work package.

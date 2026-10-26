@@ -53,7 +53,7 @@ engine burning, N1 ≥ 60 %, fuel selector ALL, battery; prints weight, CG, elev
 | T3-G trim gradient | from T3-A data | elevator + trim vs. α | slope vs. CR-96008 −Cmα/Cmδe 0.67-1.05; intercept ≈ 0 (measured 1.06-1.08, −0.05°) |
 | T3-H climb | level max-AB accelerations at 10 000 and 20 000 ft as in D-6398 (`tools/analyse_climb.py`) | excess thrust Fn,ex(M) at 18 000 lb | D-6398 Fig. 6 ±10 % (band means); **2026-10-25: subsonic ✓, supersonic ±20-30 % (≤ 800 lbf) accepted** |
 | T3-I top speed | 36 000-40 000 ft, max AB, sink in from above, then level | Mach | FM: M 2.0 (engine temperature limit) |
-| T3-J dynamic stability | rudder doublet (Dutch roll), release 30° bank (spiral), pitch pulse | period, damping, doubling time | Dutch roll ~2.3 s at 260 kt (Cnβ 0.50); spiral > 20 s |
+| T3-J dynamic stability | rudder doublet (Dutch roll), release 30° bank (spiral), pitch pulse | period, damping, doubling time | Dutch roll ~2.3 s at 260 kt (Cnβ 0.50); spiral > 20 s; **2026-10-26: natural damping 0.57/cycle vs. CR-2144 SAS off 0.43 ✓ (accepted); MSFS yaw damper unusable (no effect at 0.3, departure at 1.0) -> off; own SAS later** |
 | T3-K roll rate | full aileron at cruise speed (gear up ±9.75°) | p max | FM/CR-2144 Clδa |
 | T3-L stall/APC | idle, 1 kt/s from 1.4 Vs, clean and flaps LAND | Vs, α | FM values, pitch-up behaviour |
 

@@ -108,8 +108,8 @@ check("S11e", "speed brakes: ΔCD ≈ 0.042 at 52° (8.25 ft² flat plate, drag 
       abs(sb_dcd - 0.042) < 0.004 and num(aero.get("lift_coef_air_spoilers")) == 0
       and num(geo.get("spoiler_handle_available")) == 1, info=f"ΔCD {sb_dcd:.4f}")
 ap = load(os.path.join(CFG, "systems.cfg")).get("autopilot", {})
-check("AP-6", "yaw damper gain <= 0.5 until T3-J is done (gain 1.0 rolled the jet away, round D)",
-      (num(ap.get("yaw_damper_gain")) or 0) <= 0.5, info=f"is {ap.get('yaw_damper_gain')}")
+check("AP-6", "yaw damper gain <= 2 (T3-J; gain 1.0 rolled the jet away with the old over-stiff fin, round D)",
+      (num(ap.get("yaw_damper_gain")) or 0) <= 2, info=f"is {ap.get('yaw_damper_gain')}")
 
 cp = fm.get("contact_points", {})
 

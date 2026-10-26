@@ -34,7 +34,9 @@ wrapping restart_sim, check_build (T0/T1), preflight, takeoff/doublet/sideslip t
 results only (saves most tokens); do not modify the third-party simconnect-mcp.
 **AP-11 done (2026-10-26):** G fin 50 ft²/7.3 ft/45°, rudder_lift_coef 2.0, rudder_maxangle_scalar 0.32 -> Dutch roll
 1.48 s (CR-2144 1.41 s), β/δr 0.35, δa/δr 0.41. **Lateral cfg changes need only Build All + aircraft reload.**
-**Next step:** tune the yaw damper (T3-J, damping), T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
+**T3-J (2026-10-26):** MSFS yaw damper unusable (0.3 no effect, 1.0 -> departure and crash) -> off; natural damping
+close to CR-2144 SAS off. Own SAS logic (WASM/XML) later.
+**Next step:** T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).

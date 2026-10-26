@@ -4,7 +4,7 @@ Usage (with the Python of the simconnect-mcp venv):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\doublet_test.py <output.csv> [seconds=30]
 Precondition: steady flight, AP altitude hold + wing leveler (no heading hold), yaw damper as wanted.
 Sequence: 3 s quiet -> full right rudder 1 s -> full left rudder 1 s -> rudder free, log until the end.
-Only 3 SimVars per sample (simlog.py with 26 SimVars reaches only ~0.7 Hz, too slow for a ~2-3 s period).
+Only 4 SimVars per sample (simlog.py with 26 SimVars reaches only ~0.7 Hz, too slow for a ~2-3 s period).
 Prints the sideslip peaks after the doublet: period and ratio of successive peaks (damping).
 """
 import csv
@@ -30,12 +30,12 @@ while (t := time.time() - t0) < seconds:
         rud(want)
         cmd = want
     rows.append((round(t, 3), (aq.get("INCIDENCE_BETA") or 0) * DEG, (aq.get("PLANE_BANK_DEGREES") or 0) * DEG,
-                 (aq.get("ROTATION_VELOCITY_BODY_Y") or 0) * DEG, cmd))
+                 (aq.get("ROTATION_VELOCITY_BODY_Y") or 0) * DEG, cmd, (aq.get("RUDDER_DEFLECTION") or 0) * DEG))
 rud(0)
 sm.exit()
 with open(out, "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
-    w.writerow(["t", "beta_deg", "bank_deg", "yaw_rate_dps", "cmd_rud"])
+    w.writerow(["t", "beta_deg", "bank_deg", "yaw_rate_dps", "cmd_rud", "rudder_deg"])
     w.writerows(rows)
 print(f"{len(rows)} samples ({len(rows) / seconds:.1f} Hz) -> {out}")
 # peaks of |beta| after the doublet (local extrema with sign change in between)
