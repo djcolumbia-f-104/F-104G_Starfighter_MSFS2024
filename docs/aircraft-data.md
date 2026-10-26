@@ -156,6 +156,17 @@ Status: provisional (secondary). Consistent with the G having a larger fin than 
 47.77/36.0 = 1.33, and between the A fin and the tested V3 (50.8 ft²). Unclear whether 47.77 ft² is the exposed area
 or measured to a theoretical root.
 
+## Fin measured on the NASA TN D-6398 three-view (Fig. 2, PDF 24, F-104G test airplane)
+Digitized at 600 dpi (scratchpad script, method: polygon area). Scale from the drawing's own dimensions: height
+13.49 ft = 753 px (55.8 px/ft vertical), length 54.77 ft = 2937 px (53.6 px/ft longitudinal; scan distortion 4 %).
+- Area above the fuselage top line (incl. dorsal blend and tip fairing): **≈ 57 ft²**; without the dorsal fillet
+  (straight leading edge) ≈ 56.5 ft². Very sensitive to the root definition: 1 ft of height ≈ 12 ft² -> consistent
+  with 47.77 ft² measured to a higher reference line.
+- **Leading-edge sweep ≈ 45°** (A fin V2: 52.3°, enlarged wind-tunnel fin V3: 44.0°), height above the fuselage
+  at the nozzle ≈ 7.2 ft (V3: 7.5 ft), root chord ≈ 12.5 ft, tip chord ≈ 4.8 ft.
+- **Conclusion: the F-104G has the enlarged fin (V3 type, ~50.8 ft² to the theoretical root), not the A fin.**
+  Use for the cfg (AP-11): `vtail_area` ≈ 48-51 ft² [Q/M], `vtail_sweep` 45° [M], span ≈ 7.2-7.5 ft.
+
 Use: The cfg uses `vtail_area` 38 ft², span 5.5 ft (close to the A fin V2) but
 `vtail_sweep` 40° (V2: LE 52.3°) and `htail_sweep` 10° (LE 19.5°; 10° is the quarter-chord value) and `wing_sweep`
 26° (27.1°). **Candidates for AP-11** (Dutch roll too fast): the fin in the cfg is even smaller than the G fin
