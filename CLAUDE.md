@@ -32,9 +32,9 @@ sim restart) re-run the normalization? (2) script: kill sim -> `steam://rungamei
 n8n is not suitable (no desktop control). Preferred: own small project MCP server (Python FastMCP, `tools/mcp_f104/`)
 wrapping restart_sim, check_build (T0/T1), preflight, takeoff/doublet/sideslip tests and analyse_* with compact
 results only (saves most tokens); do not modify the third-party simconnect-mcp.
-**Next step:** AP-11 - read CR-2144 Table III-10/11 (PDF 63/64, Dutch roll ωn/ζ), then reduce Cnβ (vtail_area /
-rudder_lift_coef / fuselage) while keeping β/δr 0.32 (T3-E) - test with `tools/doublet_test.py`; then tune the yaw
-damper (T3-J), T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
+**AP-11 done (2026-10-26):** G fin 50 ft²/7.3 ft/45°, rudder_lift_coef 2.0, rudder_maxangle_scalar 0.32 -> Dutch roll
+1.48 s (CR-2144 1.41 s), β/δr 0.35, δa/δr 0.41. **Lateral cfg changes need only Build All + aircraft reload.**
+**Next step:** tune the yaw damper (T3-J, damping), T3-I Mach 2, supersonic trim (S12), landing T3-L. Open: CR-2144 δa definition (one aileron or sum).
 **How to test: `docs/notes/test-procedures.md` (cookbook).**
 **Since 2026-10-25 `docs/flight-model-plan.md` is authoritative** (iteration loop, test levels T0-T3, work packages,
 step-by-step schedule in section 3a, official Microsoft test sequence).
@@ -152,7 +152,7 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
     `htail_incidence`. For trimmed NASA data use htail_incidence = trim at α = 0 (here 0), NOT cruise trim.
   - Positive `htail_incidence` acts like nose-up trim; ELEVATOR_TRIM_POSITION positive = nose up.
   - `wing_camber = 0` becomes 1° internally -> extra lift; FSX legacy terms (lift_coef_delta_elevator etc.) set to 0.
-  - `rudder_lift_coef` = whole fin (directional stability!). `rudder_effectiveness` scales that lift and does not
+  - `rudder_lift_coef` = whole fin (directional stability! sets the Dutch roll period; 2.0 with the G fin, AP-11). `rudder_effectiveness` scales that lift and does not
     change the β = δr equilibrium. Rudder authority via `rudder_maxangle_scalar` (SDK: < 1 for flap rudders).
     `elevator_maxangle_scalar` = 1 for the all-moving tail.
   - All lateral FSX coefficients of the template (roll_moment_slip_angle, yaw_moment_* ...) are legacy/unused;

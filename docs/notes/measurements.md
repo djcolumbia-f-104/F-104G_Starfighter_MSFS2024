@@ -354,3 +354,21 @@ the sim (ratio 0.31/cycle) is close to CR-2144 (0.43/cycle).
 Changes (value diff: exactly these 5 keys): fin of the G vtail_area 38 -> 50, vtail_span 5.5 -> 7.3, vtail_sweep
 40 -> 45 (D-6398 three-view, RM SL56H06 V3, historicalfighters.com); rudder_lift_coef 5.0 -> 1.7; rudder_maxangle_scalar
 0.32 -> 0.24 (keep β/δr 0.32). Test: doublet (period target 1.4 s ±15 %), T3-E2 sideslip (β/δr 0.32, δa/δr 0.27-0.47).
+
+## 2026-10-26: AP-11 PASSED - Dutch roll, sideslip (iterations 1 and 2, aircraft reload only)
+**Workflow finding: lateral cfg changes take effect after Build All + reloading the aircraft - no full sim restart
+needed** (iteration 1: build 18:25, sim started 18:16, period changed 0.87 -> 1.6 s). Normalization (lift) still
+assumed to need a full restart.
+All at 15 000 ft, M 0.90, ~460 KIAS = CR-2144 F/C 4; AP ALT + wing leveler; `tools/doublet_test.py`, `sideslip_test.py`.
+
+| | round F (5.0 / 0.32, fin 38) | it. 1 (1.7 / 0.24, fin 50) | **it. 2 (2.0 / 0.32, fin 50)** | CR-2144 |
+|---|---|---|---|---|
+| Dutch roll period | 0.87 s | 1.6 s | **1.48 s** (+5 %) | 1.41 s |
+| amplitude ratio per cycle | 0.31 | 0.54 | 0.57 | 0.43 |
+| β/δr (full rudder) | 0.32 | 0.26 | **0.35** | 0.32-0.42 |
+| δa/δr (opposite aileron) | 0.39 | 0.33 | **0.41** | 0.27-0.47 |
+
+Values: rudder_lift_coef / rudder_maxangle_scalar, fin area ft². Logs `flighttest_2026-10-26_AP11_it1_*`, `_it2_*`.
+Damping slightly weaker than CR-2144 (SAS off) - the yaw damper (T3-J) can add it. Pitfall: in iteration 2 the
+first AP_MASTER toggle did not leave the AP on after the reload -> the jet dived to 6 100 ft; always read
+AUTOPILOT_MASTER after positioning.
