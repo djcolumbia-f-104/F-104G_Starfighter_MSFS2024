@@ -120,6 +120,15 @@ def sideslip(name: str = "sideslip", rudder_s: float = 15) -> str:
 
 
 @mcp.tool()
+def approach(name: str = "T3L_approach", target_ias: float = 200, hold_s: int = 45) -> str:
+    """T3-L approach configuration: idle + speed brakes, gear down < 255 KIAS, LAND flaps < 230 KIAS, then hold
+    target_ias with a throttle loop (no AB) while logging. Fly position() at a safe altitude first (aborts below
+    3 000 ft AGL). FM final approach: 170 KIAS up to 15 000 lb, +5 kt per 1 000 lb (Fig. A8-2)."""
+    return run(SIMPY, "tools/mcp_f104/sim_actions.py", "approach", csv_path(name), target_ias, hold_s,
+               timeout=hold_s + 300)[1].strip()
+
+
+@mcp.tool()
 def accel_run(name: str = "accel", mach_stop: float = 1.2, max_s: int = 240) -> str:
     """Level full-afterburner acceleration with logging (simlog 3 Hz, ~1 Hz real) until mach_stop, 740 KIAS or
     max_s; throttle to idle at the end. Use for T3-H/T3-I/T3-F; then analyse('climb'|'drag', name)."""

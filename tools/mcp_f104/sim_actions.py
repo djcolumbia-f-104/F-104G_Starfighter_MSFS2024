@@ -82,6 +82,9 @@ elif cmd == "position":
         lowest = min(lowest, a)
         if not g("AUTOPILOT_MASTER"):
             ap_on()
+        if not g("AUTOPILOT_ALTITUDE_LOCK"):               # 2026-10-26: ALT hold was off once -> dived 5 000 ft
+            ev("AP_ALT_VAR_SET_ENGLISH", int(alt))
+            ev("AP_ALT_HOLD_ON")
         time.sleep(1)
     s = state()
     print(f"positioned; AP {'on' if s['ap'] else 'OFF!'} (first check {'ok' if ok else 'needed retries'}); "
@@ -99,6 +102,41 @@ elif cmd == "runway":
         ev("PARKING_BRAKES")
     time.sleep(6)                                         # flaps extending (5 s)
     print(f"on runway EDDM 26L; {state()}")
+
+elif cmd == "approach":
+    # T3-L: decelerate (idle + speed brakes), gear down < 255 KIAS, LAND flaps < 230 KIAS (FM: 240-210), then hold the
+    # target IAS with a throttle P-loop for hold_s while logging. Run at a safe altitude (AP ALT hold).
+    csv_path, target, hold_s = sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
+    ev("THROTTLE1_SET", 0)
+    ev("SPOILERS_ON")
+    t0 = time.time()
+    while time.time() - t0 < 180:
+        ias = g("AIRSPEED_INDICATED") or 0
+        if ias < 255 and g("GEAR_HANDLE_POSITION") != 1:
+            ev("GEAR_DOWN")
+        if ias < 230:
+            ev("FLAPS_DOWN")
+            ev("SPOILERS_OFF")
+            break
+        time.sleep(1)
+    log = subprocess.Popen([SIMPY, "-I", ROOT + "tools/simlog.py", csv_path, str(hold_s + 40), "3"],
+                           stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+    thr = 9000.0
+    t1 = time.time()
+    while time.time() - t1 < hold_s + 35:
+        err = target - (g("AIRSPEED_INDICATED") or 0)
+        thr = max(0.0, min(11141.0, thr + 60.0 * err))          # integrating P-loop on the throttle, no afterburner
+        ev("THROTTLE1_SET", int(thr))
+        if (g("PLANE_ALT_ABOVE_GROUND") or 0) < 3000:
+            ev("FLAPS_UP")
+            ev("THROTTLE1_SET", 16383)
+            print("ABORT: below 3 000 ft AGL")
+            break
+        time.sleep(1)
+    s = state()
+    log.wait()
+    print(f"approach config held at target {target} KIAS for {hold_s} s (+35 s settling); end {s}; "
+          f"throttle cmd {thr:.0f}; log {csv_path}")
 
 elif cmd == "accel":
     csv_path, mach_stop, max_s = sys.argv[2], float(sys.argv[3]), float(sys.argv[4])

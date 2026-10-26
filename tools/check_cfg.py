@@ -89,7 +89,7 @@ check("AP-11", "fin geometry of the G: vtail_area 45-55 ftÂ², vtail_sweep 43-47Â
       info=f"area {geo.get('vtail_area')}, sweep {geo.get('vtail_sweep')}")
 
 flaps, lcf = fm.get("flaps.0", {}), num(aero.get("lift_coef_flaps")) or 0
-for pos, target in ((1, 0.30), (2, 0.62)):
+for pos, target in ((1, 0.30), (2, 0.97)):   # LAND: 0.62 effective needs 0.97 nominal (T3-L run 2)
     v = [num(t) for t in flaps.get(f"flaps-position.{pos}", "0").split(",")]
     v += [None] * (8 - len(v))
     dcl = lcf * (num(flaps.get("lift_scalar")) or 1) * (v[3] or 1) * (v[0] or 0) / 57.29578

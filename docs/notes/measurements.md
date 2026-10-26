@@ -418,3 +418,13 @@ hold the altitude; recovered with flaps up + AB.
   more α, and CR-2144 trims with δs -7.1° (nose up) while the sim runs out of trim -> the flap lift acts too far aft
   (large nose-down moment, large tail download). Change: LAND dd aft feet 0 -> +3.5 [S] (flap lift centre forward).
   Retest at FM final approach speed (≈ 200 KIAS at 18 400 lb), ~88 % rpm, target trim < 11°, α ≈ 5°.
+
+## 2026-10-26: T3-L approach run 2 (add aft feet 3.5, at 16 500 -> 12 300 ft) - flap lift too low
+New sim_actions.py approach (idle + speed brakes, gear < 255, LAND flaps < 230 KIAS, throttle loop, no AB).
+Log ..._T3L_approach2.csv, 19 000 lb: 218 KIAS α 8.8° CL 0.86 trim 9.5°; 189 KIAS α 8.8° CL 0.91 trim 9.0° (better
+than run 1, trim no longer at the stop at these speeds); military not enough at 12-16 000 ft -> slowed to 157-177 KIAS,
+α 10.6°, CL 1.00, CD 0.40, trim 11° (stop), descent -7°.
+CR-2144 extrapolated to α 8.8°: CL ≈ 1.12 -> effective LAND increment ≈ 0.39 instead of 0.62 (same shortfall as
+TAKEOFF before AP-10's empirical factor) -> LAND lift scalar 1.273 -> 2.0 [M]. T0 target updated (nominal 0.97).
+Also: position at 8 000 ft / 250 kt TAS dived to 1 300 ft AGL (ALT hold apparently not active) -> watchdog on
+AUTOPILOT_ALTITUDE_LOCK added; approach tests at >= 12 000 ft until verified.
