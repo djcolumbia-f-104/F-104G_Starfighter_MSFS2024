@@ -102,7 +102,8 @@ elif cmd == "runway":
 
 elif cmd == "accel":
     csv_path, mach_stop, max_s = sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
-    log = subprocess.Popen([SIMPY, "-I", ROOT + "tools/simlog.py", csv_path, str(max_s + 20), "3"])
+    log = subprocess.Popen([SIMPY, "-I", ROOT + "tools/simlog.py", csv_path, str(max_s + 20), "3"],
+                           stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
     time.sleep(3)
     s0 = state()
     ev("THROTTLE1_SET", 16383)

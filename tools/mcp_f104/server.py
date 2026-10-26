@@ -22,7 +22,7 @@ mcp = FastMCP("f104")
 
 def run(py, script, *args, timeout=600):
     p = subprocess.run([py, "-I", os.path.join(ROOT, script), *map(str, args)], cwd=ROOT, capture_output=True,
-                       text=True, encoding="utf-8", errors="replace", timeout=timeout)
+                       stdin=subprocess.DEVNULL, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     out = (p.stdout or "") + (("\nSTDERR: " + p.stderr[-1500:]) if p.returncode and p.stderr else "")
     return p.returncode, out
 
@@ -50,7 +50,7 @@ def check_build() -> str:
 def build_cfg() -> str:
     """Regenerate common/config/*.cfg from source/cfg (run after editing source/cfg; then the user does Build All)."""
     p = subprocess.run(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(ROOT, "tools", "build_cfg.ps1")],
-                       cwd=ROOT, capture_output=True, text=True, timeout=120)
+                       cwd=ROOT, capture_output=True, stdin=subprocess.DEVNULL, text=True, timeout=120)
     return (p.stdout or "")[-300:] + check_build()
 
 
@@ -131,7 +131,8 @@ def accel_run(name: str = "accel", mach_stop: float = 1.2, max_s: int = 240) -> 
 def log(name: str, seconds: int = 60) -> str:
     """Start the flight data logger (tools/simlog.py) in the background for `seconds`; returns the CSV path at once."""
     path = csv_path(name)
-    subprocess.Popen([SIMPY, "-I", os.path.join(ROOT, "tools", "simlog.py"), path, str(seconds), "3"], cwd=ROOT)
+    subprocess.Popen([SIMPY, "-I", os.path.join(ROOT, "tools", "simlog.py"), path, str(seconds), "3"], cwd=ROOT,
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return f"logging {seconds} s -> {path}"
 
 
@@ -152,7 +153,7 @@ def sim_event(name: str, value: int | None = None) -> str:
             "sm = SimConnect(); ae = AircraftEvents(sm)\n"
             f"e = ae.find({name!r}) or Event({name!r}.encode(), sm)\n"
             f"e({'' if value is None else int(value)})\nsm.exit()\nprint('sent')")
-    p = subprocess.run([SIMPY, "-I", "-c", code], capture_output=True, text=True, timeout=30)
+    p = subprocess.run([SIMPY, "-I", "-c", code], capture_output=True, stdin=subprocess.DEVNULL, text=True, timeout=30)
     return (p.stdout + p.stderr[-300:]).strip()
 
 
@@ -161,14 +162,14 @@ def restart_sim(wait_s: int = 600) -> str:
     """Quit MSFS 2024 and start it again via Steam, then wait until SimConnect answers (main menu).
     The user still has to start the flight (world map -> EDDM runway, F-104G Pruefstand) unless loading works.
     Note: lateral cfg changes only need Build All + aircraft reload; lift (normalization) needs a full restart."""
-    subprocess.run(["taskkill", "/IM", "FlightSimulator2024.exe", "/F"], capture_output=True)
+    subprocess.run(["taskkill", "/IM", "FlightSimulator2024.exe", "/F"], capture_output=True, stdin=subprocess.DEVNULL)
     time.sleep(10)
     os.startfile("steam://rungameid/2537590")
     t0 = time.time()
     while time.time() - t0 < wait_s:
         time.sleep(15)
         p = subprocess.run([SIMPY, "-I", "-c", "from SimConnect import SimConnect; SimConnect().exit(); print('up')"],
-                           capture_output=True, text=True, timeout=60)
+                           capture_output=True, stdin=subprocess.DEVNULL, text=True, timeout=60)
         if "up" in p.stdout:
             return f"sim restarted, SimConnect answers after {time.time() - t0:.0f} s - user: start the flight"
     return f"sim started but SimConnect did not answer within {wait_s} s"
