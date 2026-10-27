@@ -484,3 +484,11 @@ lag) -> tune the script (throttle gain, earlier configuration) before using touc
 give the same ratio (2.74/3.07 = 0.89). (Yesterday's quick estimate of 2 850 ft without chute was too low; landing 1
 with 3 158 ft matches.) The chute drag estimate ΔCD 0.65 (18-ft ring-slot, CD 0.5) would be far too strong; energy
 balance with mean q ≈ half the touchdown q gives ΔCD ≈ 0.10-0.15 -> drag_coef_spoilers 0.76 -> 0.21 before building.
+
+## 2026-10-27: landing 3 - belly landing (gear not down), procedure from the FM
+..._T3L_landing3.csv: approach clean (path error +3 ft at the flare, 192 KIAS on target with the PI throttle), but
+touchdown 184 KIAS, pitch 2.3°, sink 803 ft/min, ground roll 3 091 ft - **gear 0 %** afterwards: positioning in the air
+retracts the gear and the script had extended it before set_pos. Landings 1 and 3 were belly landings -> their ground
+rolls are invalid. Script fixed (gear/flaps after positioning, gear check 2 NM out -> go-around, softer flare from
+100 ft, 80 % rpm), speeds per FM Fig. 2-7 (final 175 / touchdown 155 KIAS @ 16 100 lb), glide 2.5° (700-800 ft/min),
+chute 1 s after touchdown. FM landing procedure summarised in the project skill .claude/skills/f104-pilot.

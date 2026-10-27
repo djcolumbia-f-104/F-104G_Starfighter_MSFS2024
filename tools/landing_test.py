@@ -22,7 +22,7 @@ from SimConnect.EventList import Event
 sys.stdout.reconfigure(encoding="utf-8")
 out = sys.argv[1]
 start_nm = float(sys.argv[2]) if len(sys.argv) > 2 else 6.0
-glide = math.radians(float(sys.argv[3]) if len(sys.argv) > 3 else 3.0)
+glide = math.radians(float(sys.argv[3]) if len(sys.argv) > 3 else 2.5)   # FM: 700-800 ft/min like ILS/PAR
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position
@@ -56,8 +56,8 @@ def track(lat, lon):
 # --- set up: ground elevation from the threshold, weight -> speeds
 elev = None
 w = g("TOTAL_WEIGHT")
-v_app = 170 + 5 * max(0.0, w / 1000 - 15)                            # FM Fig. A8-2 final approach, LAND flaps
-v_td = 152 + 5 * max(0.0, w / 1000 - 15)                             # normal touchdown (lower edge)
+v_app = 175 + 5 * (w / 1000 - 16.1)                                  # FM Fig. 2-7: final 175 KIAS @ 16 100 lb
+v_td = 155 + 5 * (w / 1000 - 16.1)                                   # FM Fig. 2-7: touchdown 155-160 KIAS
 start_ft = start_nm * 6076.12
 lat_s = LAT0 - start_ft * U[1] / FT_PER_DEG
 lon_s = LON0 - start_ft * U[0] / (FT_PER_DEG * math.cos(math.radians(LAT0)))
@@ -151,7 +151,7 @@ while time.time() - t0 < 600:
     elif phase == "rollout":
         roll += gs_kt * 1.68781 * dt
         ev("AXIS_ELEVATOR_SET", 4000)                                # FM 2-25: lower the nose wheel at once
-        if not res.get("chute") and t - res["t_td"] > 2.0:              # nose wheel down -> drag chute
+        if not res.get("chute") and t - res["t_td"] > 1.0:              # FM 2-28: chute blossoms as the nose wheel touches
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
