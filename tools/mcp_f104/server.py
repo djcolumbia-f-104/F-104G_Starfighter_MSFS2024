@@ -133,7 +133,8 @@ def landing(name: str = "T3L_landing", start_nm: float = 6, glide_deg: float = 3
     """T3-L scripted approach and landing on EDDM 26L (tools/landing_test.py): repositions start_nm out on the glide
     path with gear + LAND flaps, AP HDG (localizer from cross-track) + AP VS (glide path) + throttle loop on the FM
     final approach speed, flare, touchdown, brakes. Returns touchdown IAS/sink/position and ground roll.
-    FM Fig. A8-4 (no chute, LAND flaps): ground roll ≈ 2 850 ft at 17 900 lb, 1 500 ft field, std temp, no wind."""
+    FM ground roll at 17 900 lb, 1 500 ft field, 12 °C, no wind: 3 130 ft without chute (Fig. A8-4), 2 760 ft with the
+    18-ft chute (Fig. A8-3); +5 kt headwind ≈ -4 %. The chute is the ground spoiler drag (speed brake handle)."""
     rc, out = run(SIMPY, "tools/landing_test.py", csv_path(name), start_nm, glide_deg, timeout=700)
     return pick(out, r"weight|flare|TOUCHDOWN|GO-AROUND|Result|samples|STDERR")
 

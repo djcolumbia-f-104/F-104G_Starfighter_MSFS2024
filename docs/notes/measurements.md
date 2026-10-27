@@ -477,3 +477,10 @@ sink 565 ft/min, pitch 8.0°, 399 ft past the threshold, 78 ft right of the cent
 ≈ 2 850 ft at 17 900 lb, 1 500 ft field, std temp, no wind -> +11 % (later braking) ✓.
 Approach quality: IAS oscillated 160-220 kt and the jet was up to 570 ft below the path (throttle loop too slow, AP VS
 lag) -> tune the script (throttle gain, earlier configuration) before using touchdown values as a strict test.
+
+## 2026-10-27: FM landing distance charts read carefully (grid at 200 dpi)
+17 900 lb, 1 500 ft pressure altitude, 12 °C (standard), no wind, dry hard runway, anti-skid, hard braking:
+**Fig. A8-4 without chute ≈ 3 130 ft, Fig. A8-3 with 18-ft chute ≈ 2 760 ft (-12 %)**; the sample arrows of both charts
+give the same ratio (2.74/3.07 = 0.89). (Yesterday's quick estimate of 2 850 ft without chute was too low; landing 1
+with 3 158 ft matches.) The chute drag estimate ΔCD 0.65 (18-ft ring-slot, CD 0.5) would be far too strong; energy
+balance with mean q ≈ half the touchdown q gives ΔCD ≈ 0.10-0.15 -> drag_coef_spoilers 0.76 -> 0.21 before building.
