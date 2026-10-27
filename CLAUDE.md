@@ -6,13 +6,25 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-26 evening) <<<
-**TOMORROW START HERE (note for 2026-10-27):**
-1. User: Build All + FULL sim restart (pending: drag chute = ground spoiler drag 0.76, commit b2a6208), F-104 on the
-   EDDM runway. Then MCP `f104`: `check_build`, `preflight`, `landing` (script now follows FM 2-25: flare at ~83 % N1,
-   idle at touchdown, nose down, chute after 2 s, hard braking). Compare touchdown IAS with FM 155-160 KIAS @ 16 100 lb
-   (+5 kt/1 000 lb) and the ground roll with FM Fig. A8-3 (with chute, PDF 550) - read that chart carefully first
-   (A8-4 without chute ≈ 2 850 ft @ 17 900 lb; landing 1 without chute: 3 158 ft). Tune drag_coef_spoilers if needed.
+## >>> CONTINUE HERE (state 2026-10-27 evening) <<<
+**Since 2026-10-27: every sim flight test follows the test-card method (skill `f104-testcard`, cards in
+`docs/notes/test-cards/`): card with preconditions + expected values, desk check, go/no-go, build-up run, then the test.**
+**Test plan with all test points and the iteration order: `docs/test-plan.md`** (phases A-H, FM/NASA references).
+FM extract with checklists/limits/test reference values: `docs/notes/fm-procedures.md`.
+
+**TOMORROW START HERE (note for 2026-10-28):**
+1. pete: reload the flight (full fuel, EDDM 26L); MSFS assistance off (checked 2026-10-27, trim holds).
+2. Dry run 13 (`landing_test.py <csv> 6 2.5 4000`) to confirm the outlier rejection (change control), then the real
+   landing F2 (`landing_test.py <csv> 6 2.5`): TD IAS vs. Fig. 2-7, ground roll vs. A8-3. Card:
+   `docs/notes/test-cards/T3-L-landing.md` (dry runs 1-12 with root causes).
+3. Then test-plan order: B5 landing-config drag (N1 96-98 % vs. FM 87-90 %), B6 go-around climb, B4 glide, D5 fuel.
+Key findings 2026-10-27: MSFS AP flies pitch by trim only (~0.13°/s) and LOCKS the trim while engaged; set trim with
+the AP off (SimVar). `pitch_use_elevator_only` unusable (reverted). set_pos speed ≈ IAS, pitch negative = nose up.
+landing_test.py now flies by hand (elevator PI on VS + pitch damping, aileron PID on a localizer bank target).
+Older notes (2026-10-26, still valid as background):
+- Drag chute = ground spoiler drag `drag_coef_spoilers` 0.21 (FM: chute only -12 %); A8-3 with chute 2 760 ft,
+  A8-4 without 3 130 ft @ 17 900 lb. Landings 1/3 were belly landings (set_pos retracts the gear).
+- MCP `landing` tool wraps landing_test.py (its output parsing predates the hand-flown rewrite - check).
 1b. Idea from pete (YouTube training video): flap blowing - the BLC blows engine bleed air over the LAND flaps (FM 1-74,
    2-24/25: lift depends on engine rpm, effective above ~80 %, approach at ~88 %). Our LAND ΔCL (CR-2144) includes BLC
    at approach power, but the rpm dependence is NOT modelled (lift should drop at idle, e.g. in the flare/go-around).
@@ -79,6 +91,11 @@ returns 0 -> false alarm on 2026-10-25).
   `msfs_connect`. HubHop tools go to the internet and are not needed.
 
 ## Important rules
+- **Change control (since 2026-10-27): validated values are frozen.** A cfg value or script behaviour that passed a
+  test (see `docs/notes/measurements.md`, "PASSED") is only changed with (1) a documented reason from test data, (2) an
+  entry in the test card / measurements, and (3) the regression tests of the affected area re-run afterwards
+  (table in skill `f104-testcard`, section "Change control"). Prefer fixing a test script over changing a validated
+  cfg value (2026-10-27: `pitch_use_elevator_only` broke the AP used by all earlier tests -> reverted).
 - **No third-party assets**: nothing from the DCS mod (VSN F-104C, in `Downloads\F-104C Standalone`) and nothing
   from the SimSkunkWorks package. Model, textures and code must be self-made or cleanly licensed. The VSN manual in
   `docs/sources/` is reading material only. The SDK sample assets are test bed only.

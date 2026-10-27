@@ -44,6 +44,33 @@ F-104 section PDF 80-85 (Section VII). Variant not stated, primary source "unpub
   trims. Solved via the trim range from FM 6-5 (AP-2b).
 - PID primer: `pitchPID` sets the elevator angle; AP controller parameters in ai.cfg/engines.cfg.
 
+- 2026-10-27 confirmed in our own dry runs (should have been read before changing the AP!): elevator-only AP reset
+  the trim to 0 and gave only ~1.4-3° elevator -> reverted. With the AP engaged the trim is locked.
+- 2026-10-27 trim runs down by itself (≈ 0.8°/s) after AP disconnect. Community explanations (unverified for us):
+  an ANALOGUE controller axis bound to elevator trim resets the trim to the axis position after AP disconnect;
+  piloting assistance auto-trim; duplicate bindings
+  ([flyawaysimulation](https://flyawaysimulation.com/ask/answers/trim-keeps-returning-to-neutral-microsoft-flight-simulator/),
+  [MSFS forum: elevator trim is broken](https://forums.flightsimulator.com/t/elevator-trim-is-broken/272761/65),
+  [MSFS forum: abrupt control input reset when disconnecting AP](https://forums.flightsimulator.com/t/abrupt-control-input-reset-when-disconnecting-autopilot/727385)).
+  No SimConnect event/SimVar found to switch assistance options -> pete sets them in the menu.
+
+## Flight-test methodology sources (research 2026-10-27)
+- **USAF/USN Test Pilot School course books are approved for public release** (AvioConsult link list,
+  https://avioconsult.com/links.htm): USAFTPS Performance Phase Textbook Vol. I (1986, DTIC ADA170957), Flying
+  Qualities Textbook Vol. II Parts 1/2 (ADA170959/ADA170960), Flying Qualities Phase Planning Guide (1996), Pitot-
+  Statics and the Standard Atmosphere (AD1115005); USNTPS FTM-103 Fixed Wing Stability and Control, FTM-108 Fixed
+  Wing Performance, FTM-109 Systems Testing. -> methods: level accelerations, sawtooth climbs, takeoff/landing,
+  turns, stall approaches, doublets, steady heading sideslips, trim shots (to fetch for the test program).
+- AFFTC era documents (1959, same time as the F-104 Category II tests): Flight Test Handbook Performance Part II
+  (AFFTC TN 59-22, AD0215865), AFFTC Stability and Control Techniques (TN 59-21, AD0226523) - catalogued on
+  Contrails (IIT), not scanned; DTIC copy possible.
+- F-104 specific: "Lockheed F-104 Test Pilot's Notebook" (Scribd 788676444, 52 pages, uploader only, no author/date
+  visible - not verified, Scribd login needed). AFFTC report on the F-104 high-density fuel range test
+  (FTC-TDR-61-62). No F-104 Category II report found online yet. Cornell wind-tunnel F-104 dynamic tests AFFDL
+  TR 66-153 (AD0651437).
+- Phase model (Category I contractor / II AFFTC / III operational) is the USAF practice of the 1950s; for us the
+  equivalent is our T0-T3 levels + build-up per test card.
+
 ## MSFS: horizontal tail (forum)
 - User reports: `htail_area = 0` + full area in `elevator_area` works (not counted twice); some recommend 0.1
   instead of 0. Confirmed in the sim: 0 becomes 0.1 ft² (debug warning).

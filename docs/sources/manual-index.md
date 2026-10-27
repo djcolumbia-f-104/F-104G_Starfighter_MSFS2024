@@ -20,6 +20,25 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Fuel schematic (Fig. 1-32/1-33), Fuel Control Panels (Fig. 1-34) | 1-45 … 1-48 | 61 … 64 |
 | Fuel Quantity Data (Fig. 1-35) | 1-49 | 65 |
 | Electric Power Supply | 1-56 | 72 |
+| **Extract of Sections II, III, V, VI with checklists and test reference values: `docs/notes/fm-procedures.md`** | | |
+| Section II start (contents), preparation | 2-1 | 133 |
+| Exterior inspection (Fig. 2-1) | 2-2 | 134 |
+| Before starting engine, starting engine, idle checks, false/hung/hot start | 2-11 … 2-13 | 143 … 145 |
+| Danger areas (Fig. 2-3), ground operation, pilot/crew chief check | 2-14 … 2-16 | 146 … 148 |
+| Before taxiing, taxiing, before takeoff, ground clearances (Fig. 2-4), engine check | 2-17 … 2-19 | 149 … 151 |
+| Takeoff, typical takeoff (Fig. 2-6), after takeoff, climb | 2-20 … 2-22 | 152 … 154 |
+| Go-around (Fig. 2-8), after landing, engine shutdown | 2-29 … 2-31 | 161 … 163 |
+| Section III emergency procedures: contents | 3-1 | 167 |
+| Abort, AB failure, engine failure on takeoff | 3-6, 3-7 | 172, 173 |
+| Air start, APC failure / compressor stalls, stall clearing | 3-11, 3-13 | 177, 179 |
+| Hydraulic failure, IGV, nozzle failure | 3-25, 3-26 | 195, 196 |
+| RAT flight, spin recovery, SAS failure, runaway trim | 3-29, 3-30 | 199, 200 |
+| Belly landing, BLC malfunction, flameout landing (Fig. 3-7), simulated flameout | 3-32 … 3-35 | 202 … 205 |
+| Flap failure / no-flap landing, gear emergencies, maximum glide (Fig. 3-8) | 3-36 … 3-39 | 206 … 209 |
+| Partial-power pattern, precautionary straight-in, stuck throttle | 3-41 | 211 |
+| Section VI: stalls/APC (Fig. 6-3), minimum operating speeds (Fig. 6-4), pitch-up/spins | 6-5 … 6-10 | 395 … 400 |
+| Section VI: thrust/drag, envelope, climb angle, go-around capability (Fig. 6-8), trim vs. Mach (Fig. 6-9) | 6-11 … 6-16 | 401 … 406 |
+| Section VI: level flight, maneuvering, diving, stores, tip tank oscillation | 6-17 … 6-20 | 407 … 410 |
 | Section II: minimum turning radius, takeoff, typical takeoff (Fig. 2-5) | 2-14 … 2-21 | 150 … 155 |
 | Section II: descent, before landing, final approach (≥ 190 KIAS, ≥ 83 % rpm), landing, BLC, landing technique (flat powered approach ~88 % rpm) | 2-22 … 2-25 | 155 … 157 |
 | Section II: before landing (speeds for 16 100 lb, +5 kt/1 000 lb), cruise, AB operation, descent | 2-23 | 155 |

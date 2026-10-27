@@ -55,7 +55,7 @@ engine burning, N1 ≥ 60 %, fuel selector ALL, battery; prints weight, CG, elev
 | T3-I top speed | 36 000-40 000 ft, max AB, sink in from above, then level | Mach | FM: M 2.0 (engine temperature limit) |
 | T3-J dynamic stability | rudder doublet (Dutch roll), release 30° bank (spiral), pitch pulse | period, damping, doubling time | Dutch roll ~2.3 s at 260 kt (Cnβ 0.50); spiral > 20 s; **2026-10-26: natural damping 0.57/cycle vs. CR-2144 SAS off 0.43 ✓ (accepted); MSFS yaw damper unusable (no effect at 0.3, departure at 1.0) -> off; own SAS later** |
 | T3-K roll rate | full aileron at cruise speed (gear up ±9.75°) | p max | FM/CR-2144 Clδa |
-| T3-L stall/APC | idle, 1 kt/s from 1.4 Vs, clean and flaps LAND | Vs, α | FM values, pitch-up behaviour |
+| T3-L stall/APC | idle, 1 kt/s from 1.4 Vs, clean and flaps LAND | Vs, α | FM values, pitch-up behaviour - **renamed B7 in `docs/test-plan.md`** (T3-L is used for the approach/landing card since 2026-10-26) |
 
 ## 3. Work packages
 
