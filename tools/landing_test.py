@@ -76,6 +76,9 @@ ev("AP_ALT_VAR_SET_ENGLISH", int(field_elev) - 1000)                 # VS mode m
 ev("AP_VS_VAR_SET_ENGLISH", -int(v_app * 101.27 * math.tan(glide)))
 ev("AP_PANEL_VS_ON")
 sm.set_pos(alt0, lat_s, lon_s, int(v_app * 1.05), 0.0, 0.0, HDG, 0)
+time.sleep(1.0)
+ev("GEAR_DOWN")                                                      # AFTER set_pos: positioning in the air
+ev("FLAPS_DOWN")                                                     # retracts the gear (landings 1/3 were belly landings)
 ev("THROTTLE1_SET", 9500)
 print(f"weight {w:.0f} lb -> final approach {v_app:.0f} KIAS, touchdown {v_td:.0f} KIAS; start {start_nm} NM, {alt0:.0f} ft MSL")
 
@@ -110,17 +113,22 @@ while time.time() - t0 < 600:
             err = v_app - ias
             res["i_spd"] = max(-60.0, min(60.0, res.get("i_spd", 0.0) + err * dt))
             thr = max(2000.0, min(11141.0, 9000.0 + 250.0 * err + 25.0 * res["i_spd"]))
-            if agl < 60:
+            if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 and not res.get("gear_go"):
+                res["gear_go"] = True                                    # gear not down 2 NM out -> go around
+                print(f"GEAR NOT DOWN ({g('GEAR_TOTAL_PCT_EXTENDED'):.2f}) at {s:.0f} ft")
+            if agl < 100:
                 phase = "flare"
-                ev("AP_VS_VAR_SET_ENGLISH", -300)
+                ev("AP_VS_VAR_SET_ENGLISH", -400)
                 print(f"flare at {agl:.0f} ft AGL, {ias:.0f} KIAS, {s:.0f} ft from the threshold, path error {path_err:+.0f} ft")
         if phase == "flare":
-            # FM 2-25: smooth thrust reduction to 82-83 % rpm in the flare, idle only when the main gear touches
-            thr = max(0.0, min(11141.0, thr + 300.0 * (83.0 - g("TURB_ENG_N1:1")) * dt))
+            # FM 2-25: smooth thrust reduction to 82-83 % rpm in the flare (80 % to bleed ~15 kt), idle at touchdown;
+            # sink rate eased from -400 (100 ft) to -150 ft/min (30 ft)
+            thr = max(0.0, min(11141.0, thr + 300.0 * (80.0 - g("TURB_ENG_N1:1")) * dt))
+            ev("AP_VS_VAR_SET_ENGLISH", int(-150 - 250 * max(0.0, min(1.0, (agl - 30) / 70))))
         ev("THROTTLE1_SET", int(thr))
         # localizer: heading bug = runway heading - 0.05°/ft cross-track (±15°)
         ev("HEADING_BUG_SET", int(round(HDG - max(-15, min(15, 0.05 * c)))) % 360)
-        bad = (agl < 500 and (abs(c) > 300 or abs(bank) > 30)) or (agl < 400 and path_err < -300)
+        bad = (agl < 500 and (abs(c) > 300 or abs(bank) > 30)) or (agl < 400 and path_err < -300) or res.get("gear_go")
         if bad and not gnd:
             phase = "go-around"
             ev("THROTTLE1_SET", 16383)
@@ -131,12 +139,13 @@ while time.time() - t0 < 600:
         if gnd:
             phase = "rollout"
             res["td"] = dict(ias=ias, vs=res.get("last_vs", vs), pitch=-g("PLANE_PITCH_DEGREES") * DEG, s=s, c=c,
+                             gear=g("GEAR_TOTAL_PCT_EXTENDED"),
                              t=t - t0)
             if g("AUTOPILOT_MASTER") == 1:
                 ev("AP_MASTER")
             ev("THROTTLE1_SET", 0)
             res["t_td"] = t
-            print(f"TOUCHDOWN {ias:.0f} KIAS, sink {res['td']['vs']:.0f} ft/min, pitch {res['td']['pitch']:.1f}°, "
+            print(f"TOUCHDOWN {ias:.0f} KIAS, gear {res['td']['gear']:.0%}, sink {res['td']['vs']:.0f} ft/min, pitch {res['td']['pitch']:.1f}°, "
                   f"{s:.0f} ft past the threshold, {c:+.0f} ft off the centreline")
         res["last_vs"] = vs
     elif phase == "rollout":

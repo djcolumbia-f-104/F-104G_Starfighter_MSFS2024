@@ -22,6 +22,8 @@ Manual pages ≠ PDF pages. Inserted pages (e.g. 4-26A) shift the offset, hence 
 | Electric Power Supply | 1-56 | 72 |
 | Section II: minimum turning radius, takeoff, typical takeoff (Fig. 2-5) | 2-14 … 2-21 | 150 … 155 |
 | Section II: descent, before landing, final approach (≥ 190 KIAS, ≥ 83 % rpm), landing, BLC, landing technique (flat powered approach ~88 % rpm) | 2-22 … 2-25 | 155 … 157 |
+| Section II: before landing (speeds for 16 100 lb, +5 kt/1 000 lb), cruise, AB operation, descent | 2-23 | 155 |
+| Section II: crosswind, heavyweight, minimum-run (touchdown 140 kt), slippery runway, touch-and-go | 2-28 | 160 |
 | Typical landing pattern (Fig. 2-7, 16 100 lb: LAND flaps 240-210 KIAS, base ≥ 200, final ≥ 190 KIAS, +5 kt/1 000 lb) | 2-26, 2-27 | 158, 159 |
 | Section VI: stability augmenters (Fig. 6-2), speed brakes (mild nose-up trim below M 1.75) | 6-4 | 394 |
 | Section VI: APC (stick shaker/kicker, vanes, kicker inoperative with LAND flaps or gear down) | 6-6 | 396 |
