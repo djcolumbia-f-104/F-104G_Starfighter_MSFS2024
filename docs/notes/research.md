@@ -139,3 +139,8 @@ Sources: [Aircraft Creation Workflow](https://docs.flightsimulator.com/msfs2024/
    (MSFS CG limit parameters, check SDK) - our CG 9-10 % MAC would be inside.
 5. **Takeoff ground run vs. FM Fig. A2-4** (PDF ≈ 458) - new test point D1b (we validated only the liftoff IAS).
    The claim "final approach 200-220 kt" contradicts FM Fig. 2-7 (175 KIAS @ 16 100 lb + 5 kt/1 000 lb) - ignore.
+- Follow-up search (Gemini, strict primary-source prompt, 2026-10-28): items 1-8 "not found" (J79 part-power SFC, CG
+  limits, landing-config drag, drag chute data, brake deceleration, G fin area, BLC effects, AFFTC Cat II report).
+  "Lockheed F-104 Test Pilot's Notebook" attributed to "Glenn L. Rea" - UNVERIFIED (no source given). Conclusion: use
+  our local primary sources - CR-2144 (CG limits), FM appendix Parts 6/9 (fuel flow, D5), FM 1-74/2-24 (BLC),
+  FM Fig. A8-3/A8-4 (chute, brakes).
