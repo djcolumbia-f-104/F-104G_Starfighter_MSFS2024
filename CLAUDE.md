@@ -21,6 +21,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    (valid / superseded / invalid, e.g. live-weather runs). Purpose: validation evidence and re-analysis without
    re-flying; MSFS itself needs no curves from our data (FM values go into REFERENCE SPEEDS/checklists later).
    Later: plot tool sim-vs-FM from the raw data (regenerable charts for the docs).
+0c. Check pete's input (research.md, 2026-10-28 evening): verify CG limits 0.07-0.164 MAC in CR-2144; new test D1b
+   takeoff ground run vs. FM Fig. A2-4.
 1b. **All tests before 2026-10-28 afternoon ran in LIVE weather** (pete). Re-verify in ISA/calm: B6/B5, T3-F drag,
    T3-H excess thrust, thrust/fuel flow; spot checks T3-E2/T3-J (measurements.md note, test plan step 2b).
 2. Then test plan order (`docs/test-plan.md` section 4): B4 glide L/D, D5 fuel flow (strong evidence: approach 91 % N1

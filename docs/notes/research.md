@@ -126,3 +126,16 @@ Sources: [Aircraft Creation Workflow](https://docs.flightsimulator.com/msfs2024/
 [Weight and Balance](https://docs.flightsimulator.com/msfs2024/retail/samples-tutorials/tutorials/tuning-the-flight-model/weight-and-balance/),
 [DevSupport: 2024 SDK flight model](https://devsupport.flightsimulator.com/t/msfs-2024-sdk-does-not-show-any-major-flight-model-updates/10562),
 [FlyByWire setup](https://docs.flybywiresim.com/dev-corner/dev-guide/setup-environment/).
+
+## Input from pete 2026-10-28 evening (AI-generated summary, evaluated against our sources)
+1. Fin area 47.8 ft² (historicalfighters / 916-starfighter "service history", no primary source): close to our
+   vtail_area 50 ft², which is validated by T3-J (Dutch roll 1.48 vs. 1.41 s) -> keep (change control). The claim
+   "+25 % vs. F-104A/C" does not match NACA RM SL56H06 (A fin 36.0 ft² -> +33 %).
+2. Inertia: keep CR-2144 values, no linear mass scaling -> already done.
+3. Flap increments "from T3-D run 6": wrong - run 6 is our own test, not a source. Flaps come from CR-2144/FM and are
+   now checked against three FM points (B5/B6). BLC rpm dependence = test plan H3. Low-speed extrapolation below M 0.4:
+   our tables come from D-7137 (not CR-2144); behaviour below M 0.4 is covered by the takeoff/landing tests.
+4. **CG limits 0.07-0.164 MAC "from CR-2144"** - TO VERIFY in the local CR-2144 PDF; if confirmed, enter in the cfg
+   (MSFS CG limit parameters, check SDK) - our CG 9-10 % MAC would be inside.
+5. **Takeoff ground run vs. FM Fig. A2-4** (PDF ≈ 458) - new test point D1b (we validated only the liftoff IAS).
+   The claim "final approach 200-220 kt" contradicts FM Fig. 2-7 (175 KIAS @ 16 100 lb + 5 kt/1 000 lb) - ignore.

@@ -78,6 +78,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
 | D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ +3.4 % |
+| D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-4 (ground run vs. weight, PDF ≈ 458), ±10 % | ○ (idea 2026-10-28) |
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ subsonic ✓, supersonic ±20-30 % |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
