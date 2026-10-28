@@ -26,6 +26,7 @@ Test Pilot School methods (performance and flying qualities textbooks, `docs/not
 |---|---|
 | Aircraft | "F-104G Starfighter Pruefstand (TESTBED)", build current (`check_build` T1 green) |
 | Sim settings | **assistance off** (auto-trim, assisted controls, AI piloting, stall protection), no analogue axis on elevator trim, no duplicate bindings (2026-10-27 trim run-down) |
+| Weather | **no live weather**: preset clear skies, wind calm, ISA (FM charts are for no wind / standard day); crosswind tests (F9) separately. 2026-10-28 landing 9: live weather 14 kt crosswind + gusts rolled the jet 22° in the flare |
 | Restart rules | lift/flap changes: FULL sim restart; lateral/systems: Build All + aircraft reload |
 | Weight/fuel | note weight, fuel (≥ 1 500 lb), CG (`preflight`); FM speeds +5 kt per 1 000 lb |
 | Flight control | scripts fly by hand (elevator/aileron controllers, signs probed); MSFS AP only for positioning, cruise, go-around (trim-based, trim locked while engaged) |
@@ -55,8 +56,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | B2 | Drag (T3-F) | idle deceleration, dV/dt | D-7137 ±10 % | ✓ 1.00-1.04 |
 | B3 | Trim gradient (T3-G) | from B1 data | CR-96008 | ✓ |
 | B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ○ **next** |
-| B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ○ (dry runs: 96-98 % at 5 500 ft) |
-| B6 | Go-around climb | landing config, Military, sawtooth climbs 160-200 KIAS | Fig. 6-8: ≈ 1 400 ft/min at 165-175 KIAS (20 500 lb, SL) | ○ |
+| B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ✓ 2026-10-28 after LAND flap drag 0.12 -> 0.08: 194 KIAS (was 164) |
+| B6 | Go-around climb | landing config, Military, sawtooth climbs 160-200 KIAS | Fig. 6-8: ≈ 1 400 ft/min at 165-175 KIAS (20 500 lb, SL) | ✓ 2026-10-28 after the flap drag change: +1 061 ft/min (FM ≈ 1 050-1 250; was +389) |
 | B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ○ (sim stall debug 120 kt with flaps - check) |
 | B8 | Approach configuration (T3-L) | LAND flaps at altitude | CR-2144 CL 0.845 at α 4.1° | ✓ |
 | B9 | Maneuvering flaps | TAKEOFF flaps, gear up, wind-up turn | +≈ 1 g available load factor (FM 6-2) | ○ |
@@ -80,7 +81,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ subsonic ✓, supersonic ±20-30 % |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
-| D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ○ (pete: fuel goes fast - check vs. charts) |
+| D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ○ evidence: approach 91 % N1 -> 8 270 lb/h at 5 170 lbf (TSFC ≈ 1.25 vs. ≈ 0.85-0.9) -> part-power FF too high? |
 | D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ○ |
 | D7 | Climb schedule | max thrust / military climb | Fig. 6-7 climb angles, appendix climb charts | ○ |
 
@@ -96,9 +97,9 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
-| F1 | Approach + flare (dry run) | `landing_test.py ... 4000` (virtual runway) | card T3-L-landing: TD 165-180 KIAS, < 600 ft/min | ✓ dry run 12 |
-| F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ○ **next after dry run 13** |
-| F3 | Landing without chute | as F2, no chute | Fig. A8-4: 3 130 ft | ○ |
+| F1 | Approach + flare (dry run) | `landing_test.py ... 4000` (virtual runway) | card T3-L-landing: TD 165-180 KIAS, < 600 ft/min | ✓ dry runs 15-17 (go-around 24-30 ft, flaps retract) |
+| F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ◐ 2026-10-28: TD ✓ (162-180 KIAS within FM); roll in calm weather +20 % -> chute 0.21 -> 0.43, regression pending (live-weather +7 % was headwind) |
+| F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-28 calm weather, brakes 0.82: TD 175 KIAS, roll 3 782 ft (+9.4 % scaled) |
 | F4 | Minimum-run landing | TD 140 kt near the threshold | FM 2-28 | ○ |
 | F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ○ |
 | F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ○ |
@@ -125,8 +126,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 ## 4. Iteration order (next sessions)
 
-1. **F1 confirm** (dry run 13, outlier rejection) -> **F2 normal landing** -> F3 without chute.
-2. **B5 landing-configuration drag/thrust** and **B6 go-around climb** (explain N1 96-98 % in the approach).
+1. ✓ F1, B5, B6, F3 (2026-10-28). **F2 regression** with chute 0.43 (calm weather).
+2. ✓ (done above)
 3. **B4 glide L/D** (cheap, drag-only check in two configurations).
 4. **D5 fuel flow** at 260 KIAS and cruise (pete's observation) against appendix Part 6.
 5. **B7 minimum speeds** (sim stall speed with flaps vs. Fig. 6-4).

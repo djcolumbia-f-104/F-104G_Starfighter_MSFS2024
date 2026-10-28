@@ -90,6 +90,11 @@ If the jet departs from a safe state (dive, low altitude, unknown AP state): **r
 `position` to ≥ 15 000 ft or `runway_start`) or ask pete to reload - never improvise a control loop on the live jet
 (2026-10-27: an ad-hoc trim pitch loop oscillated ±17° and flew the jet into the ground).
 
+**The end of a script is part of the test**: what the script leaves behind (configuration changes, throttle, AP
+mode) must follow the FM limits too (flaps UP only ≥ 260 KIAS, gear ≤ 260 KIAS, minimum speeds Fig. 6-4) and is
+checked in the dry run (`sim_state` after the run). 2026-10-28: an untested cleanup retracted the flaps at 170 KIAS
+and the jet sank into the ground after an otherwise perfect dry run.
+
 ## Known sim pitfalls (preconditions to check)
 - `set_pos` in the air: retracts the gear, drops AP modes, resets the trim to ~2°, α starts at 0. Re-extend
   gear/flaps, preset trim, re-arm and verify the AP, give the jet time (level segment) before the test phase.
@@ -98,6 +103,9 @@ If the jet departs from a safe state (dive, low altitude, unknown AP state): **r
   ELEVATOR_TRIM_POSITION (rad) -> read back -> AP on. `AXIS_ELEV_TRIM_SET` has the opposite sign; ELEV_TRIM_UP
   moved the trim nose down.
 - Idling on the runway burns the tanks empty; check fuel before every test.
+- **Weather is part of the test configuration**: no live weather, clear skies, wind calm, ISA (FM charts: no wind,
+  standard day). Check AMBIENT_WIND_VELOCITY before low-altitude tests (2026-10-28: 14 kt + gusts -> 22° bank in
+  the flare, go-around at 25 ft).
 - MSFS assistance settings are part of the test configuration (auto-trim, assisted controls, AI piloting): with the
   AP off the trim ran down by itself at ≈ 0.8°/s on 2026-10-27 (suspected auto-trim) -> confirm with pete.
 - `set_pos` pitch argument: negative = nose up; start at the expected attitude (e.g. -3° for the approach) instead

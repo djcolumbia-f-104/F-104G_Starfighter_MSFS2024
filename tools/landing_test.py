@@ -2,7 +2,7 @@
 autopilot OFF before landing). Test card: docs/notes/test-cards/T3-L-landing.md.
 
 Usage (with the Python of the simconnect-mcp venv):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\landing_test.py <output.csv> [start_nm=6] [glide_deg=2.5] [high_ft=0]
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\landing_test.py <output.csv> [start_nm=6] [glide_deg=2.5] [high_ft=0] [nochute]
 Sequence: reposition on the extended centreline start_nm before the threshold, level ~2 NM below/short of the glide
 path, nose 3° up, gear down + LAND flaps, trim preset 5.2° with the AP OFF -> level segment -> glide path intercept from
 below -> glide path (vertical speed from ground speed + path error) -> flare from 120 ft (sink eased to -150 ft/min,
@@ -14,7 +14,9 @@ Controller structure from sideslip_test.py (T3-E2 passed). Signs (probed 2026-10
 +aileron axis = raw bank increases, raw PLANE_BANK positive = left bank, raw PLANE_PITCH negative = nose up.
 Why not the MSFS AP: it flies pitch by trim only (~0.13°/s), cannot hold a repositioned jet nor flare (dry runs 1-9).
 Optional 4th argument HIGH (ft): dry run against a virtual runway raised by HIGH (build-up, no crash risk).
-Go-around (FM 2-29: Maximum, speed brakes in, AP on with VS +3000; gear up once climbing, flaps TAKEOFF ≥ 180 KIAS) if
+Go-around, hand-flown (FM 2-29: Maximum to 300 KIAS, speed brakes in, +1 500 ft/min, level 2 000 ft above the field;
+gear up once climbing, flaps TAKEOFF ≥ 180 KIAS, UP ≥ 260 KIAS after 30 s; then the AP takes over), also at the end of
+a dry run, if IAS < v_app - 25 (not in the flare) or
 |bank| > 35° or pitch outside -15..+20° at any height, |cross-track| > 300 ft or |bank| > 30° below 500 ft, glide path
 error < -300 ft below 400 ft, or the gear is not down 2 NM out.
 Results: touchdown IAS, sink rate, pitch, distance past the threshold; ground roll to a stop; CSV log + simlog CSV.
@@ -36,6 +38,7 @@ glide = math.radians(float(sys.argv[3]) if len(sys.argv) > 3 else 2.5)   # FM: 7
 # build-up / dry run: virtual runway raised by HIGH ft (e.g. 4000) -> the whole approach and flare are flown in the
 # air, "touchdown" = reaching the virtual runway height, then climb away. Validates the approach without crash risk.
 HIGH = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
+CHUTE = not (len(sys.argv) > 5 and sys.argv[5] == "nochute")       # F3: landing without drag chute (FM Fig. A8-4)
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
@@ -65,6 +68,33 @@ def clamp(v, lo, hi):
 
 def wrap(d):
     return (d + 180) % 360 - 180
+
+
+def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
+    """Hand flying: elevator PI on vertical speed + pitch-rate damping (+axis = nose down); ailerons PID on a bank
+    target from the localizer (heading from cross-track; right turn = negative raw bank)."""
+    err_fps = (res["vs_f"] - vs_tgt) / 60.0
+    res["integ"] = clamp(res["integ"] + err_fps * dt, -200.0, 200.0)
+    cmd_e = clamp(KP_VS * kp_scale * err_fps + KI_VS * res["integ"] + KQ * q, -12000, 6000)
+    ev("AXIS_ELEVATOR_SET", int(cmd_e))
+    hdg_tgt = HDG - clamp(0.05 * c, -15, 15)
+    bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
+    e_b = bank - bank_tgt
+    res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
+    # limit ±8000 (landing 9: a gust rolled the jet -7 -> -22° in the flare with the ailerons at the ±4000 limit;
+    # the gains, not the limit, set the small-signal stability - dry run 11)
+    cmd_a = clamp(-(KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)
+    ev("AXIS_AILERONS_SET", int(cmd_a))
+
+
+def go_around(reason):
+    """FM 2-29 / Fig. 2-8: Maximum (marginal climb in landing config), speed brakes IN; the script keeps flying by hand
+    (dry run 14: handing over to the trim-based AP lost 558 ft); gear/flaps are handled in the go-around phase
+    (landing 6: early FLAPS_1 -> crash). The AP takes over only when clean at ≥ 260 KIAS (cleanup)."""
+    ev("THROTTLE1_SET", 16383)
+    ev("SPOILERS_OFF")
+    print(f"GO-AROUND: {reason}")
+    return "go-around"
 
 
 def ap_master(on):
@@ -106,6 +136,7 @@ alt0 = field_elev + (max(start_ft - 12000, 6000) + AIM_FT) * math.tan(glide)
 # --- position: speed argument behaves like IAS (dry run 1: 200 -> 205 KIAS; the TAS correction of dry runs 5-9
 # started the jet at 250 KIAS). Nose 3° up = expected α (SimConnect pitch negative = nose up; dry run 8).
 ap_master(False)
+ev("SPOILERS_OFF")                                                   # chute/speed brakes of a previous run
 sm.set_pos(alt0, lat_s, lon_s, int(v_app), -3.0, 0.0, HDG, 0)
 time.sleep(1.0)
 ev("GEAR_DOWN")                                                      # AFTER set_pos: positioning in the air
@@ -182,59 +213,41 @@ while time.time() - t0 < 600:
                       f"sink {res['vs_f']:.0f} ft/min")
         if phase == "flare":
             vs_tgt = -150 + (res["vs0"] + 150) * clamp((agl - 20) / 100, 0.0, 1.0)
-        # pitch: elevator PI on vertical speed + pitch-rate damping (+axis = nose down)
-        err_fps = (res["vs_f"] - vs_tgt) / 60.0
-        res["integ"] = clamp(res["integ"] + err_fps * dt, -200.0, 200.0)
         # dry run 10: flare gains too soft (pitch 1.9 -> 5.1° in 9 s, sink 864 ft/min at TD) -> x1.6 in the flare
-        kp = KP_VS * (1.6 if phase == "flare" else 1.0)
-        cmd_e = clamp(kp * err_fps + KI_VS * res["integ"] + KQ * q, -12000, 6000)
-        ev("AXIS_ELEVATOR_SET", int(cmd_e))
-        # roll: localizer -> heading target -> bank target (right turn = negative raw bank), ailerons PID
-        hdg_tgt = HDG - clamp(0.05 * c, -15, 15)
-        bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
-        e_b = bank - bank_tgt
-        res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
-        cmd_a = clamp(-(KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -4000, 4000)
-        ev("AXIS_AILERONS_SET", int(cmd_a))
+        fly(vs_tgt, 1.6 if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
         # thrust/BLC loss, sink rose again) -> gain 40 towards 83 %
         if phase != "flare" or agl >= 100:
             err = v_app - ias
             res["i_spd"] = clamp(res.get("i_spd", 0.0) + err * dt, -60.0, 60.0)
-            thr = clamp(9000.0 + 250.0 * err + 25.0 * res["i_spd"], 2000.0, 11141.0)
+            # dry run 13 (19 170 lb): Military could not hold the speed level in landing config (170 -> 157 KIAS) ->
+            # AB allowed in the level segment (FM 2-24 heavy weight: Military may not be enough); approach ≤ Military
+            thr = clamp(9000.0 + 250.0 * err + 25.0 * res["i_spd"], 2000.0, 16383.0 if phase == "level" else 11141.0)
         else:
             thr = clamp(thr + 40.0 * (83.0 - g("TURB_ENG_N1:1")) * dt, 0.0, 11141.0)
         ev("THROTTLE1_SET", int(thr))
         if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 and not res.get("gear_go"):
             res["gear_go"] = True                                    # gear not down 2 NM out -> go around
             print(f"GEAR NOT DOWN ({g('GEAR_TOTAL_PCT_EXTENDED'):.2f}) at {s:.0f} ft")
+        # low speed: FM Fig. 6-4 minimum control speed LAND flaps ≈ 150-155 KIAS at 19 500 lb (not in the flare)
         bad = (abs(bank) > 35 or not -15 < theta < 20 or (agl < 500 and (abs(c) > 300 or abs(bank) > 30))
+               or (phase != "flare" and ias < v_app - 25)
                or (agl < 400 and path_err < -300) or res.get("gear_go"))
         if bad and not gnd:
-            phase = "go-around"
-            # FM 2-29 / Fig. 2-8: Maximum (marginal climb in landing config), speed brakes IN; AP takes over;
-            # gear UP and flaps TAKEOFF (≥ 180 KIAS) only once climbing (landing 6: early FLAPS_1 -> crash)
-            for n in ("AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
-                ev(n, 0)
-            ev("THROTTLE1_SET", 16383)
-            ev("SPOILERS_OFF")
-            ev("HEADING_BUG_SET", int(round(HDG)) % 360)
-            ap_master(True)
-            ev("AP_HDG_HOLD_ON")
-            ev("AP_ALT_VAR_SET_ENGLISH", int(field_elev + 3000))
-            ev("AP_VS_VAR_SET_ENGLISH", 3000)
-            ev("AP_PANEL_VS_ON")
-            print(f"GO-AROUND: AGL {agl:.0f}, cross-track {c:.0f} ft, bank {bank:.0f}°, pitch {theta:.0f}°, "
-                  f"path error {path_err:+.0f} ft")
-        if gnd:
-            phase = "rollout"
+            phase = go_around(f"AGL {agl:.0f}, {ias:.0f} KIAS, cross-track {c:.0f} ft, bank {bank:.0f}°, "
+                              f"pitch {theta:.0f}°, path error {path_err:+.0f} ft")
+        if gnd and phase != "go-around":
             res["td"] = dict(ias=ias, vs=res.get("last_vs", vs), pitch=theta, s=s, c=c,
                              gear=g("GEAR_TOTAL_PCT_EXTENDED"), t=t - t0)
             print(f"{'VIRTUAL ' if HIGH else ''}TOUCHDOWN {ias:.0f} KIAS, gear {res['td']['gear']:.0%}, sink {res['td']['vs']:.0f} ft/min, "
                   f"pitch {theta:.1f}°, {s:.0f} ft past the threshold, {c:+.0f} ft off the centreline")
-            if HIGH:                                                 # dry run ends here: climb away (cleanup below)
-                break
+            if HIGH:
+                # dry run ends with a real FM go-around (dry run 13: the old cleanup selected flaps UP at ~170 KIAS,
+                # far below the clean minimum speed 200-225 KIAS (Fig. 6-4) -> the jet sank into the ground)
+                phase = go_around("dry run end")
+                continue
+            phase = "rollout"
             ev("AXIS_AILERONS_SET", 0)
             ev("THROTTLE1_SET", 0)
             res["t_td"] = t
@@ -242,7 +255,7 @@ while time.time() - t0 < 600:
     elif phase == "rollout":
         roll += gs_kt * 1.68781 * dt
         ev("AXIS_ELEVATOR_SET", 4000)                                # FM 2-25: lower the nose wheel at once
-        if not res.get("chute") and t - res["t_td"] > 1.0:              # FM 2-28: chute blossoms as the nose wheel touches
+        if CHUTE and not res.get("chute") and t - res["t_td"] > 1.0:     # FM 2-28: chute blossoms as the nose wheel touches
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
@@ -253,13 +266,23 @@ while time.time() - t0 < 600:
             res["roll"] = roll
             break
     elif phase == "go-around":
+        # hand-flown climb: +1 500 ft/min, less if the speed is low (0 at v_app - 20), level off 2 000 ft above the field
+        vs_tgt = min(clamp(100.0 * (ias - (v_app - 20)), 0.0, 1500.0), clamp(2.0 * (field_elev + 2000 - alt), -500, 1500))
+        fly(vs_tgt, 1.0, bank, p, q, hdg, c, dt)
+        # Maximum until 300 KIAS, then Military (TAKEOFF flap limit 370 KIAS, gear transient 260 KIAS)
+        ev("THROTTLE1_SET", 16383 if ias < 300 else 11141)
+        # FM 2-29: gear UP once climbing, flaps TAKEOFF at ≥ 180 KIAS (≥ 30 s), UP at ≥ 260 KIAS; done when clean
         if vs > 500 and agl > 200 and not res.get("ga_gear"):          # climb established
             res["ga_gear"] = True
             ev("GEAR_UP")
         if res.get("ga_gear") and ias >= 180 and not res.get("ga_flaps"):
-            res["ga_flaps"] = True
+            res["ga_flaps"] = t
             ev("FLAPS_1")                                             # TAKEOFF
-        if agl > 1500:
+        # TAKEOFF flap limit 370 KIAS (FM 3-36) has priority over the 30 s BLC cooling time -> retract at 340 KIAS latest
+        if res.get("ga_flaps") and ((t - res["ga_flaps"] > 30 and ias >= 260) or ias >= 340) and not res.get("ga_clean"):
+            res["ga_clean"] = True
+            ev("FLAPS_UP")
+        if res.get("ga_clean") and agl > 1500 and g("TRAILING_EDGE_FLAPS_LEFT_ANGLE") * DEG < 1:
             break
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
                  round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
@@ -268,18 +291,19 @@ while time.time() - t0 < 600:
 for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "AXIS_AILERONS_SET"):
     ev(n, 0)
 if g("SIM_ON_GROUND") != 1:
-    # still airborne (dry run / go-around): AP on, clean up and leave a fuel-saving cruise state - 2026-10-27 the jet
-    # kept flying in full AB with gear + LAND flaps after a dry run and burned ~3 000 lb at 260 kt
-    ev("HEADING_BUG_SET", int(round(g("PLANE_HEADING_DEGREES_MAGNETIC") * DEG)) % 360)
+    # still airborne: the go-around phase has cleaned up per FM (or the time ran out). Leave a safe cruise state:
+    # AP on, ALT hold; flaps UP and cruise power only at ≥ 260 KIAS (FM 2-22/2-29), else Military and flaps as they are
+    # (2026-10-27: full AB with gear + LAND flaps burned ~3 000 lb; dry run 13: flaps UP at ~170 KIAS -> sank to the ground)
     ap_master(True)
     ev("AP_HDG_HOLD_ON")
-    ev("GEAR_UP")
-    ev("FLAPS_UP")
     ev("SPOILERS_OFF")
-    ev("THROTTLE1_SET", 11141 if HIGH and "td" in res else 9000)
-    ev("AP_ALT_VAR_SET_ENGLISH", int(g("PLANE_ALTITUDE") + 1000))
-    ev("AP_VS_VAR_SET_ENGLISH", 1500)
-    ev("AP_PANEL_VS_ON")
+    clean = g("AIRSPEED_INDICATED") >= 260
+    if clean:
+        ev("GEAR_UP")
+        ev("FLAPS_UP")
+    ev("THROTTLE1_SET", 9000 if clean else 11141)
+    ev("AP_ALT_VAR_SET_ENGLISH", int(g("PLANE_ALTITUDE") + 500))
+    ev("AP_ALT_HOLD_ON")
 if phase == "rollout" or "roll" in res:
     ev("PARKING_BRAKES") if g("BRAKE_PARKING_POSITION") != 1 else None
     ev("AXIS_LEFT_BRAKE_SET", -16383)

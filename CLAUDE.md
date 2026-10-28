@@ -6,7 +6,29 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-27 evening) <<<
+## >>> CONTINUE HERE (state 2026-10-28 evening) <<<
+**TOMORROW START HERE (note for 2026-10-29):**
+0. pete builds/restarts tonight (pending: `drag_coef_spoilers` 0.21 -> 0.43 = drag chute, needs FULL restart).
+   Test configuration every session: MSFS assistance off, **weather clear skies / wind calm / ISA** (check with
+   AMBIENT_WIND_VELOCITY), flight on EDDM 26L. Engine cold? `sim_event ENGINE_AUTO_START`. Fuel: `tools/refuel.py`
+   (4 080 lb fuselage, tip tanks EMPTY) instead of reloading. After every sim restart: trim-hold check (AP off ->
+   SimVar trim 5° must stay).
+1. **F2 regression** (landing with chute): `landing_test.py <csv> 6 2.5` -> FM A8-3 2 760 ft scaled by
+   (166.5/TD IAS)²; target ±10 %. F3 (no chute) already passes (+9.4 %, brakes 0.82). If the chute is now too strong
+   or weak, adjust drag_coef_spoilers (MSFS applies ≈ 1/3 of it on the ground).
+2. Then test plan order (`docs/test-plan.md` section 4): B4 glide L/D, D5 fuel flow (strong evidence: approach 91 % N1
+   burns 8 270 lb/h at 5 170 lbf -> part-power TSFC ≈ 1.25 vs. ≈ 0.85-0.9), B7 minimum speeds.
+3. MCP `landing` tool output parsing predates the hand-flown script -> update or call the script directly.
+Results 2026-10-28 (details `docs/notes/measurements.md`, cards in `docs/notes/test-cards/`):
+- Hand-flown landing script complete (dry runs 13-17, outlier rejection, FM go-around flown by the script, 24-30 ft
+  height loss); normal landing F2 ✓ (162 KIAS) and F3 ✓ in live weather, re-flown in calm weather after changes.
+- **LAND flap drag 0.12 -> 0.08** (3 FM points: Fig. 6-8 go-around climb, FM 3-41 flat final, approach rpm) ->
+  B6 +1 061 ft/min ✓, B5 194 KIAS ✓ (`tools/config_test.py`, card B5-B6-landing-config.md).
+- **Flap damaging-speed 240 -> 370** (it applies to every position; TAKEOFF flaps stuck in the go-around).
+- **toe_brakes_scale 0.68 (template) -> 0.82** (calm-weather ground roll +20 % -> F3 +9.4 % ✓).
+- Live weather gave false good ground rolls (headwind) and a 22° gust roll in the flare -> calm weather mandatory.
+
+## Older state (2026-10-27 evening)
 **Since 2026-10-27: every sim flight test follows the test-card method (skill `f104-testcard`, cards in
 `docs/notes/test-cards/`): card with preconditions + expected values, desk check, go/no-go, build-up run, then the test.**
 **Test plan with all test points and the iteration order: `docs/test-plan.md`** (phases A-H, FM/NASA references).
@@ -149,6 +171,9 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
 - `build_cfg.ps1 -Engine minimal`: diagnostic engine (required parameters only).
 - `mcp_f104/server.py` + `mcp_f104/sim_actions.py`: project MCP server (see CONTINUE HERE).
 - `doublet_test.py`, `sideslip_test.py`, `takeoff_test.py`, `analyse_climb.py`: T3-J, T3-E2, T3-D, T3-H/I.
+- `landing_test.py <csv> [nm] [glide] [high_ft] [nochute]`: hand-flown approach/landing (F1-F3), dry run with a
+  virtual runway; `config_test.py <csv> <alt> climb|level [ias] [sb]`: B5/B6 landing configuration at Military;
+  `refuel.py`: standard fuel state via SimVars (MCP venv Python).
 - `C:\MSFS 2024 SDK\Tools\bin\fspackagetool.exe` attaches to the running sim and waits -> do not use;
   build via Dev Mode in the sim.
 

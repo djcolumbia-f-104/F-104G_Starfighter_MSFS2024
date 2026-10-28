@@ -492,3 +492,90 @@ retracts the gear and the script had extended it before set_pos. Landings 1 and 
 rolls are invalid. Script fixed (gear/flaps after positioning, gear check 2 NM out -> go-around, softer flare from
 100 ft, 80 % rpm), speeds per FM Fig. 2-7 (final 175 / touchdown 155 KIAS @ 16 100 lb), glide 2.5° (700-800 ft/min),
 chute 1 s after touchdown. FM landing procedure summarised in the project skill .claude/skills/f104-pilot.
+
+## 2026-10-27/28: landing script rebuilt (dry runs 1-15) - details in docs/notes/test-cards/T3-L-landing.md
+Root causes found on the way: set_pos retracts the gear, drops AP modes, starts at α 0, speed argument ≈ IAS; the
+MSFS AP flies pitch by trim only (~0.13°/s) and locks the trim while engaged; `pitch_use_elevator_only` resets the trim
+to 0 (tried, reverted); a trim run-down after AP disconnect came from the sim settings (fixed by pete). The script now
+flies by hand (elevator PI on vertical speed + pitch damping, aileron PID on a localizer bank target, PI throttle),
+incl. a hand-flown FM go-around (dry run 15: 30 ft height loss). B5 evidence: level flight in landing configuration
+at Military, 6 500 ft MSL, 19 180 lb only 168 KIAS steady (α ≈ 7°, CL ≈ 1.02, CD ≈ 0.32) - FM Fig. 6-8 suggests a
+positive climb margin -> test B5 at low altitude.
+
+## 2026-10-28: F2 normal landing PASSED (landing 7, ..._T3L_landing7.csv)
+16 786 lb, EDDM 26L (1 487 ft, OAT 10 °C, light wind), 2.5° glide path hand-flown by the script: level 1 065-1 120 ft
+AGL, glide path -5..+25 ft, 177-183 KIAS (target 178), bank ±3.6°. Flare from 117 ft. **Touchdown 162 KIAS** (FM Fig.
+2-7: 158-163 KIAS at 16 786 lb ✓), sink 83 ft/min, pitch 1.5°, +4 ft from the centreline, 3 979 ft past the threshold
+(long float). Chute at 160 KIAS (≤ 180 ✓), hard braking. **Ground roll 2 850 ft**; FM Fig. A8-3 (chute) 2 760 ft at
+17 900 lb and its schedule touchdown speed (≈ 165 KIAS) -> scaled by (162/165)² ≈ 2 660 ft -> **+7 % ✓** (±10 %).
+Drag chute ΔCD (`drag_coef_spoilers` 0.21) confirmed. Next: F3 without chute (A8-4: 3 130 ft).
+Approach of landing 7 (real altitude, ≈ 1 950 ft MSL, 16 570 lb, 179 KIAS, 2.5° glide, steady 33 samples):
+**N1 91.1 %** (FM Fig. 2-7: 87-90 % at 16 100 lb, 175 KIAS -> sim ≈ 1-4 % high -> B5: slightly too much drag or too
+little part-power thrust), sink 785 ft/min (FM 700-800 ✓), α 3.5°, trim 5.2° with elevator ≈ 0.2° (trim preset
+right). **Fuel flow 8 270 lb/h at 5 170 lbf net thrust** - almost the validated military fuel flow (8 400 lb/h) at
+about half the thrust: TSFC on gross thrust (≈ 6 600 lbf incl. ram drag) ≈ 1.25 vs. J79 part power ≈ 0.85-0.9 ->
+**part-power fuel flow probably too high (test plan D5, pete's observation 2026-10-27)**.
+
+## 2026-10-28: F3 landing without chute PASSED (landing 8, ..._T3L_landing8_nochute.csv)
+Refuelled via SimVars (FUEL_TANK_CENTER/CENTER2_QUANTITY, 4 145 lb, CG 8.9 % MAC) instead of a reload. 19 243 lb at
+the start, ≈ 18 700 lb at touchdown. Approach: glide path -14..+35 ft, 179-204 KIAS. **Touchdown 173 KIAS** (FM 171-176
+✓), 241 ft/min, pitch 2.7°, -3 ft. **Ground roll 3 511 ft** without chute; FM Fig. A8-4 3 130 ft at 17 900 lb and
+≈ 166.5 KIAS schedule touchdown -> scaled (173/166.5)² -> ≈ 3 380 ft -> **+4 % ✓**.
+Both landings normalised to 166.5 KIAS: with chute 3 010 ft (+9 % vs. 2 760), without 3 250 ft (+4 % vs. 3 130);
+chute effect -7 % in the sim vs. -12 % FM -> chute slightly weak, both within ±10 % -> no change (change control).
+
+## 2026-10-28: B6 / B5 landing configuration at Military - FAILED, drag too high (tools/config_test.py)
+Card docs/notes/test-cards/B5-B6-landing-config.md. Gear down, LAND flaps, trim 5.2°, Military, hand-flown.
+- B6 build-up 10 000 ft (..._B6_climb10k.csv): steady 9 100 ft, 18 780 lb, 167 KIAS: **-690 ft/min** (Fig. 6-8
+  extrapolated ≈ 0..+100). Aborted by a false AGL 0 read (fixed).
+- **B6 4 500 ft** (..._B6_climb4500.csv): steady 25-119 s, mean 5 140 ft, 18 280 lb, OAT 3 °C, 173 KIAS, α 5.4°,
+  N1 100 %, net thrust 6 377 lbf, FF 9 823 lb/h: **+389 ft/min**. FM Fig. 6-8 (3 000 ft curve, scaled for weight and
+  altitude, colder day) ≈ 1 200-1 400 ft/min -> deficit ≈ 850-900 ft/min ≈ 850 lbf excess thrust ≈ ΔCD 0.043 at q 101 psf.
+- **B5 4 500 ft, speed brakes out** (..._B5_level4500_sb.csv): level, 17 400 lb, settles at **164 KIAS** (α 6.25°,
+  net thrust 6 489 lbf); FM 3-41: speed brakes + LAND flaps + gear at Military -> flat ≈ 190-200 KIAS -> at 195 KIAS
+  the sim drag is ≈ 930 lbf above the thrust ≈ **ΔCD 0.037**.
+- Thrust check: Military net thrust at M 0.29 / 5 000 ft ≈ 6 700 lbf expected (NASA max-AB table x validated static
+  Military/AB ratio 6 670/11 200) vs. 6 377 sim (-5 %, as validated before) -> explains ≤ 300 lbf only.
+- Source conflict: the LAND flap + gear ΔCD 0.142 comes from NASA CR-2144 (approach CD 0.263 at CL 0.735; the sim
+  reproduces that polar), but three FM points (Fig. 6-8, FM 3-41, Fig. 2-7 approach rpm 87-90 % vs. 91 %) agree on
+  ≈ 0.04 less drag. FM = flight-tested performance -> proposal: LAND flap drag ΔCD 0.12 -> ≈ 0.08 (flaps-position.2
+  drag scalar 1.273 -> ≈ 0.85), gear unchanged. Needs a FULL sim restart and regression: B5/B6, T3-L approach config,
+  F2/F3 landings (ground roll will lengthen a few %, chute effect -7 % vs. FM -12 % could then be raised), T3-D.
+
+## 2026-10-28: regression after LAND flap drag 1.273 -> 0.85 (Build All + full sim restart)
+- **B6 4 500 ft** (..._B6_climb4500_r2.csv): mean 5 634 ft, 18 800 lb, OAT 3 °C, 177 KIAS: **+1 061 ft/min** (was +389;
+  FM Fig. 6-8 scaled ≈ 1 050-1 250) **✓**.
+- **B5 4 500 ft speed brakes** (..._B5_level4500_sb_r2.csv): level at **194 KIAS** (was 164; FM 3-41 190-200) **✓**.
+- Both flown with live weather (≈ 14 kt wind at altitude) - steady wind does not change IAS/ROC, light turbulence only.
+- **F2 landing 9** (with chute, 17 900 lb): approach OK (path -38..+21 ft), but bank oscillation ±6° and in the flare
+  at 42 ft a gust (IAS 181 -> 191 KIAS in 1 s, bank -7 -> -22°, ailerons at the ±4000 limit) -> go-around at 25 ft
+  (lowest 6 ft AGL), FM go-around flown fine. Live weather: 14 kt from 325° (crosswind for 26L) with gusts.
+  -> test configuration: no live weather, calm wind, ISA (test plan section 2); aileron limit ±4000 -> ±8000.
+- **Dry run 16** (clear skies, wind 1 kt, ISA; aileron limit ±8000): bank ±1.3° in the approach (was ±6° in live
+  weather), path -7..+32 ft, TD 177 KIAS (FM 171-176, +1 kt), 384 ft/min, +2 ft ✓. **cfg bug found in the go-around:**
+  the TAKEOFF flaps stuck at 15° up to 545 KIAS - `damaging-speed = 240` applies to every extended flap position (SDK),
+  the FM go-around accelerates with TAKEOFF flaps beyond 240 (TAKEOFF limit 370 KIAS, FM 3-36) -> flaps damaged.
+  Fixed: damaging-speed 370, blowout 400, position limits TAKEOFF 370 / LAND 240 (both flap systems); scripts retract
+  the TAKEOFF flaps at 340 KIAS latest. (Earlier takeoff tests retracted at 400 ft AGL - possibly damaged then too,
+  without effect on the liftoff measurement.)
+
+## 2026-10-28: landings in calm weather (clear skies, wind 1 kt, ISA, after the flap fixes) - ground roll too long
+- Dry run 17 ✓ (TD 175 KIAS, 497 ft/min, -2 ft; go-around: flaps retracted to 0° ✓ after the damaging-speed fix).
+- **F2 landing 10 (chute)**, 18 634 lb: TD 173 KIAS (FM 168-173 ✓), 21 ft/min, +6 ft; **ground roll 3 701 ft** ->
+  scaled to 166.5 KIAS 3 428 ft vs. FM A8-3 2 760 ft = **+24 % ✗**.
+- **F3 landing 11 (no chute)**, 19 771 lb: TD 178 KIAS (FM 173-178 ✓); **ground roll 4 292 ft** -> scaled 3 755 ft vs.
+  FM A8-4 3 130 ft = **+20 % ✗**. Chute effect -9 % (FM -12 %).
+- Landings 7/8 (+9/+4 %) were flown in live weather - a headwind of ≈ 8 kt explains ≈ -10 %; calm weather is the valid
+  FM condition. Mean deceleration (no chute) 0.33 g vs. FM 0.39 g; brake share ≈ 0.29 vs. 0.35 g ->
+  **toe_brakes_scale 0.68 (template) -> 0.82** (systems.f104.cfg [BRAKES]); Build All + aircraft reload; regression F2/F3.
+
+## 2026-10-28: brakes 0.82 - regression F3/F2 in calm weather
+- **F3 landing 12 (no chute)**, 19 339 lb: TD 175 KIAS ✓, roll 3 782 ft -> scaled 3 423 ft vs. FM 3 130 = **+9.4 % ✓**
+  (brakes x1.2 gave -9 %, not the computed -17 %: friction/transition limited).
+- **F2 landing 13 (chute)**, 20 287 lb (refuel script left 116 gal in the tip tanks - fixed: tools/refuel.py, tips
+  empty, 4 080 lb fuselage): TD 180 KIAS ✓, roll 3 868 ft -> scaled 3 310 ft vs. FM 2 760 = **+20 % ✗**.
+- Deceleration vs. speed (rollout logs): no chute 11-14 ft/s², chute only +1..1.5 ft/s² at 100-160 kt -> effective
+  chute ΔCD ≈ 0.066 of the configured 0.19 (≈ 1/3) -> `drag_coef_spoilers` 0.21 -> 0.43 (provisional value, marked
+  "to be calibrated with the landing test"). Full sim restart + F2 regression (F3 unaffected: no chute).
+- Both landings: the first band after touchdown (180 -> 160 kt) only ≈ 6.4 ft/s² - engine still at ≈ 84 % N1
+  (≈ 3 300 lbf) and nose up for several seconds; FM charts likely include a shorter transition. Watch, no change.

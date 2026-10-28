@@ -85,6 +85,18 @@ Script CSV `docs/data/flighttest_<date>_T3L_<name>.csv` + `..._simlog.csv` (α, 
 | 2026-10-27 | dry 11 | TD 169 KIAS ✓, sink 254 ✓, pitch 4.7° ✓, -29 ft ✓; **but roll limit cycle ±20-31°, ~4.5 s** | aileron gains 600/400/200 too high for the F-104 roll power at ~2 Hz -> 250/150/60, limit ±4 000 |
 | 2026-10-27 | **dry 12** | **PASS**: level 1 072-1 117 ft, bank ±3° level / ±0.8° flare, 182-186 KIAS; **TD 168 KIAS** (FM 163-168), **385 ft/min**, pitch 4.8°, -13 ft, 2 758 ft past the threshold | one failed lat/lon read (returns 0) -> false early intercept 510 ft below the path -> outlier rejection for position, altitude, IAS (needs one more dry run: change control) |
 
+| 2026-10-28 | dry 13 (19 170 lb, full fuel) | TD 170 KIAS ✓ (FM 170-175), 550 ft/min ✓, pitch 5.1°, -62 ft ✓, outlier rejection ✓ (no false intercept); **level segment at Military: 170 -> 157 KIAS, α 9°** (≈ FM min. control speed 150-155) -> B5 evidence; **after the run the old cleanup selected flaps UP at ~170 KIAS (clean min. speed 200-225) -> jet sank into the ground** | AB allowed in the level segment (FM 2-24 heavy weight), go-around if IAS < v_app - 25; dry-run end = real FM go-around (gear up when climbing, TAKEOFF ≥ 180, UP ≥ 260 KIAS after ≥ 30 s); cleanup only cleans up at ≥ 260 KIAS |
+
+| 2026-10-28 | dry 14 (19 180 lb) | TD 172 KIAS ✓, 444 ft/min ✓, pitch 3.8°, -55 ft ✓; end state clean ✓; level segment steady 168 KIAS at Military (AB lights only at ~100 % lever); **go-around via the trim-based AP sank 558 ft below the (virtual) runway** | go-around hand-flown too (same controllers, +1 500 ft/min, Maximum to 300 KIAS), AP only when clean ≥ 260 KIAS |
+| 2026-10-28 | **dry 15** (18 090 lb) | **PASS all**: level ±35 ft, 177-185 KIAS; glide path 0..+31 ft, bank ±0.9°; **TD 168 KIAS** (FM 165-170), **461 ft/min**, pitch 3.7°, -60 ft; **go-around lost 30 ft** (FM ≤ 100), climb ≤ 3 300 ft/min, pitch ≤ 12°, bank ±3°; end state clean, AP on, 7 000 ft | ready for the real landing F2 |
+
+B5 data point 2 (dry 14): steady level flight at Military, ≈ 6 500 ft MSL, 19 180 lb, gear + LAND flaps: 168 KIAS,
+α ≈ 7°, net thrust ≈ 6 080 lbf -> CL ≈ 1.02, CD ≈ 0.32 (q ≈ 96 psf).
+
+B5 data point (2026-10-28): gear + LAND flaps, no speed brakes, Military, ≈ 6 500 ft MSL, 19 170 lb: speed decays
+170 -> 157 KIAS level (excess thrust < 0). FM Fig. 6-8 (Military, landing config, 20 500 lb): ≈ +800 ft/min at
+3 000 ft, sea level ≈ +1 400 ft/min -> the sim has too little excess thrust in landing configuration (drag or thrust).
+
 ## Next
 1. pete: reload the flight (fuel), MSFS assists as checked.
 2. Dry run 13 (4 000 ft) to confirm the outlier rejection - script change = regression dry run.
