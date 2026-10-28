@@ -16,6 +16,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 1. **F2 regression** (landing with chute): `landing_test.py <csv> 6 2.5` -> FM A8-3 2 760 ft scaled by
    (166.5/TD IAS)²; target ±10 %. F3 (no chute) already passes (+9.4 %, brakes 0.82). If the chute is now too strong
    or weak, adjust drag_coef_spoilers (MSFS applies ≈ 1/3 of it on the ground).
+1b. **All tests before 2026-10-28 afternoon ran in LIVE weather** (pete). Re-verify in ISA/calm: B6/B5, T3-F drag,
+   T3-H excess thrust, thrust/fuel flow; spot checks T3-E2/T3-J (measurements.md note, test plan step 2b).
 2. Then test plan order (`docs/test-plan.md` section 4): B4 glide L/D, D5 fuel flow (strong evidence: approach 91 % N1
    burns 8 270 lb/h at 5 170 lbf -> part-power TSFC ≈ 1.25 vs. ≈ 0.85-0.9), B7 minimum speeds.
 3. MCP `landing` tool output parsing predates the hand-flown script -> update or call the script directly.

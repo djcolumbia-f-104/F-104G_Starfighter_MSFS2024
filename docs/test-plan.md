@@ -126,8 +126,14 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 ## 4. Iteration order (next sessions)
 
+**Note 2026-10-28:** every test before 2026-10-28 afternoon ran in LIVE weather (wind, non-ISA, turbulence) - see
+measurements.md. Re-verification in ISA/calm is part of the order below (marked *ISA*).
+
+
 1. ✓ F1, B5, B6, F3 (2026-10-28). **F2 regression** with chute 0.43 (calm weather).
 2. ✓ (done above)
+2b. *ISA* re-verification: B6/B5 (quick), T3-F drag + T3-H excess thrust (accel runs), thrust/fuel flow
+   checks; spot checks T3-E2 and T3-J.
 3. **B4 glide L/D** (cheap, drag-only check in two configurations).
 4. **D5 fuel flow** at 260 KIAS and cruise (pete's observation) against appendix Part 6.
 5. **B7 minimum speeds** (sim stall speed with flaps vs. Fig. 6-4).

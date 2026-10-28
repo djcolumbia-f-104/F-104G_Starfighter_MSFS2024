@@ -579,3 +579,14 @@ Card docs/notes/test-cards/B5-B6-landing-config.md. Gear down, LAND flaps, trim 
   "to be calibrated with the landing test"). Full sim restart + F2 regression (F3 unaffected: no chute).
 - Both landings: the first band after touchdown (180 -> 160 kt) only ≈ 6.4 ft/s² - engine still at ≈ 84 % N1
   (≈ 3 300 lbf) and nose up for several seconds; FM charts likely include a shorter transition. Watch, no change.
+
+## 2026-10-28: NOTE - all tests until 2026-10-28 afternoon were flown in LIVE (real) weather
+pete: the sim ran with real weather in every session until clear skies were set (after landing 9). Wind, non-ISA
+temperature/pressure and turbulence were therefore present in all earlier rounds (A-F, T3-A ... T3-L, B5/B6 incl. the
+regression runs; e.g. 14 kt and 1 028 hPa on 2026-10-28). Assessment:
+- Likely still valid: T3-A lift and T3-G trim (analysed with the measured density and IAS; steady wind has no effect),
+  T3-D liftoff IAS, landing touchdown IAS.
+- **To re-verify in ISA / calm**: T3-F drag and T3-H/I excess thrust (wind shear biases dV/dt; NASA thrust is standard
+  day), thrust/fuel-flow comparisons, B5/B6 (1 028 hPa ≈ +1-2 % thrust), spot checks T3-E2 / T3-J (turbulence).
+- Invalid and already replaced: landings 7-9 (headwind / gusts).
+Valid test results from now on only with the test configuration of docs/test-plan.md section 2 (clear skies, calm, ISA).
