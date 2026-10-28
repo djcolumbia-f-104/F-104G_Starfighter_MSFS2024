@@ -23,6 +23,9 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    Later: plot tool sim-vs-FM from the raw data (regenerable charts for the docs).
 0c. Check pete's input (research.md, 2026-10-28 evening): verify CG limits 0.07-0.164 MAC in CR-2144; new test D1b
    takeoff ground run vs. FM Fig. A2-4.
+0d. Targeted primary-source search directly in NASA NTRS (API: https://ntrs.nasa.gov/api/citations/search?q=...)
+   and DTIC - not via Gemini (hallucinates): F-104 flight tests with landing-configuration / BLC data, J79
+   part-power fuel consumption, F-104 CG limits. Download found PDFs to docs/sources/ and read the numbers there.
 1b. **All tests before 2026-10-28 afternoon ran in LIVE weather** (pete). Re-verify in ISA/calm: B6/B5, T3-F drag,
    T3-H excess thrust, thrust/fuel flow; spot checks T3-E2/T3-J (measurements.md note, test plan step 2b).
 2. Then test plan order (`docs/test-plan.md` section 4): B4 glide L/D, D5 fuel flow (strong evidence: approach 91 % N1
