@@ -590,3 +590,52 @@ regression runs; e.g. 14 kt and 1 028 hPa on 2026-10-28). Assessment:
   day), thrust/fuel-flow comparisons, B5/B6 (1 028 hPa ≈ +1-2 % thrust), spot checks T3-E2 / T3-J (turbulence).
 - Invalid and already replaced: landings 7-9 (headwind / gusts).
 Valid test results from now on only with the test configuration of docs/test-plan.md section 2 (clear skies, calm, ISA).
+
+## 2026-10-29: F2 regression with drag_coef_spoilers 0.43 (clear skies, wind 1 kt, ISA) - chute lever ineffective
+Landing 14 (..._T3L_landing14.csv), 19 180 lb (refuel.py standard): approach path -6..+20 ft, bank ±1.2°; TD 176 KIAS
+(FM 170-175, +1 kt ✓), 275 ft/min, -6 ft; chute at 175 KIAS. **Ground roll 3 628 ft -> scaled 3 247 ft vs. FM A8-3
+2 760 = +17.6 % ✗** (with 0.21: +20 %). Deceleration bands (ft/s²) no chute / chute 0.21 / chute 0.43:
+160-180 kt 6.4/6.4/5.8, 140-160 11.3/14.3/14.9, 120-140 14.2/13.7/13.8, 100-120 14.1/15.5/14.8, 80-100 14.1/15.4/15.7,
+below 80 ≈ 13-14 for all -> **doubling the ground spoiler drag changes nothing measurable**: the MSFS ground spoiler
+drag is not a usable drag chute. No native drag chute in the MSFS 2024 SDK (only parachute SimObjects). The first
+≈ 2 s after touchdown show almost no deceleration (small bounce, nose lowering), then ≈ 15 ft/s² (0.46 g).
+Verdict: F3 (no chute, brakes 0.82) ✓ +9.4 %; **F2 with chute = known deviation +17.6 %** until a real drag chute is
+modelled with own system logic (test plan H5). drag_coef_spoilers stays 0.43 (harmless, no measurable effect).
+
+## 2026-10-29: B6/B5 re-verified in ISA (clear skies, wind 1 kt, 1013.25 hPa, OAT 9 °C at 4 500 ft ≈ ISA+3)
+- **B6** (..._B6_climb4500_isa.csv): mean 5 373 ft, 18 984 lb, 176 KIAS, Military: **+905 ft/min** (FM Fig. 6-8
+  scaled ≈ 850-1 000) **✓**. Live-weather run (1 028 hPa, 3 °C) gave 1 061 - consistent with the extra thrust.
+- **B5** (..._B5_level4500_sb_isa.csv): 18 881 lb, speed brakes out, Military, level: **182.8 KIAS** (card 180-210 ✓;
+  FM 3-41 190-200 without weight -> lower edge). Live weather (18 158 lb, more thrust) gave 194.
+
+## 2026-10-29: ISA re-verification of T3-A/F/G and T3-H (clear skies, calm, 1013.25 hPa, ≈ ISA+3)
+- **Deceleration run** (`tools/decel_test.py`, new; ..._T3AF_decel_isa.csv; 16 000 ft, 18 750 lb, OAT -12.5 °C, idle
+  from M 1.15 / 596 KIAS to 229 KIAS): **T3-A lift ✓** (mean -0.012, largest band -0.028, tolerance 0.03);
+  **T3-G** tail = -0.01° + 1.08 α ✓ (as before); **T3-F drag mean 1.04 ✓** but bands M 0.4-0.6 0.97, **M 0.6-0.8 1.06,
+  M 0.8-0.95 1.09**, M 0.95-1.2 1.02 (live weather 2026-10-25: 1.00-1.04).
+- **T3-H 10 000 ft** (MCP accel_run, ..._T3H_accel10k_isa.csv, M 0.70 -> 1.20 in 55 s, OAT -1.2 °C, 18 470 lb):
+  Fn,ex sim/NASA M 0.75 0.76, 0.80 0.82, 0.85 0.87, 0.90 0.96, 0.95 1.00, 1.00 0.94, 1.05-1.20 0.75-0.84 -> ✗ subsonic
+  (live weather: mostly 0.86-1.07); supersonic unchanged (-20 %, accepted before). Drag split of the same run:
+  CD/NASA M 0.6-0.8 1.08, M 0.8-0.95 1.11. Few points per band (≈ 1 Hz logger, n = 2) and the run started right
+  after positioning (AP still climbing back 350 ft).
+- Consistent picture: in ISA the subsonic drag at M 0.6-0.95 is ≈ 6-11 % above D-7137 (T3-F still within ±10 %), which
+  becomes -13..-24 % excess thrust. Candidate cause: Oswald factor / induced drag at higher CL or the transonic
+  rise start - **no change yet**; to investigate with a dedicated repeat (longer bands, logger at higher rate,
+  20 000 ft run too). Earlier "T3-F ✓ 1.00-1.04" and "T3-H subsonic ✓" were live-weather results.
+- **T3-J doublet in ISA** (MCP doublet, 16 500 ft, M 0.89, 18 000 lb): period **1.60 s**, amplitude ratio **0.55**/cycle.
+  CR-2144 F/C 4 (15 000 ft, M 0.9): 1.41 s / 0.43; scaled to the test point (density, speed) ≈ 1.53 s -> +5 % ✓
+  (live weather 2026-10-26: 1.48 s / 0.57).
+- **T3-E2 sideslip in ISA** (MCP sideslip, 15 000 ft, ≈ 350-381 KIAS, M ≈ 0.7): **β/δr 0.34, δa/δr 0.43** ✓
+  (CR-2144 0.32-0.42 / 0.27-0.47; round E 0.32 / 0.39).
+
+## 2026-10-29: B4 glide (tools/config_test.py glide mode, ISA, 22 000 -> 13 000 ft, idle, gear up)
+- Run 1 (TAKEOFF flaps): aborted at pitch -21° (controller start too aggressive) -> VS command starts at the current VS,
+  slower speed integrator, gains scaled with 1/q.
+- **TAKEOFF flaps, 245 KIAS** (..._B4_glide_to2.csv, 19 175 lb): α 4.4°, idle net thrust -549 lbf (≈ windmilling ram
+  drag): glide ratio (energy) **5.15 = 8.5 NM per 10 000 ft**; aerodynamic L/D (thrust removed) 6.04.
+- **Flaps up, 275 KIAS** (..._B4_glide_clean.csv): α 7.2°, idle net thrust -803 lbf: glide ratio **6.42 = 10.6 NM per
+  10 000 ft**; aerodynamic L/D 8.78 (desk check from the polar 8.6 ✓).
+- FM Fig. 3-8: both configurations give the same distance; 9 NM with RAT, ≈ 11 NM without RAT (the sim has no RAT) ->
+  **clean -4 % ✓, TAKEOFF -23 % ✗** -> TAKEOFF flap drag too high (same pattern as the LAND flaps on 2026-10-28, both
+  from the scaled CR-2144 estimate): **TAKEOFF drag scalar 1 -> 0.42** (flap ΔCD 0.031 -> 0.013). FULL restart;
+  regression: B4 TAKEOFF glide (expect ≈ 10.5-11 NM), T3-D takeoff liftoff speed (drag only, should be unchanged).

@@ -3,7 +3,9 @@ FM Fig. 6-8) or level flight with speed brakes (flat final, FM 3-41). Test card:
 docs/notes/test-cards/B5-B6-landing-config.md.
 
 Usage (with the Python of the simconnect-mcp venv):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\config_test.py <output.csv> <alt_ft MSL> climb|level [ias=170] [sb]
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\config_test.py <output.csv> <alt_ft MSL> climb|level|glide [ias=170] [sb|clean]
+  glide: B4 (FM 3-38, Fig. 3-8) idle, gear up, TAKEOFF flaps at 245 KIAS (or "clean": flaps up, 275 KIAS), speed hold by
+         elevator, down to alt - 9 000 ft -> glide ratio (energy) and aerodynamic L/D in NM per 10 000 ft
   climb: elevator holds IAS (default 170 KIAS) at Military -> mean rate of climb over the steady part (after 25 s)
   level: elevator holds the start altitude at Military -> IAS it settles at (mean of the last 30 s)
   sb:    speed brakes out (FM 3-41 flat final: speed brakes + LAND flaps + gear at Military ≈ 190-200 KIAS)
@@ -66,21 +68,32 @@ fuel, n1 = g("FUEL_TOTAL_QUANTITY_WEIGHT"), g("TURB_ENG_N1:1")
 if fuel < 2500 or n1 < 60:
     sm.exit()
     sys.exit(f"ABORT: fuel {fuel:.0f} lb, N1 {n1:.0f} % - refuel / start the engine first")
+GLIDE = mode == "glide"
+CLEAN = "clean" in sys.argv[4:]
+if GLIDE:
+    # B4 (FM 3-38/Fig. 3-8): idle, gear up, TAKEOFF flaps 245 KIAS (or flaps up 275 KIAS: "clean")
+    ias_tgt = float(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] not in ("sb", "clean") else (275.0 if CLEAN else 245.0)
+    TRIM_DEG = 3.0                                    # [S] CL ≈ 0.48 at 245 KIAS -> α ≈ 3° (T3-G: tail ≈ 1.08 α)
 ap_master(False)
 ev("SPOILERS_OFF")
-sm.set_pos(alt0, LAT, LON, 185, -3.0, 0.0, HDG, 0)   # speed ≈ IAS, pitch negative = nose up (landing_test.py)
+# speed ≈ IAS, pitch negative = nose up (landing_test.py); glide: nose ≈ 5° down (L/D ≈ 6-7 -> γ ≈ -8.5°, α ≈ 3°)
+sm.set_pos(alt0, LAT, LON, int(ias_tgt) if GLIDE else 185, 5.0 if GLIDE else -3.0, 0.0, HDG, 0)
 time.sleep(1.0)
-ev("GEAR_DOWN")
-ev("FLAPS_DOWN")
+if GLIDE:
+    ev("GEAR_UP")
+    ev("FLAPS_UP" if CLEAN else "FLAPS_1")
+else:
+    ev("GEAR_DOWN")
+    ev("FLAPS_DOWN")
 ap_master(False)
 for _ in range(5):
     aq.set("ELEVATOR_TRIM_POSITION", TRIM_DEG / DEG)
     time.sleep(0.2)
-    if g("ELEVATOR_TRIM_POSITION") * DEG > TRIM_DEG - 0.3:
+    if abs(g("ELEVATOR_TRIM_POSITION") * DEG - TRIM_DEG) < 0.3:
         break
 if SB:
     ev("SPOILERS_ON")
-ev("THROTTLE1_SET", 11141)                            # Military
+ev("THROTTLE1_SET", 0 if GLIDE else 11141)            # glide: idle; else Military
 w = g("TOTAL_WEIGHT")
 print(f"{mode} at {alt0:.0f} ft MSL, {'speed brakes OUT, ' if SB else ''}weight {w:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C, "
       f"trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°" + (f", IAS target {ias_tgt:.0f}" if mode == "climb" else ""))
@@ -116,10 +129,16 @@ while time.time() - t0 < 300:
     if phase == "test":
         if mode == "climb":
             vs_tgt = clamp(150.0 * (ias - ias_tgt), -1500.0, 4000.0)   # faster than the target -> climb steeper
+        elif GLIDE:
+            # speed hold by elevator: integrate the descent-rate command from the speed error (faster -> sink less)
+            # (glide run 1: started at -3 500 / -6 200 ft/min target while level -> full push, α < 0, pitch -21° abort ->
+            # start at the current VS, slower integrator)
+            res["vs_cmd"] = clamp(res.get("vs_cmd", res["vs_f"]) + 15.0 * (ias - ias_tgt) * dt, -9000.0, 0.0)
+            vs_tgt = clamp(res["vs_cmd"] + 40.0 * (ias - ias_tgt), -9000.0, 500.0)
         else:
             vs_tgt = clamp(4.0 * (alt0 - alt), -1000.0, 1000.0)
-        bad = ias < 150 or abs(bank) > 30 or not -10 < theta < 20 or agl < 1500
-        done = el > 120 or (mode == "climb" and alt > alt0 + 3000 and el > 40)
+        bad = ias < 150 or abs(bank) > 30 or not (-20 if GLIDE else -10) < theta < 20 or agl < (3000 if GLIDE else 1500)
+        done = (el > 200 or alt < alt0 - 9000) if GLIDE else (el > 120 or (mode == "climb" and alt > alt0 + 3000 and el > 40))
         if bad or done:
             reason = (f"ABORT: IAS {ias:.0f}, bank {bank:.0f}°, pitch {theta:.0f}°, AGL {agl:.0f}" if bad else "test done")
             print(reason)
@@ -144,14 +163,17 @@ while time.time() - t0 < 300:
     # hand flying (landing_test.py fly(); heading hold instead of the localizer)
     err_fps = (res["vs_f"] - vs_tgt) / 60.0
     res["integ"] = clamp(res["integ"] + err_fps * dt, -200.0, 200.0)
-    ev("AXIS_ELEVATOR_SET", int(clamp(KP_VS * err_fps + KI_VS * res["integ"] + KQ * q, -12000, 6000)))
+    # gains tuned at ~185 KIAS; scale with 1/q (glide run 1: pitch oscillation 0..15° at 250-380 KIAS)
+    ks = clamp((185.0 / max(ias, 100.0)) ** 2, 0.25, 1.5)
+    ev("AXIS_ELEVATOR_SET", int(clamp(ks * (KP_VS * err_fps + KI_VS * res["integ"] + KQ * q), -12000, 6000)))
     bank_tgt = -clamp(2.0 * wrap(HDG - hdg), -15, 15)
     e_b = bank - bank_tgt
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
     ev("AXIS_AILERONS_SET", int(clamp(-(KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -4000, 4000)))
     rows.append([round(el, 2), phase, round(alt), round(ias, 1), round(vs), round(vs_tgt), round(bank, 1), round(theta, 1),
                  round(g("INCIDENCE_ALPHA") * DEG, 2), round(g("TURB_ENG_N1:1"), 1), round(g("TURB_ENG_JET_THRUST:1")),
-                 round(g("ENG_FUEL_FLOW_PPH:1")), round(g("TOTAL_WEIGHT"))])
+                 round(g("ENG_FUEL_FLOW_PPH:1")), round(g("TOTAL_WEIGHT")), round(g("AIRSPEED_TRUE"), 1),
+                 round(g("GROUND_VELOCITY"), 1)])
     time.sleep(0.05)
 
 for n in ("AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
@@ -170,13 +192,33 @@ sm.exit()
 log.terminate()
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
-    wr.writerow(["t", "phase", "alt", "ias", "vs_fpm", "vs_tgt", "bank", "pitch", "alpha", "n1", "thrust_lbf", "ff_pph", "weight"])
+    wr.writerow(["t", "phase", "alt", "ias", "vs_fpm", "vs_tgt", "bank", "pitch", "alpha", "n1", "thrust_lbf", "ff_pph", "weight",
+                 "tas", "gs"])
     wr.writerows(rows)
 
 # evaluation: steady part of the test phase
 test = [r for r in rows if r[1] == "test"]
-steady = [r for r in test if r[0] > 25] if mode == "climb" else [r for r in test if r[0] > test[-1][0] - 30]
-if len(steady) > 5:
+if GLIDE:
+    st = [r for r in test if r[0] > 30]
+    if len(st) > 10:
+        dist = sum((st[i][14] * 1.68781) * (st[i][0] - st[i - 1][0]) for i in range(1, len(st)))   # ground speed, calm
+        dh = st[0][2] - st[-1][2]
+        v1, v2 = st[0][13] * 1.68781, st[-1][13] * 1.68781
+        dh_e = dh + (v1 ** 2 - v2 ** 2) / (2 * 32.174)              # energy height loss (TAS change)
+        w_m = sum(r[12] for r in st) / len(st)
+        t_m = sum(r[10] for r in st) / len(st)                       # idle net thrust (windmilling would be ≈ 0..-)
+        d_m = t_m + w_m * dh_e / dist                                # mean aerodynamic drag from the energy balance
+        print(f"GLIDE {st[0][0]:.0f}-{st[-1][0]:.0f} s: {st[0][2]:.0f} -> {st[-1][2]:.0f} ft, IAS {sum(r[3] for r in st) / len(st):.0f} KIAS, "
+              f"α {sum(r[8] for r in st) / len(st):.2f}°, idle net thrust {t_m:.0f} lbf")
+        print(f"  glide ratio (energy) {dist / dh_e:.2f} = {dist / dh_e * 10000 / 6076.12:.1f} NM per 10 000 ft; "
+              f"aerodynamic L/D (thrust removed) {w_m / d_m:.2f} = {w_m / d_m * 10000 / 6076.12:.1f} NM per 10 000 ft")
+        print("  FM Fig. 3-8 (TAKEOFF flaps 245 KIAS / flaps up 275, gear up, windmilling, RAT out): 9 NM per 10 000 ft; "
+              "without RAT ≈ +2 NM -> ≈ 11")
+steady = [] if GLIDE or not test else (
+    [r for r in test if r[0] > 25] if mode == "climb" else [r for r in test if r[0] > test[-1][0] - 30])
+if GLIDE:
+    pass
+elif len(steady) > 5:
     t_a, t_b = steady[0][0], steady[-1][0]
     roc = (steady[-1][2] - steady[0][2]) / max(t_b - t_a, 1) * 60      # from altitude, not from the noisy VS samples
     mean = lambda i: sum(r[i] for r in steady) / len(steady)
