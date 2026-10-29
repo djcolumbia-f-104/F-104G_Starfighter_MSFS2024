@@ -110,8 +110,8 @@ ff_fm = tas / (nmpp_delta / delta) * 1000.0
 ff_sd = math.sqrt(sum((s[4] - ff) ** 2 for s in samples) / n)
 print(f"steady {n} samples, t {t_end - avg_s:.0f}-{t_end:.0f} s: {alt:.0f} ft, M {m:.3f}, {tas:.0f} KTAS, "
       f"{ias:.0f} KIAS, OAT {oat:.1f} °C, weight {w:.0f} lb, δ {delta:.4f}, W/δ {wd:.0f}")
-print(f"  N1 {n1:.1f} %, throttle {th / 16383 * 100:.0f} %, net thrust {fn:.0f} lbf, gross (FF/1.26) "
-      f"{ff / 1.26:.0f} lbf, FF {ff:.0f} ± {ff_sd:.0f} lb/h")
+print(f"  N1 {n1:.1f} %, throttle {th / 16383 * 100:.0f} %, net thrust {fn:.0f} lbf, gross (FF/TSFC 0.72) "
+      f"{ff / 0.72:.0f} lbf, FF {ff:.0f} ± {ff_sd:.0f} lb/h")
 print(f"  FM Fig. A6-1 (DI 0): NMPP x δ {nmpp_delta:.1f} -> {nmpp_delta / delta:.0f} NM per 1 000 lb -> "
       f"FF {ff_fm:.0f} lb/h; sim/FM {ff / ff_fm:.2f}; sim NM per 1 000 lb {tas / ff * 1000:.0f}")
 print(f"log {out}")

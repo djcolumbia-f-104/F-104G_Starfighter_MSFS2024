@@ -100,8 +100,12 @@ log here; this index says under which conditions each log was flown and whether 
 | `B4_glide_to2` | B4 TAKEOFF | TAKEOFF drag 1.0 | 8.5 NM ✗ | superseded (TAKEOFF drag 0.42) |
 | `B4_glide_clean` | **B4 clean** | | 10.6 NM ✓ | **valid** |
 | `B4_glide_to_reg` | **B4 TAKEOFF** | TAKEOFF drag 0.42 | 9.8 NM (-11 %) ◐ | **valid** |
-| `D5_cruise_A` / `_B` / `_C` | **D5 cruise FF** | 11 900 / 19 600 / 29 500 ft, M 0.70 / 0.80 / 0.85 | sim/FM 1.79 / 1.86 / 1.84 ✗ | **valid** (A: simlog only, script aborted on VS unit) |
+| `D5_cruise_A` / `_B` / `_C` | **D5 cruise FF** | 11 900 / 19 600 / 29 500 ft, M 0.70 / 0.80 / 0.85 | sim/FM 1.79 / 1.86 / 1.84 ✗ | superseded (TSFC 0.72) - reason for the change |
 | `T3D_takeoff_reg_flap042` | **T3-D** | TAKEOFF drag 0.42, LE flaps | 170 kt (-4.2 %) ✓, roll 2 627 ft | **valid** (D1b data point) |
+| `D5_endur_5k` / `D5_endur_10k` | D5 endurance (FM A5-1) | TSFC 1.26 | 1.66 / 1.70 ✗ | superseded (TSFC 0.72) |
+| `T3D_takeoff_tsfc072` | **T3-D** | TSFC 0.72, 19 340 lb | first 171 / sustained 185 kt ✓ | **valid** |
+| `AB_accel10k_tsfc072` | **AB FF regression** | TSFC 0.72, full AB 10 000 ft | FF unchanged (M 1.0-1.2: 0.996-1.007) | **valid** |
+| `D5_cruise_B_reg` / `D5_cruise_C_reg` / `D5_endur_5k_reg` | **D5 regression** | TSFC 0.72 | 1.07 / 1.04 / 0.96 ✓ | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

@@ -232,7 +232,9 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
   - All lateral FSX coefficients of the template (roll_moment_slip_angle, yaw_moment_* ...) are legacy/unused;
     lateral stability comes from geometry (vtail, wing_dihedral, fuselage_lateral_cx).
   - Turbine: `egt_tuning_constant` has no effect -> `egt_peak_temperature`. Fuel flow via gross thrust
-    (`use_gross_thrust_on_fuelflow`); AB TSFC only applies to the AB thrust increment.
+    (`use_gross_thrust_on_fuelflow`); with full AB only the AB TSFC is used. Gross thrust includes the ram drag, so
+    TSFC is calibrated in cruise (D5, FM Fig. A6-1/A5-1: 0.72), not statically (1.26 gave 1.7-1.9x cruise fuel flow).
+  - MCP `position` from the ground (runway, idle) crashed MSFS (2026-10-29): position only when airborne, throttle ≥ 7 000.
   - Starting from the world map ignores .flt files (yaw damper off) -> send `YAW_DAMPER_ON`.
   - `htail_area = 0` becomes 0.1 ft² (warning in debug, harmless).
   - Flaps are modelled as an INCIDENCE increment of the flapped wing section (≈ 0.62 x angle x lift scalar): above

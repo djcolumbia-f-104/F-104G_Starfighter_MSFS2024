@@ -51,6 +51,8 @@ Mach error not settled after 240 s; altitude ±500 ft; IAS < 250 KIAS; AP off.
 | 2026-10-29 | A 11 900 ft M 0.70 | sim 6 148 vs. FM 3 427 lb/h: **1.79 ✗** | evaluated from simlog (script VS unit bug, fixed) |
 | 2026-10-29 | B 19 600 ft M 0.80 | 5 825 vs. 3 124: **1.86 ✗** | |
 | 2026-10-29 | C 29 500 ft M 0.85 | 4 816 vs. 2 616: **1.84 ✗** | |
+| 2026-10-29 | E1 5 000 ft M 0.50 (FM A5-1 endurance) | 5 210 vs. 3 132: **1.66 ✗** | |
+| 2026-10-29 | E2 10 000 ft M 0.556 (A5-1) | 5 085 vs. 3 000: **1.70 ✗** | |
 
 ## Finding and fix plan (2026-10-29)
 Error independent of altitude, so it is the ram drag inside the gross thrust (Mach effect), not density. Needed:
@@ -69,4 +71,14 @@ FF/gross ≈ 0.69 at M 0.7-0.85 vs. 1.26 at M 0 (static Military). Next steps, i
       would disagree).
 3. One A/B sim round with the chosen option; regression: D5 A-C, static Military/idle FF, AB FF in flight (round A
    method), approach N1/FF (landing script), engine start/idle (flameout check).
+
+## Change 2026-10-29 (change control)
+Option (b): `ThrustSpecificFuelConsumption` 1.26 -> 0.72 (predicted -5..+7 % at all 5 points). Then: AB TSFC re-calibration
+(accel run 10 000 ft vs. ..._T3H_accel10k_isa.csv), regression D5 A/B/C/E1/E2, approach N1/FF, idle in flight
+(no flameout), engine start.
+
+## Regression 2026-10-29 (TSFC 0.72): PASSED
+B 1.07, C 1.04, E1 0.96 (±10 %) ✓; AB fuel flow unchanged (full AB uses only the AB TSFC); engine start, idle in flight,
+T3-D ✓. Open: approach N1/FF with the next landing. Pitfall: MCP `position` from the ground crashed MSFS; position
+only when airborne, throttle ≥ 7 000.
 

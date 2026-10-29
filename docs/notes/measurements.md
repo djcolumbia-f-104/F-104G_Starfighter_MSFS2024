@@ -671,3 +671,35 @@ basis flight test (J79-GE-11A); FF_FM = TAS / NMPP.
 - Consequences: endurance/range in the sim ≈ 55 % of the real jet (pete's observation 2026-10-27 confirmed).
 - **No change yet** - fix options and a further reference point at low Mach (FM Part 5 endurance, sea level) are
   planned in the D5 card; the validated AB fuel flow (AP-7) and static Military FF are affected by every option.
+- **Endurance points** (FM Fig. A5-1 maximum endurance, sheets 1/2 PDF 513/515, DI 0, 18 500 lb read: 5 000 ft M 0.50
+  106 NM per 1 000 lb, 10 000 ft M 0.555 119 NM per 1 000 lb; FF scaled with weight): 5 000 ft M 0.500, 18 921 lb, N1 80.9 %,
+  net 1 998 lbf: **5 210 vs. 3 132 lb/h = 1.66**; 10 000 ft M 0.556, 18 645 lb, N1 81.5 %, net 1 968 lbf: **5 085 vs.
+  3 000 = 1.70** (logs ..._D5_endur_5k/_10k). The error grows with Mach (1.66 at M 0.5 -> 1.86 at M 0.8), consistent
+  with the ram drag in the gross thrust.
+- Options evaluated on all 5 points (needed FF/gross 0.676-0.757, FF/net 1.37-1.59): (b) gross TSFC 0.72 -> -4.9 /
+  -3.1 / +2.5 / +6.5 / +5.2 %; (c) net TSFC 1.50 -> -4 / -2 / -6 / 0 / +9 % but a mode switch with untested AB
+  behaviour and negative idle net thrust in flight. **Chosen (b): ThrustSpecificFuelConsumption 1.26 -> 0.72**
+  (same mechanism, one value). Known deviation: static Military ≈ 4 800 lb/h instead of the ≈ 8 400 estimate (ground
+  runs only; takeoff uses AB). Needs Build All + aircraft reload (engine value).
+- AB fuel flow must be re-calibrated (FF_AB = TSFC x dry gross + AB TSFC x AB increment). Reference before the change
+  (ISA accel 10 000 ft, ..._T3H_accel10k_isa.csv, full AB): M 0.70 22 895, 0.80 27 833, 0.90 31 654, 1.00 34 870,
+  1.10 37 702, 1.20 40 849 lb/h (these match D-7137 Table 4 via round A/B). Plan: same accel run after the change ->
+  dry gross G = ΔFF / 0.54 -> AB increment -> new AB TSFC that restores the reference FF.
+
+## 2026-10-29: regression after TSFC 1.26 -> 0.72 (Build All + reload; MSFS crashed once, then full restart)
+- MSFS crashed (hung, "not responding") right after an MCP `position` from the ground (engine idle on the runway).
+  After the restart: positioning only from the air (takeoff first). A position with throttle 5 000 at 19 600 ft gave
+  a dive to 9 500 ft at -22° pitch (AP too slow) -> repositioned with throttle 8 000, fine (use ≥ 7 000).
+- Engine start ✓ (39 -> 67 % N1, combustion, no flameout), ground idle FF ≈ 240-280 lb/h (known: was ≈ 566).
+- **T3-D** (..._T3D_takeoff_tsfc072.csv, 19 340 lb, FM 178.7 kt): first liftoff 171 kt (-4.3 %), short touchdown,
+  sustained 185 kt (+3.5 %) ✓ (AB thrust unchanged; same pattern as run 6).
+- **AB fuel flow unchanged** (..._AB_accel10k_tsfc072.csv vs. ..._T3H_accel10k_isa.csv, full AB, 10 000 ft):
+  FF new/old M 1.00 0.996, 1.05 1.002, 1.10 1.004, 1.15 1.007, 1.20 1.007 -> with full AB MSFS uses the AB TSFC only;
+  **no AB re-calibration needed**. (M 0.80-0.95 bands differ because the new run started at M 0.79 during the AB light-up;
+  net thrust was lower there too.)
+- **D5 regression** (cruise_test.py, same points): B M 0.80 / 19 600 ft **1.07** (3 395 vs. 3 180 lb/h, predicted
+  1.065), C M 0.85 / 29 500 ft **1.04** (2 834 vs. 2 725), E1 M 0.50 / 5 000 ft **0.96** (2 975 vs. 3 112) ✓ (±10 %).
+  Sim range now 146-178 NM per 1 000 lb (FM 156-185).
+- **Idle in flight** (5 000 ft, 35 s): N1 67 %, FF ≈ 300 lb/h, net -800..-1 150 lbf, combustion stays on ✓; Military
+  after idle: 99.3 % N1, 6 648 lbf, 6 407 lb/h at ≈ 215 KIAS ✓.
+- Open: approach N1/FF (next landing run), A/E2 not re-flown (bracketed by B/E1).
