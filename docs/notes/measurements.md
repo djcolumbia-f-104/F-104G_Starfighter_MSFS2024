@@ -649,3 +649,25 @@ modelled with own system logic (test plan H5). drag_coef_spoilers stays 0.43 (ha
     185 kt (+3.4 %), but it was flown in live weather and BEFORE the LE flaps were added (T3-L, 2026-10-26, more lift
     in TAKEOFF too); the flap drag change cannot lower the liftoff speed -> new reference value 170 kt. The ground roll
     is the first data point for D1b (FM Fig. A2-4, still to read).
+
+## 2026-10-29: D5 cruise fuel flow vs. FM Fig. A6-1 (drag index 0) - FAILED, part-power fuel flow +79..86 %
+Card docs/notes/test-cards/D5-fuel-flow.md, new `tools/cruise_test.py` (AP ALT/HDG hold, throttle PI on Mach, 60 s steady
+average). Clear skies, calm, 1013.25 hPa, ISA+3. FM chart: NM per 1 000 lb x δ vs. true Mach, W/δ parameter, data
+basis flight test (J79-GE-11A); FF_FM = TAS / NMPP.
+| Point | alt | M | W/δ | N1 | net thrust | FF sim | gross = FF/1.26 | FF FM | sim/FM |
+|---|---|---|---|---|---|---|---|---|---|
+| A | 11 898 ft | 0.700 | 29 450 | 83.8 % | 2 156 lbf | 6 148 lb/h | 4 880 lbf | 3 427 lb/h | **1.79** |
+| B | 19 602 ft | 0.801 | 39 306 | 84.7 % | 2 081 lbf | 5 825 lb/h | 4 623 lbf | 3 124 lb/h | **1.86** |
+| C | 29 499 ft | 0.853 | 59 509 | 85.4 % | 1 906 lbf | 4 816 lb/h | 3 822 lbf | 2 616 lb/h | **1.84** |
+- Point A was evaluated from the simlog (t 150-236 s, steady ±5 ft, M 0.700) because the script aborted on a wrong VS unit
+  (Python-SimConnect returns VERTICAL_SPEED in ft/min; fixed).
+- Chart reading ±1.5 units ≈ ±2 %; error is ~40x that. Also seen in passing: 6 100 ft, M 0.82: 9 320 lb/h at 2 950 lbf
+  net thrust.
+- Cause: FF = TSFC 1.26 x GROSS thrust (AP-7, calibrated statically at Military, M 0). In flight the gross thrust
+  includes the ram drag (here ≈ 1 900-2 700 lbf, airflow ≈ 100 lb/s - physically plausible with ram pressure), so a
+  constant gross TSFC overstates part-power cruise fuel. The FM implies FF/gross ≈ 0.68-0.70 at M 0.7-0.85 vs. 1.26
+  static; the error does NOT depend on altitude (1.79-1.86 from 12 000 to 29 500 ft) -> it is a Mach (ram) effect, so
+  `JET_density_on_FF_table` alone cannot fix it. FM-implied net TSFC 1.37-1.59.
+- Consequences: endurance/range in the sim ≈ 55 % of the real jet (pete's observation 2026-10-27 confirmed).
+- **No change yet** - fix options and a further reference point at low Mach (FM Part 5 endurance, sea level) are
+  planned in the D5 card; the validated AB fuel flow (AP-7) and static Military FF are affected by every option.

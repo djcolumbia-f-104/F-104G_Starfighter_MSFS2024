@@ -100,6 +100,7 @@ log here; this index says under which conditions each log was flown and whether 
 | `B4_glide_to2` | B4 TAKEOFF | TAKEOFF drag 1.0 | 8.5 NM ✗ | superseded (TAKEOFF drag 0.42) |
 | `B4_glide_clean` | **B4 clean** | | 10.6 NM ✓ | **valid** |
 | `B4_glide_to_reg` | **B4 TAKEOFF** | TAKEOFF drag 0.42 | 9.8 NM (-11 %) ◐ | **valid** |
+| `D5_cruise_A` / `_B` / `_C` | **D5 cruise FF** | 11 900 / 19 600 / 29 500 ft, M 0.70 / 0.80 / 0.85 | sim/FM 1.79 / 1.86 / 1.84 ✗ | **valid** (A: simlog only, script aborted on VS unit) |
 | `T3D_takeoff_reg_flap042` | **T3-D** | TAKEOFF drag 0.42, LE flaps | 170 kt (-4.2 %) ✓, roll 2 627 ft | **valid** (D1b data point) |
 
 ## Keeping this index

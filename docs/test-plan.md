@@ -82,7 +82,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ subsonic ✓, supersonic ±20-30 % |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
-| D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ○ evidence: approach 91 % N1 -> 8 270 lb/h at 5 170 lbf (TSFC ≈ 1.25 vs. ≈ 0.85-0.9) -> part-power FF too high? |
+| D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ✗ **sim/FM 1.79-1.86** at M 0.7-0.85, 12-30 kft (2026-10-29); fix planned (card D5) |
 | D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ○ |
 | D7 | Climb schedule | max thrust / military climb | Fig. 6-7 climb angles, appendix climb charts | ○ |
 
