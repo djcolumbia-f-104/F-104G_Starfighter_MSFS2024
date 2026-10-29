@@ -6,31 +6,36 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-28 evening) <<<
-**TOMORROW START HERE (note for 2026-10-29):**
-0. pete builds/restarts tonight (pending: `drag_coef_spoilers` 0.21 -> 0.43 = drag chute, needs FULL restart).
-   Test configuration every session: MSFS assistance off, **weather clear skies / wind calm / ISA** (check with
-   AMBIENT_WIND_VELOCITY), flight on EDDM 26L. Engine cold? `sim_event ENGINE_AUTO_START`. Fuel: `tools/refuel.py`
-   (4 080 lb fuselage, tip tanks EMPTY) instead of reloading. After every sim restart: trim-hold check (AP off ->
-   SimVar trim 5° must stay).
-1. **F2 regression** (landing with chute): `landing_test.py <csv> 6 2.5` -> FM A8-3 2 760 ft scaled by
-   (166.5/TD IAS)²; target ±10 %. F3 (no chute) already passes (+9.4 %, brakes 0.82). If the chute is now too strong
-   or weak, adjust drag_coef_spoilers (MSFS applies ≈ 1/3 of it on the ground).
-0b. **DONE 2026-10-29: data index `docs/data/README.md`** - add a row per new log in the same commit. Original note (pete, 2026-10-28): write `docs/data/README.md` - for every `flighttest_*.csv` (+ `_simlog`):
-   test ID, date, conditions (weather live/ISA-calm, weight, cfg state / relevant commit), result and validity
-   (valid / superseded / invalid, e.g. live-weather runs). Purpose: validation evidence and re-analysis without
-   re-flying; MSFS itself needs no curves from our data (FM values go into REFERENCE SPEEDS/checklists later).
-   Later: plot tool sim-vs-FM from the raw data (regenerable charts for the docs).
-0c. Check pete's input (research.md, 2026-10-28 evening): verify CG limits 0.07-0.164 MAC in CR-2144; new test D1b
-   takeoff ground run vs. FM Fig. A2-4.
-0d. Targeted primary-source search directly in NASA NTRS (API: https://ntrs.nasa.gov/api/citations/search?q=...)
-   and DTIC - not via Gemini (hallucinates): F-104 flight tests with landing-configuration / BLC data, J79
-   part-power fuel consumption, F-104 CG limits. Download found PDFs to docs/sources/ and read the numbers there.
-1b. **All tests before 2026-10-28 afternoon ran in LIVE weather** (pete). Re-verify in ISA/calm: B6/B5, T3-F drag,
-   T3-H excess thrust, thrust/fuel flow; spot checks T3-E2/T3-J (measurements.md note, test plan step 2b).
-2. Then test plan order (`docs/test-plan.md` section 4): B4 glide L/D, D5 fuel flow (strong evidence: approach 91 % N1
-   burns 8 270 lb/h at 5 170 lbf -> part-power TSFC ≈ 1.25 vs. ≈ 0.85-0.9), B7 minimum speeds.
-3. MCP `landing` tool output parsing predates the hand-flown script -> update or call the script directly.
+## >>> CONTINUE HERE (state 2026-10-29 evening) <<<
+**TOMORROW START HERE (note for 2026-10-30):**
+0. Session start: pete loads the flight (EDDM 26L, clear skies). Checks: MCP `check_build` (T1 green), `preflight`,
+   weather (AMBIENT_WIND_VELOCITY ≈ 1 kt, 1013.25 hPa), trim-hold check (AP off -> SimVar trim 5° must stay),
+   `tools/refuel.py` (4 080 lb fuselage, tips EMPTY - a fresh load had 87 gal in each tip). Engine cold?
+   `sim_event ENGINE_AUTO_START`. **Never MCP `position` from the ground** (crashed MSFS 2026-10-29): take off first
+   (`runway_start` + `takeoff`), then position in the air with throttle ≥ 7 000 (5 000 gave a -22° dive).
+1. **Approach N1/FF check** (last open D5 regression item): next landing run (`landing_test.py <csv> 6 2.5`), compare
+   approach N1 (FM Fig. 2-7: 87-90 %) and FF (was 8 270 lb/h at 91 % before TSFC 0.72).
+2. Test plan order (`docs/test-plan.md` section 4): **B7 minimum speeds** (FM Fig. 6-4: LAND flaps shaker 155 / min.
+   control 150 KIAS at 19 500 lb; check that the sim does not allow touchdowns far below the FM speeds), then
+   **T3-H subsonic drag investigation** (ISA: drag +6..11 % at M 0.6-0.95 -> excess thrust -13..-24 %; repeat with
+   longer bands, higher logger rate, also 20 000 ft; candidate: Oswald factor / transonic rise), D1b takeoff ground
+   run vs. FM Fig. A2-4 (first data point: 2 627 ft at 18 938 lb), D3 climb, H5 drag chute logic.
+3. Still open from 2026-10-29 list: 0c CG limits 0.07-0.164 MAC in CR-2144; 0d NTRS/DTIC primary-source search
+   (landing config / BLC, CG limits - J79 part-power fuel is now covered by the FM charts); MCP `landing` tool parsing.
+Results 2026-10-29 (details `docs/notes/measurements.md`, data index `docs/data/README.md`):
+- ISA re-verification: B6 +905 ft/min ✓, B5 183 KIAS ✓, T3-A/G ✓, T3-F 1.04 (M 0.6-0.95 1.06-1.09), T3-H subsonic
+  -13..-24 % ✗ (open), T3-J 1.60 s ✓, T3-E2 0.34/0.43 ✓.
+- F2 with chute +17.6 % = known deviation: MSFS ground spoiler drag is no drag chute (doubling it changed nothing)
+  -> own logic later (H5).
+- **B4 glide**: clean 10.6 NM/10 000 ft ✓; TAKEOFF flaps 8.5 -> **TAKEOFF flap drag scalar 1 -> 0.42** -> 9.8 NM
+  (-11 %, accepted ◐); T3-D 170 kt (-4.2 %) ✓.
+- **D5 fuel flow** (`tools/cruise_test.py`, FM Fig. A6-1 range + A5-1 endurance, DI 0): cruise FF was 1.66-1.86x the FM
+  (gross-thrust TSFC includes ram drag) -> **ThrustSpecificFuelConsumption 1.26 -> 0.72** -> 0.96-1.07 ✓; AB FF
+  unchanged (full AB uses only the AB TSFC); engine start/idle in flight ✓. Known: static ground FF now low.
+- Data index `docs/data/README.md` written (validity of every log: live weather before landing 10 = no evidence for
+  drag/climb/ground roll).
+
+## Older state (2026-10-28 evening)
 Results 2026-10-28 (details `docs/notes/measurements.md`, cards in `docs/notes/test-cards/`):
 - Hand-flown landing script complete (dry runs 13-17, outlier rejection, FM go-around flown by the script, 24-30 ft
   height loss); normal landing F2 ✓ (162 KIAS) and F3 ✓ in live weather, re-flown in calm weather after changes.
@@ -186,6 +191,8 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
 - `landing_test.py <csv> [nm] [glide] [high_ft] [nochute]`: hand-flown approach/landing (F1-F3), dry run with a
   virtual runway; `config_test.py <csv> <alt> climb|level [ias] [sb]`: B5/B6 landing configuration at Military;
   `refuel.py`: standard fuel state via SimVars (MCP venv Python).
+- `config_test.py ... glide [ias] [clean]`: B4 glide L/D; `decel_test.py <csv>`: T3-A/F/G idle deceleration run;
+  `cruise_test.py <csv> <alt> <mach> <fm_nmpp_delta> <wd_ref> [slope]`: D5 stabilised cruise fuel flow vs. FM Fig. A6-1.
 - `C:\MSFS 2024 SDK\Tools\bin\fspackagetool.exe` attaches to the running sim and waits -> do not use;
   build via Dev Mode in the sim.
 

@@ -114,3 +114,7 @@ and the jet sank into the ground after an otherwise perfect dry run.
 - Flaps/gear: check the real angle/percentage, not the handle.
 - Indexed SimVars via MCP with `index=1`; `msfs_get_simvars_bulk` can be stale.
 - PowerShell has no `<` redirection: use `$null | & python ...` for stdin.
+- **Never position (MCP `position` / set_pos) from the ground** - it crashed MSFS on 2026-10-29. Take off first, then
+  position in the air with throttle ≥ 7 000 (throttle 5 000 gave a -22° dive to 9 500 ft; recover by repositioning).
+- A fresh flight load can carry fuel in the tip tanks: always run `tools/refuel.py` (tips empty) before a test.
+- Python-SimConnect returns VERTICAL_SPEED in ft/min (not ft/s); AMBIENT_DENSITY in slug/ft³ (use Rankine for p = ρRT).
