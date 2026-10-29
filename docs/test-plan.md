@@ -55,7 +55,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | B1 | Lift (T3-A) | idle deceleration 16 500 ft | NASA TN D-7137, ±0.03 | ✓ |
 | B2 | Drag (T3-F) | idle deceleration, dV/dt | D-7137 ±10 % | ✓ 1.00-1.04 |
 | B3 | Trim gradient (T3-G) | from B1 data | CR-96008 | ✓ |
-| B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ○ **next** |
+| B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ◐ clean -4 %, TAKEOFF -11 % (drag scalar 0.42) |
 | B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ✓ 2026-10-28 after LAND flap drag 0.12 -> 0.08: 194 KIAS (was 164) |
 | B6 | Go-around climb | landing config, Military, sawtooth climbs 160-200 KIAS | Fig. 6-8: ≈ 1 400 ft/min at 165-175 KIAS (20 500 lb, SL) | ✓ 2026-10-28 after the flap drag change: +1 061 ft/min (FM ≈ 1 050-1 250; was +389) |
 | B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ○ (sim stall debug 120 kt with flaps - check) |
@@ -77,7 +77,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
-| D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ +3.4 % |
+| D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29) |
 | D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-4 (ground run vs. weight, PDF ≈ 458), ±10 % | ○ (idea 2026-10-28) |
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ subsonic ✓, supersonic ±20-30 % |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |

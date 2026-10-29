@@ -31,5 +31,7 @@ IAS < 150 KIAS, bank > 30°, pitch outside -20..+20°, AGL < 3 000 ft.
 | 2026-10-29 | 1 TAKEOFF | aborted (pitch -21°) | controller start too aggressive -> fixed |
 | 2026-10-29 | 2 TAKEOFF 245 KIAS | 8.5 NM per 10 000 ft (energy ratio 5.15), aero L/D 6.04 ✗ (FM ≈ 11 without RAT) | TAKEOFF flap drag too high |
 | 2026-10-29 | clean 275 KIAS | 10.6 NM (6.42), aero L/D 8.78 ✓ (-4 %) | clean polar confirmed |
+| 2026-10-29 | 3 TAKEOFF 245 KIAS, drag scalar 0.42 | 9.8 NM (5.94), aero L/D 7.29, -11 % ◐ | regression after FULL restart; accepted (reference ≈ 11 NM is an estimate) |
 
 Change: TAKEOFF flap drag scalar 1 -> 0.42 (FULL restart); regression B4 TAKEOFF + T3-D.
+Regression T3-D: liftoff 170 kt vs. 177.5 kt (-4.2 %) ✓.

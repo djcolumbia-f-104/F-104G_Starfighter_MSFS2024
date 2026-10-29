@@ -639,3 +639,13 @@ modelled with own system logic (test plan H5). drag_coef_spoilers stays 0.43 (ha
   **clean -4 % ✓, TAKEOFF -23 % ✗** -> TAKEOFF flap drag too high (same pattern as the LAND flaps on 2026-10-28, both
   from the scaled CR-2144 estimate): **TAKEOFF drag scalar 1 -> 0.42** (flap ΔCD 0.031 -> 0.013). FULL restart;
   regression: B4 TAKEOFF glide (expect ≈ 10.5-11 NM), T3-D takeoff liftoff speed (drag only, should be unchanged).
+- **Regression after the change (Build All + FULL restart, ISA, wind 1 kt, trim-hold check ✓):**
+  - B4 TAKEOFF flaps 245 KIAS (..._B4_glide_to_reg.csv, 19 140 lb): α 4.3°, idle net thrust -596 lbf: glide ratio
+    (energy) **5.94 = 9.8 NM per 10 000 ft** (was 8.5); aerodynamic L/D 7.29. vs. FM ≈ 11: **-11 %**, just outside ±10 %;
+    sim TAKEOFF/clean = 0.92 (FM 1.0). Accepted as ◐: the "≈ 11 NM without RAT" reference is itself an estimate (FM text:
+    RAT costs about 2 NM), so a further scalar cut would chase reading accuracy. No further change.
+  - T3-D takeoff (MCP takeoff, 18 938 lb, θ 10.5°): liftoff **170 kt**, pitch 8.9°, ground roll 2 627 ft / 17.0 s.
+    FM Fig. A2-3 174 kt at 18 155 lb + 4.43 kt per 1 000 lb -> 177.5 kt: **-4.2 % ✓** (±5 %). Run 6 (2026-10-25) was
+    185 kt (+3.4 %), but it was flown in live weather and BEFORE the LE flaps were added (T3-L, 2026-10-26, more lift
+    in TAKEOFF too); the flap drag change cannot lower the liftoff speed -> new reference value 170 kt. The ground roll
+    is the first data point for D1b (FM Fig. A2-4, still to read).
