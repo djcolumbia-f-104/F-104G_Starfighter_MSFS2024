@@ -1,0 +1,17 @@
+{
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative",
+  "alwaysUpdateLinks": true,
+  "showUnsupportedFiles": false,
+  "userIgnoreFilters": [
+    "Packages/",
+    "_PackageInt/",
+    "PackagesMetadata/",
+    "PackageSources/",
+    "PackageDefinitions/",
+    "tools/.venv/",
+    "docs/sdk-ref/",
+    ".opencode/",
+    "F-104G/"
+  ]
+}

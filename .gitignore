@@ -37,6 +37,13 @@ PackageSources/SimObjects/Airplanes/pete-f104g/common/panel/
 docs/sdk-ref/
 # Runtime data of other tools
 .opencode/
+# Obsidian vault = repo root: shared settings (app.json etc.) are committed, personal UI state is not
+.obsidian/workspace*.json
+.obsidian/cache
+.obsidian/plugins/
+.trash/
+# Personal VS Code settings (local paths)
+.vscode/
 PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png
 PackageSources/SimObjects/Airplanes/pete-f104g/liveries/pete/testbed/texture.exterior/*.png.xml
 PackageDefinitions/pete-aircraft-f104g/ContentInfo/Thumbnail.jpg

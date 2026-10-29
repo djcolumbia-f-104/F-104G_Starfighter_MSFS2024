@@ -147,6 +147,8 @@ returns 0 -> false alarm on 2026-10-25).
 
 ## Project layout
 ```
+Home.md                         documentation map; the repo root is also an Obsidian vault (.obsidian/app.json
+                                committed: Markdown links, build/SDK folders excluded; workspace files ignored)
 F104G.xml                       project file for Dev Mode (Project Editor → Build)
 PackageDefinitions/             pete-aircraft-f104g.xml (ModularSimObject) + ContentInfo/Thumbnail.jpg (SDK, not in repo)
 PackageSources/SimObjects/Airplanes/pete-f104g/
