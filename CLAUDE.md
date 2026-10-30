@@ -22,6 +22,12 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    now retracted by runway_start/takeoff_test (a takeoff with the chute drag happened once).
    C. Then: faster ground loop for the rotation law (qrot v2 taxi build-up: no push, but 3.6°/s break-out), H2 pitch-up /
       APC (reference NASA TN D-6943, local PDF).
+   DONE 2026-10-31: H2 ◐ - native Stall Protection System completed ([CONTROL_SYSTEM]: shaker α 11.3°, kicker α 14.5°,
+   unit degrees confirmed): shaker clean/TAKEOFF/LAND 220/182/144 vs. FM 220.5/184.5/148.6, kicker clean 197 (+1 %), TAKEOFF
+   165 (-6 %); SDK simple pusher = leaky α limiter (no hold, push_rate has no effect). Regression T3-D / F3 ✓. Card H2-apc.md.
+   **Always runway_start after a flight reload** (trim 0° otherwise; takeoff_test now refuses it). New `tools/fastlog.py`.
+   D. Next: rotation ground loop (item C first half); optional adaptive SPS pusher (PID with α anticipation) if the kick
+      character matters; F3 metric (hop position moves the "final touchdown") - consider measuring from V = 165 KIAS.
 **State 2026-10-31** (details `docs/notes/measurements.md`, index `docs/data/README.md`):
 - runway_start: settle check incl. heading ±1° and ground speed (the 273° placement came from a fast jet before respawn).
 - Rotation law v2 (option `qrot`) taxi build-up safe but not adopted; default attitude law stays.

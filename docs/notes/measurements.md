@@ -1062,3 +1062,30 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - **H5 ✓**: drag chute = speed brake handle on the ground with spoiler_limit 65° > air_spoiler_limit 52° and
   drag_coef_spoilers 0.12 (ground ΔCD ≈ 0.136). Pilot note: speed brakes OUT on the ground = chute drag (retract for taxi
   and takeoff). The real chute (MB-7G 180 KIAS limit, jettison) is not modelled as a separate handle (later, cockpit).
+
+## 2026-10-31: H2 APC stick shaker / kicker - MSFS native Stall Protection System (card H2-apc.md)
+- Analysis first (gate 2b): the old `[CONTROL_SYSTEM]` block had 3 of the 13 required SPS parameters -> SPS never
+  initialised (B7 reached α 16° unopposed). FM Fig. 6-3 read by pixel scan at n = 1.5 (17 000 lb) + FM 6-5 text + Fig. 6-4
+  -> low-Mach kicker CL ≈ 0.725, shaker CL ≈ 0.58; sim α for these CL taken from the B7 logs (not the table: the sim gives
+  ≈ 5 % less CL than the table at high α) -> **shaker α 11.3° (off 10.8), kicker α 14.5°**, simple pusher to -0.1 (FM 6-6
+  "slightly ahead of neutral"). One α also fits TAKEOFF/LAND (measured B7 curves). Fig. 6-3 kicker α falls to ≈ 11° at M 0.8
+  (single α in MSFS -> known deviation).
+- Results (shaker = yoke vibrating ±0.03 vs. elevator; kicker = first α crossing + yoke step, `tools/fastlog.py` ≈ 6 Hz):
+  | config | weight | shaker sim / FM | kicker sim / FM |
+  |---|---|---|---|
+  | clean (2 runs + 1) | 18 600-18 700 | 220 / 220.5 KIAS (0 %) ✓ | 197 / 194-196 (+1 %) ✓ |
+  | TAKEOFF | 18 357 | 181.8 / 184.5 (-1.5 %) ✓ | 165.1 / 175.5 (-6 %) ◐ |
+  | LAND | 18 016 | 144.4 / 148.6 (-2.8 %) ✓ | 136 (FM: inoperative; below min. control ≈ 146) |
+  Unit of the SPS AoA parameters = degrees (confirmed).
+- Kick shape: the SDK simple pusher pushes only while α > limit; α responds in ≈ 0.15 s, so the stick moves Δ ≈ 0.15 and is
+  released again -> leaky α limiter, α limit cycle 13-15.5° (≈ 1.3 s) against a script that keeps pulling; α 16° only with
+  stick ≥ 0.8. push_rate 4 -> 20 changed nothing (prediction "kick to -0.1" failed; cause above). B7 clean minimum level
+  speed is now kicker-limited ≈ 196 KIAS (FM min. control 197; before 188-190 elevator-limited).
+- Regression: T3-D takeoff (after runway_start) first liftoff 171 / sustained 191 kt, α ≤ 9° (no SPS) ✓ - same overshoot
+  pattern as before; F3 rollout identical to landing 23 (≈ 7.5 kt/s, 168 KIAS -> stop 3 366 vs. 3 355 ft) ✓ - the scaled
+  "-12 %" came from a short hop moving the "final touchdown" 500 ft down the runway (F3 metric scatter, not physics).
+- Incident: a takeoff right after a flight reload without runway_start ran with trim 0° -> no climb-out (≈ 1° pitch to
+  330 KIAS at 4-10 ft), AP fallback dived to 8 ft AGL at 435 kt. takeoff_test now refuses trim outside 4-6°; skill pitfall.
+- Script fixes: config_test slow mode Military pre-phase until ias_start (set_pos speed), recovery unloads (integrator
+  reset, pull ≤ -6 000; it had pulled to α 17° through the kicker), log columns el_cmd / elev_pos / yoke_y.
+- **H2 ◐** (accepted with documented limits; adaptive pusher with α anticipation = option later).

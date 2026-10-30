@@ -67,5 +67,21 @@ ias_stop + 40, FM clean-up; script failure -> MCP `position` (airborne).
 | 2026-10-31 | (regression) takeoff after flight reload | INVALID: trim 0° (runway_start skipped) -> climb-out loop could not raise the nose (≈ 1° up to 330 KIAS, skipping at 4-10 ft), AP fallback at 399 ft dived to 8 ft AGL at 435 kt | takeoff_test now aborts unless trim 4-6°; not SPS-related (α low) |
 | 2026-10-31 | clean bu1, 15 000 ft 260 -> 185, 18 732 lb | **SPS works, unit = degrees.** Shaker (yoke ≠ elevator ±0.03) from α 11.47° at ≈ 220 KIAS (pred. 220, FM 220.5 ✓); first kick at α 14.53° / 197 KIAS (pred. 198, FM 194-196, +1 % ✓) | then α cycles 13.2-16.0° (script keeps pulling, integrator winds up); 1.4 Hz log too slow for the kick shape |
 | 2026-10-31 | clean bu2 + `tools/fastlog.py` (≈ 6 Hz), 18 593 lb | repeat: kick at α 14.49° / 196.7 KIAS ✓. Kick shape: yoke 0.45 -> 0.27 in < 0.2 s, held 0.3-0.5 s, released as soon as α < 14.5 -> α limit cycle 13-15.5°, period ≈ 1.3 s; push depth only Δ ≈ 0.17 (≈ 1/s), never to the -0.1 position (FM: "slightly ahead of neutral") | recovery pulled to α 17° at 207-224 KIAS (wound-up integrator) -> config_test: integrator reset + pull limit -6 000 in the recovery. **Next: push_rate 4 -> 20** (pred.: yoke reaches -0.1, α drops to ≈ 10-11°, peaks ≤ 15°) |
+| 2026-10-31 | (regression) T3-D takeoff after runway_start, 19 180 lb | first liftoff 171 kt, sustained 191 kt after 3 409 ft (earlier 185-188, same pattern: dynamic overshoot 8.3° -> touch -> liftoff); α ≤ 9° -> SPS not involved ✓ | rotation scatter = open item C |
+| 2026-10-31 | clean pr20 (push_rate 20) | INVALID: set_pos left 198 instead of 240 KIAS -> started at the kicker, sink abort | config_test slow: Military pre-phase until ias_start |
+| 2026-10-31 | **clean pr20b**, 18 656 lb | kick at α 14.43° / 197.4 KIAS; **kick shape identical to push_rate 4** (yoke Δ ≈ 0.15 in one sample, released as α < 14.5) -> prediction failed: the depth is set by the fast α response (≈ 0.15 s), not by the rate; SDK simple pusher has no hold time. Speed held at 196-198 KIAS for 12 s against the -1 kt/s loop; α peaks 14.5 -> 15.6° up to stick 0.55, 16.2° only with the wound-up integrator | push_rate 20 kept (harmless, FM "abruptly") |
+| 2026-10-31 | **TAKEOFF**, 15 000 ft, 18 357 lb | shaker (α 11.3) at 181.8 KIAS (pred. 181, FM ≈ 184.5: -1.5 % ✓); kicker (α 14.5) at 165.1 (pred. 169, FM ≈ 175.5: **-6 %** ◐); α 16.0° at stick 0.8 | single-α limit |
+| 2026-10-31 | **LAND**, 12 000 ft, 18 016 lb | shaker at 144.4 KIAS (pred. 148, FM 148.6: -2.8 % ✓); kicker at 136 (pred. 137; FM: inoperative - acts only below the FM min. control ≈ 146) | known deviation, harmless |
+| 2026-10-31 | (regression) F3 landing, no chute, 17 590 lb | TD 167 KIAS / 338 ft/min, 1 hop (8 ft) at 2 834 ft; roll from the final TD (163 KIAS) 2 875 ft = -12 % scaled - but the rollout is identical to landing 23 (≈ 7.5 kt/s; 168 KIAS -> stop 3 366 vs. 3 355 ft) -> physics unchanged ✓, the difference is where the final touchdown falls | F3 measurement scatter (hop position), not SPS |
 
 ## Result
+**H2 ◐ (accepted with known limits).** The MSFS Stall Protection System works (unit degrees) and puts the APC boundaries
+on the FM speeds: shaker clean 220 / TAKEOFF 182 / LAND 144 KIAS vs. FM 220.5 / 184.5 / 148.6 (0 / -1.5 / -2.8 %); kicker clean
+197 vs. 194-196 (+1 %), TAKEOFF 165 vs. 175.5 (-6 %). B7 clean minimum level speed is now kicker-limited at ≈ 196 KIAS
+(FM min. control 197; before SPS 188-190, elevator-limited). Limits: the SDK simple pusher releases as soon as α is below
+the limit -> a "leaky α limiter" with small, fast pushes (Δ stick ≈ 0.15) instead of the real kick to slightly ahead of
+neutral; with ever-increasing back stick α creeps to ≈ 16° (still below CLmax 18°, no departure). FM 6-6 notes that pilot
+follow-through is needed anyway when trimmed close to high α (the test ran with trim 8°). Further: one α for all Mach
+(kicker late at M 0.8), no gear/LAND inhibit, no pitch-rate anticipation. Option if needed later: adaptive pusher
+(`stall_protection_flight_control_limiter_PID`, D term = α anticipation) - holds α at the limit instead of kicking.
+Regression: T3-D takeoff ✓ (α ≤ 9°, no SPS), F3 rollout physics unchanged ✓.

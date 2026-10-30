@@ -58,7 +58,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ◐ clean -4 %, TAKEOFF -11 % (drag scalar 0.42) |
 | B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ✓ 2026-10-28 after LAND flap drag 0.12 -> 0.08: 194 KIAS (was 164) |
 | B6 | Go-around climb | landing config, Military, sawtooth climbs 160-200 KIAS | Fig. 6-8: ≈ 1 400 ft/min at 165-175 KIAS (20 500 lb, SL) | ✓ 2026-10-28 after the flap drag change: +1 061 ft/min (FM ≈ 1 050-1 250; was +389) |
-| B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ◐ min. level speed clean -4 % / TAKEOFF -6..-7 % / LAND -3..-5 % vs. min. control (elevator-limited, mush, no pitch-up -> H2) |
+| B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ◐ min. level speed clean -4 % / TAKEOFF -6..-7 % / LAND -3..-5 % vs. min. control (elevator-limited, mush, no pitch-up -> H2); since H2 clean kicker-limited ≈ 196 KIAS (0 %) |
 | B8 | Approach configuration (T3-L) | LAND flaps at altitude | CR-2144 CL 0.845 at α 4.1° | ✓ |
 | B9 | Maneuvering flaps | TAKEOFF flaps, gear up, wind-up turn | +≈ 1 g available load factor (FM 6-2) | ○ |
 
@@ -121,7 +121,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Ref. | Status |
 |---|---|---|---|
 | H1 | Own SAS logic (roll/pitch/yaw dampers) | FM 6-3 Fig. 6-1, CR-2144 SAS on | – |
-| H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | – |
+| H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | ◐ 2026-10-31 native SPS: shaker 0 / -1.5 / -2.8 %, kicker clean +1 %, TAKEOFF -6 %; leaky limiter (no hold), single α, no gear/LAND inhibit (card H2-apc.md) |
 | H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | – |
 | H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | ✓ 2026-10-31: spoiler_limit 65° + drag_coef_spoilers 0.12 -> F2 +0.1 % vs. A8-3, coast 5.23 ft/s² as predicted, B5 unchanged |
 | H4 | Rudder/aileron limiters with gear | FM 6-3 | ○ (A4) |

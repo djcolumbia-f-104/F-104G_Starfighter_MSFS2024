@@ -109,7 +109,11 @@ if SB:
 # 2026-10-30: set_pos does not reliably take the speed (after a fast flight B6 started at 223 instead of 185 KIAS -> +4 000
 # ft/min command, pitch 23° abort) -> climb/level: idle pre-phase holding alt0 until IAS ≤ target + 5, then Military
 PRE = mode in ("climb", "level") and (g("AIRSPEED_INDICATED") or 0) > ias_tgt + 10
-ev("THROTTLE1_SET", 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start; else Military
+# slow: accelerate at Military first if set_pos left the jet slow (2026-10-31 H2 clean_pr20: 198 instead of 240 KIAS ->
+# started at the kicker, sink abort after 5 s)
+PRE_ACC = SLOW and (g("AIRSPEED_INDICATED") or 0) < ias_tgt - 10
+PRE = PRE or PRE_ACC
+ev("THROTTLE1_SET", 11141 if PRE_ACC else 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start
 w = g("TOTAL_WEIGHT")
 print(f"{mode} at {alt0:.0f} ft MSL, {'speed brakes OUT, ' if SB else ''}weight {w:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C, "
       f"trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°" + (f", IAS target {ias_tgt:.0f}" if mode == "climb" else ""))
@@ -146,9 +150,9 @@ while time.time() - t0 < 300:
         vs_tgt = clamp(4.0 * (alt0 - alt), -1000.0, 1000.0)
         # level mode: end the pre-phase high (200 KIAS) - ending at the 170 target at idle let the speed decay to 150 while
         # the engine spooled up, onto the back side of the drag curve (B5 2026-10-31 run h5b aborted)
-        if ias <= (200.0 if mode == "level" else ias_tgt + 5) or el > 120:
+        if (ias >= ias_tgt if PRE_ACC else ias <= (200.0 if mode == "level" else ias_tgt + 5)) or el > 120:
             phase = "test"
-            ev("THROTTLE1_SET", 11141)
+            ev("THROTTLE1_SET", 7000 if SLOW else 11141)
             print(f"pre-phase done after {el:.0f} s at {ias:.0f} KIAS")
             t0 = t                                                   # test time counts from here
     elif phase == "test":

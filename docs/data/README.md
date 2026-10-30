@@ -164,6 +164,14 @@ log here; this index says under which conditions each log was flown and whether 
 | `B5_level4500_sb_h5c` | **B5 regression** | 180 s, pre-phase to 200 KIAS | 181.3 KIAS | **valid** |
 | `T3D_takeoff_f2` | T3-D | | 171 / 191 kt | valid (liftoff) |
 | `T3D_taxi_qrot2b` | rotation law v2 taxi build-up | runway_start heading fix, taxi stop with 0° hold | no push; break-out 3.6°/s; 0.6 s hop; stopped on the centreline | valid (build-up, law not adopted) |
+| `H2_reg_takeoff` (dated 10-30, run 10-31) | T3-D regression | trim 0° (no runway_start) | no climb-out, AP fallback dive to 8 ft | **INVALID** (incident, see measurements 2026-10-31 H2) |
+| `H2_clean_bu1` / `bu2` (+ `_fast`) | **H2 clean** | 15 000 ft, push_rate 4 | shaker 220, kicker 197 / 196.7 KIAS, kick shape | **valid** |
+| `H2_reg_takeoff2` | T3-D regression with SPS | runway_start, 19 180 lb | 171 / 191 kt, α ≤ 9° | valid |
+| `H2_clean_pr20` (+ `_fast`) | H2 clean | set_pos 198 KIAS | sink abort | **INVALID** (start speed) |
+| `H2_clean_pr20b` (+ `_fast`) | **H2 clean** | push_rate 20 | kicker 197.4 KIAS, kick shape unchanged | **valid** |
+| `H2_to` (+ `_fast`) | **H2 TAKEOFF** | 15 000 ft | shaker 181.8, kicker 165.1 KIAS | **valid** |
+| `H2_land` (+ `_fast`) | **H2 LAND** | 12 000 ft | shaker 144.4, kicker 136 KIAS | **valid** |
+| `H2_reg_F3` (dated 10-30, run 10-31) | F3 regression | no chute, 17 590 lb | TD 167, roll 2 875 ft from final TD 163 (hop) | valid (rollout = landing 23) |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
