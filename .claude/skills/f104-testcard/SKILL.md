@@ -50,6 +50,28 @@ Result: filled in after the run (with the measurement entry in docs/notes/measur
   never retract flaps at low altitude.
 - Syntax check: `python -I -m py_compile <script>`.
 
+## 2b. Engineering analysis gate (mandatory before the cases below; since 2026-10-31)
+Lessons 2026-10-29..31: the desk-checked changes worked first time (D5 TSFC predicted +6.5 %, measured +7 %; CG fit), the
+un-analysed ones cost incidents or rebuild loops (rotation law tried live -> jet off the runway twice; spoiler_limit
+guessed twice although the local SDK page states the formula; two chart misreadings; a "+14 %" that was a skip).
+Before flying, write into the card (section "Analysis") and check:
+1. **cfg change**: read the SDK parameter page FIRST (`docs/sdk-ref/`, `python -I tools/sdkref_params.py`; fetch missing
+   pages from docs.flightsimulator.com into docs/sdk-ref/). Write the formula and a numeric prediction with its source
+   ("drag = coef x deflection [rad] -> 0.12 x 1.134 = ΔCD 0.136 -> ground roll ≈ -12 %"). Only then build. After the test:
+   prediction vs. measurement; if the gap is > 2x the tolerance, stop and find out why before the next change.
+2. **New or changed control law** (takeoff, flare, any closed loop near the ground): estimate the loop rate
+   (≈ 70 ms per SimConnect read: n reads -> 1/(n x 0.07) Hz), the fastest dynamics it must handle (e.g. nose-wheel
+   break-out ≈ 3-6°/s) and the worst output (never push during a rotation, never hand over to the AP near the ground).
+   Then a build-up WITHOUT the hazard (in the air at the same speed/configuration, or a taxi run without liftoff), then the
+   real test. Never tune a law live on a takeoff or landing.
+3. **Reading an FM / NASA chart**: calibrate the reading method on the chart's own sample problem first (FM appendix
+   texts give them), identify the lines by their labels on a zoom (pixel scan), write the reading with its uncertainty.
+4. **Measurement**: check that the logger rate and the definition fit the question (touchdown/skip needs ≥ 2 Hz on few
+   SimVars - tools/rollout_log.py; failed reads return 0 -> never treat a single 0 as an event).
+5. **Research**: if no source exists for a value, search (NTRS API, DTIC, FM, local sources) before guessing; record the
+   result (also "nothing found") in docs/notes/research.md.
+Not needed for pure regression re-runs of an unchanged test.
+
 ## 3. Check the preconditions in the sim (go/no-go)
 MCP `check_build`, `preflight`, `sim_state`. No-go if anything deviates from the card (e.g. fuel < 1 500 lb after
 idling on the runway, engine not at idle N1, wrong flaps/trim). Scripts must also abort themselves on these.

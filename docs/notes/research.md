@@ -160,3 +160,19 @@ Sources: [Aircraft Creation Workflow](https://docs.flightsimulator.com/msfs2024/
 - CG work package status: only two F-104A points; a two-point fit with the main cells lumped into one tank gives an
   implausible -6 % MAC at full fuel -> the cell split (forward main cell vs. aft cells) and their feed order are needed
   before changing the cfg.
+
+## 2026-10-31: SDK reference pages fetched (local only, docs/sdk-ref/) - findings
+Fetched from docs.flightsimulator.com/msfs2024/retail/...: `additional-flight-model-information.md` (cfg-files/flight-model),
+`wheels-and-contact-points.md`, `basic-aerodynamics.md` (tutorials/tuning-the-flight-model). Findings:
+- **Spoiler drag** (flight_model.cfg.md, already local!): `drag_coef_spoilers` x spoiler deflection [rad] on the ground,
+  `drag_coef_air_spoilers` overrides it (in the air, and on the ground while the deflection does not exceed the air limit).
+  Matches the coast tests exactly: 52° (0.907 rad) x 0.046 = 0.042; 65° (1.134 rad) x 0.43 = 0.49. -> with 0.12 at 65°:
+  ground ΔCD 0.136. (This page was local before the two rebuild loops - reason for the analysis gate in f104-testcard.)
+- **Gear springs**: the spring and damping factors of all-wheel gear are computed from the static compression (point.N
+  parameter 9) at the **maximum gross weight** (ours 26 600 lb) -> at ≈ 19 000 lb the gear sits at ≈ 0.44-0.48 of the max
+  compression instead of the static 0.67 (measured 2026-10-31) - i.e. stiff for the light jet; relevant if skips return.
+  `spring_exponential_fix`, `ground_new_contact_model_gear_flex(_damping)` (tutorial: ≈ 1/weight, ≈ 1 % of weight) exist.
+- **Stall Protection System** (SPS): native stick shaker (`SPS_flight_control_shaker_AoA_on/off`, amplitude, frequency,
+  IAS on/off) and pusher (simple or adaptive, `SPS_flight_control_limiter_*`, `stall_protection_flight_control_limiter_PID`)
+  = the F-104 APC shaker + kicker (FM 6-5: shaker at AoA indicator 4¼-4¾ units, kicker at 5, kicker inoperative with gear
+  down / LAND flaps) -> H2 can probably use it; needs the AoA-indicator-unit -> α mapping and a condition for gear/flaps.
