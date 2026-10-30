@@ -5,8 +5,11 @@ Usage (with the Python of the simconnect-mcp venv):
 Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, trim 5°, parking brake set.
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
 the runway heading -> from vr_kt pull the pitch to theta_target at 3°/s (rotate ~20 kt below liftoff speed, FM 6-5)
--> after liftoff from 30 ft AP in vertical speed mode (+4 000 ft/min), from 50 ft gear up, from 400 ft flaps up,
-from 1 500 ft above ground reduced power (throttle 7000) and altitude hold.
+-> climb-out hand-flown (2026-10-30; the trim-based MSFS AP took over at 30 ft and held the jet at 20-35 ft for 12 s
+while it accelerated to 330 kt -> gear up at 330 KIAS, TAKEOFF flaps up at 376 KIAS, both over the FM limits):
+pitch to 15° (softer gains scaled with (185/IAS)²), wings level by aileron, gear UP when definitely airborne (1 s,
+climbing), then Military (gear up before 260 KIAS, FM 2-11), flaps UP at ≥ 260 KIAS and ≥ 300 ft (FM), at 1 500 ft
+above ground reduced power (throttle 7000) and AP altitude hold.
 Abort (idle + brake) at a heading deviation > 10° on the ground or 90 s without liftoff.
 Tail strike guard: on the ground the target pitch is limited to 11° (ground contact at 12.3°, AP-5).
 Evaluation: liftoff IAS, ground roll, max. pitch on the ground (printed at the end + CSV).
@@ -28,7 +31,7 @@ FULL = 16383
 sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
 ae = AircraftEvents(sm)
-ev = {n: ae.find(n) for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "THROTTLE1_SET", "PARKING_BRAKES", "GEAR_UP",
+ev = {n: ae.find(n) for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "AXIS_AILERONS_SET", "THROTTLE1_SET", "PARKING_BRAKES", "GEAR_UP",
                               "FLAPS_UP", "AP_MASTER", "AP_ALT_VAR_SET_ENGLISH", "AP_ALT_HOLD_ON", "AP_VS_VAR_SET_ENGLISH",
                               "AP_HDG_HOLD_ON", "HEADING_BUG_SET")}
 # not in the library's catalog (ae.find -> None, run 5 crashed) -> map directly
@@ -48,9 +51,11 @@ def state(full=True):
         "t": time.time(), "ias": aq.get("AIRSPEED_INDICATED") or 0, "gnd": aq.get("SIM_ON_GROUND") == 1,
         "theta": -rad(aq.get("PLANE_PITCH_DEGREES")) * DEG,          # nose up positive
         "hdg": rad(aq.get("PLANE_HEADING_DEGREES_TRUE")) * DEG, "gs": aq.get("GROUND_VELOCITY") or 0, "agl": 0.0,
+        "bank": 0.0,
     }
     if full:
         s["agl"] = aq.get("PLANE_ALT_ABOVE_GROUND") or 0
+        s["bank"] = rad(aq.get("PLANE_BANK_DEGREES")) * DEG              # raw: positive = left bank
     return s
 
 
@@ -89,7 +94,9 @@ KP_HDG, KD_HDG = 700.0, 400.0            # counts per ° and per °/s (positive 
 KP_TH, KD_TH = 800.0, 200.0              # counts per ° and per °/s (positive axis = nose down, rounds D/E)
 FF_TH = 5000.0                           # feed-forward "pull the stick" (run 3 with 2500: only 6-7° on the ground)
 LIM_RUD, LIM_PULL, LIM_PUSH = 8000, 12000, 3000
-ap_on = False                            # after liftoff the AP takes over (the pitch loop oscillates in the air at ~3 Hz)
+KP_B, KD_B = 250.0, 150.0                # aileron on bank (landing_test.py; +axis increases raw bank)
+THETA_CLIMB = 15.0                       # [S] climb-out attitude
+ap_on = False                            # AP only at the end (1 500 ft), not in the climb-out (trim-based, too slow)
 res = {"start": s0, "liftoff": None, "first_air": None, "theta_max_gnd": 0.0, "vr_t": None}
 prev = state()
 t0 = prev["t"]
@@ -110,22 +117,20 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         if s["ias"] >= vr and res["vr_t"] is None:
             res["vr_t"] = s["t"] - t0
         if res["vr_t"] is not None:
-            theta_cmd = min(theta_target, theta_cmd + 3.0 * dt)
+            theta_cmd = min(THETA_CLIMB if res["liftoff"] else theta_target, theta_cmd + (2.0 if res["liftoff"] else 3.0) * dt)
             if s["gnd"]:
                 theta_cmd = min(theta_cmd, 11.0)       # tail touches at 12.3°
         cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
         cmd_rud = max(-LIM_RUD, min(LIM_RUD, cmd_rud))
         cmd_elev = 0.0
-        if res["vr_t"] is not None and not ap_on:
+        if res["vr_t"] is not None and res["first_air"] is None:
             cmd_elev = -(FF_TH + KP_TH * (theta_cmd - s["theta"]) - KD_TH * q)
             cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
-        axis("AXIS_RUDDER_SET", cmd_rud)
-        if not ap_on:
-            axis("AXIS_ELEVATOR_SET", cmd_elev)
-        if res["liftoff"] and s["agl"] > 30 and not ap_on:
+        elif res["first_air"] is not None and not ap_on and s["agl"] > 0 and (abs(s["bank"]) > 20 or not 0 < s["theta"] < 25):
+            # fallback (hand-flown climb-out unstable): old AP handover, vertical speed mode + heading hold
             axis("AXIS_ELEVATOR_SET", 0)
+            axis("AXIS_AILERONS_SET", 0)
             ev["HEADING_BUG_SET"](int(round(hdg0)) % 360)
-            # vertical speed mode: AP_ALT_HOLD_ON holds the CURRENT altitude (run 4: pushed back onto the runway)
             ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or 0) + 3000)
             ev["AP_VS_VAR_SET_ENGLISH"](4000)
             if aq.get("AUTOPILOT_MASTER") != 1:
@@ -133,7 +138,18 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             ev["AP_PANEL_VS_ON"]()
             ev["AP_HDG_HOLD_ON"]()
             ap_on = True
-            print(f"AP takes over at {s['agl']:.0f} ft above ground, {s['ias']:.0f} kt")
+            print(f"FALLBACK to AP at {s['agl']:.0f} ft, {s['ias']:.0f} kt: bank {s['bank']:.0f}°, pitch {s['theta']:.0f}°")
+        elif res["first_air"] is not None and not ap_on:
+            # airborne: the ground-run gains oscillate at ~3 Hz in the air -> half gains, scaled with 1/q, no feed-forward
+            # beyond the trim-equivalent share
+            ks = max(0.25, min(1.0, (185.0 / max(s["ias"], 100.0)) ** 2))
+            cmd_elev = -(0.5 * FF_TH * ks + ks * (400.0 * (theta_cmd - s["theta"]) - 150.0 * q))
+            cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
+            p_rate = (s["bank"] - prev["bank"]) / dt
+            axis("AXIS_AILERONS_SET", max(-8000, min(8000, -(KP_B * s["bank"] + KD_B * p_rate))))
+        axis("AXIS_RUDDER_SET", cmd_rud)
+        if not ap_on:
+            axis("AXIS_ELEVATOR_SET", cmd_elev)
         dist += s["gs"] * 1.68781 * dt                      # kt -> ft/s
         s["dist"] = dist
         if s["gnd"]:
@@ -148,12 +164,15 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             res["liftoff"] = dict(air_since, tt=air_since["t"] - t0)
             print(f"Liftoff: {air_since['ias']:.0f} kt, pitch {air_since['theta']:.1f}°, "
                   f"ground roll {res['liftoff']['dist']:.0f} ft, {res['liftoff']['tt']:.1f} s")
-        if res["liftoff"] and s["agl"] > 50 and not gear_up:
+        if res["liftoff"] and s["agl"] > 20 and not gear_up:          # FM: gear up when definitely airborne
             ev["GEAR_UP"]()
+            ev["THROTTLE1_SET"](11141)                                 # Military: gear up before 260 KIAS
             gear_up = True
-        if res["liftoff"] and s["agl"] > 400 and not flaps_up:
+            print(f"Gear up at {s['ias']:.0f} KIAS, {s['agl']:.0f} ft")
+        if gear_up and s["ias"] >= 260 and s["agl"] > 300 and not flaps_up:   # FM: flaps UP at ≥ 260 KIAS
             ev["FLAPS_UP"]()
             flaps_up = True
+            print(f"Flaps up at {s['ias']:.0f} KIAS, {s['agl']:.0f} ft")
         w.writerow([round(s["t"] - t0, 2), round(s["ias"], 1), int(s["gnd"]), round(s["theta"], 2),
                     round(theta_cmd, 2), round(err_h, 2), round(s["agl"]), round(dist), round(s["gs"], 1),
                     int(cmd_elev), int(cmd_rud)])
@@ -171,7 +190,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             break
         time.sleep(0.05)
 
-for n in ("AXIS_RUDDER_SET", "AXIS_ELEVATOR_SET"):
+for n in ("AXIS_RUDDER_SET", "AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
     axis(n, 0)
 if not aborted:
     # reduced power: with military + ALT hold the jet reached 600 KIAS at 3 000 ft (run 6)

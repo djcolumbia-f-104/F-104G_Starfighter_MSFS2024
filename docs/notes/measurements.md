@@ -714,3 +714,25 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - **F3 landing 15** (no chute): TD 174 KIAS (FM 170-175 ✓), 44 ft/min, -4 ft; ground roll 3 730 ft -> scaled to
   166.5 KIAS 3 416 ft vs. FM A8-4 3 130 = **+9.1 % ✓** (landing 12: +9.4 %).
 - D5 regression complete.
+
+## 2026-10-30: flap travel coupling found (LE TAKEOFF 15 -> 10°), takeoff climb-out fault, B7 clean
+- **Flap coupling**: MSFS drives all flap systems with ONE travel fraction and stops when the first system reaches its
+  stage: UP->TAKEOFF gave TE 15° / LE 10° (TE stage 15/45 = 1/3 reached first), LAND->TAKEOFF gave TE 22.6° / LE 15°
+  (LE stage 15/30 = 1/2 reached first). FLAPS_INCR/FLAPS_1/DECR all show it (handle index 1, percent 0.5 both times).
+  Every validated takeoff/B4 run used the extending path (TE 15 / LE 10) -> **LE TAKEOFF stage 15 -> 10°** (same
+  physics as validated, no hysteresis); flown TAKEOFF ΔCL is 0.246, not the design 0.30 (T0 target updated).
+  Needs Build All + FULL restart; regression: T3-D (extend path), LAND->TAKEOFF retract check, B4 TAKEOFF optional.
+- **Takeoff climb-out fault** (pete's question; log ..._T3D_takeoff_day4b.csv): after the AP handover at 30 ft the
+  trim-based AP held the jet at 21-34 ft for 12 s while it accelerated 204 -> 321 kt; gear UP only at 50 ft ≈ 330 KIAS
+  (FM: when definitely airborne, up before 260 KIAS), TAKEOFF flaps UP at 400 ft ≈ 376 KIAS (limit 370; FM: up at
+  ≥ 260 KIAS). Liftoff values (measured before) stay valid; no damage flags set. Fix in `takeoff_test.py`: hand-flown
+  climb-out (pitch 15°, half gains scaled with (185/IAS)², wings level by aileron), gear up at 20 ft when definitely
+  airborne then Military, flaps up at ≥ 260 KIAS / 300 ft, fallback to the old AP handover if unstable.
+- **B7 clean** (`config_test.py slow`, 19 000 lb, 1 kt/s level deceleration; card B7-minimum-speeds.md):
+  run 1 (10 000 ft, to 200 KIAS): α 9.0° @ 242, 10.7° @ 227, 12.2° @ 212, 13.9° @ 202 KIAS - consistent with the lift
+  table. Run 2 (15 000 ft): α stuck at 16.2° below ≈ 183 KIAS - script elevator clamp (-12 000 = 12.45°), invalid for
+  the limit. **Run 3** (full elevator): elevator reaches the 17° stop, **α still limited to ≈ 16.2°**, load factor
+  0.91 g at 180 KIAS -> effective trimmed CLmax ≈ 0.80 -> **minimum level speed ≈ 188-190 KIAS**; below that the jet
+  mushes (sink > 2 000 ft/min), wings level, no pitch-up, no departure. FM Fig. 6-4 at 19 000 lb: shaker ≈ 222, min.
+  control ≈ 197 KIAS; FM 6-5 kicker/pitch-up scaled ≈ 196 KIAS -> sim ≈ 4 % below the FM minimum control speed ✓
+  (±5 %), but the behaviour differs (mush instead of pitch-up) -> pitch-up/APC shaker-kicker = test plan H2.

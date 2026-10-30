@@ -97,7 +97,9 @@ def pos(sec, i):
     return v + [None] * (8 - len(v))
 
 
-for i, target in ((1, 0.30), (2, 0.62)):
+# TAKEOFF 0.246: the value actually flown in every validated takeoff (LE reached only 10° because MSFS couples the flap
+# systems by travel fraction, 2026-10-30); the design value 0.30 assumed LE 15°
+for i, target in ((1, 0.246), (2, 0.62)):
     dcl = sum(lcf * (num(sec.get("lift_scalar")) or 1) * (pos(sec, i)[3] or 1) * (pos(sec, i)[0] or 0) / 57.29578
               for sec in systems)
     check("AP-10", f"flap position {i}: ΔCL ≈ {target} over all flap systems (lift_coef_flaps x scalars x rad), add incidence 1",
