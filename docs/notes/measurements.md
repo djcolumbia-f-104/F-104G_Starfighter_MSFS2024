@@ -954,3 +954,10 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   flap lift the sim cannot lift off at a 5° attitude below ≈ 200 kt, so the FM "≈ 5°" is probably a different reference
   (attitude indicator / initial rotation). **Open: redesign the rotation as a pitch-rate command (≈ 2°/s) with a proper
   build-up**, then re-check T3-D (liftoff speed, no bounce) and D1b.
+- **Pitch-rate rotation, first try** (..._T3D_takeoff_qrot1.csv, now option `qrot`, NOT default): the nose rose ≈ 6°/s at
+  164-169 kt, the P term on the rate error PUSHED (cmd +1 600), pitch fell 5.1 -> -0.8° right after the first liftoff at 169 kt;
+  the climb-out fallback (pitch < 0°) handed over to the trim-based AP at 4 ft AGL and set the elevator to 0 -> the jet
+  bounced along the runway at 180-230 kt (sustained liftoff 203 kt after 3 747 ft) and drifted off the centreline (pete:
+  "neben der Piste"). Recovered by the AP climb (no damage). Fixes: default back to the old attitude rotation; fallback only
+  above 100 ft AGL. Lesson: a new takeoff control law needs a build-up first (e.g. a high-speed taxi run with the rotation
+  only up to nose-wheel lift-off and throttle idle, or the law tested in the air at the same speed with gear/flaps down).

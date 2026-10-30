@@ -144,6 +144,7 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3L_landing21_*` (+ `_rollout`) | **F3**, flare -250 ft/min | | TD 178 KIAS / 279 ft/min, 1 skip; +2 % from the final TD | **valid** |
 | `T3D_takeoff_cg5` | T3-D | | 170 kt | valid |
 | `T3D_takeoff_softrot` | T3-D rotation trial FF 3000 / 2°/s | reverted | 171/192 kt, weak climb-out | dev |
+| `T3D_takeoff_qrot1` | T3-D pitch-rate rotation trial | experimental, failed | 169 kt then bounce along the runway to 203 kt, off the centreline | invalid |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

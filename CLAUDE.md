@@ -16,7 +16,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    [S] (compression ratio 1.5, damping 0.7) and the main-gear x (-0.3 ft) against the corrected CG. `tools/rollout_log.py`
    for high-rate data (CONTACT_POINT_COMPRESSION:n reads 0 - find the right SimVar form).
 2. **Takeoff rotation (pete: pulls too early/hard)**: attitude + feed-forward overshoots on the ground (FM 6-5 "dynamic
-   overshoot"), bounce at ≈ 170 kt; softer FF tried and reverted -> redesign as pitch-rate command (≈ 2°/s) with build-up.
+   overshoot"), bounce at ≈ 170 kt; softer FF tried and reverted; a first pitch-rate rotation (option `qrot`) failed (pushed the nose down after
+   liftoff, AP fallback at 4 ft, jet bounced along/off the runway) -> design the rate law offline + build-up in the air first.
    Flare now -250 ft/min; the remaining touchdown skip points to gear spring/damping [S] or the template ground effect
    (`lift_coef_ground_effect_mach_table` ≈ +8 % at M 0.26) - needs a source or a dedicated touchdown test.
 3. Remaining test plan: H2 pitch-up / APC shaker-kicker (reference NASA TN D-6943 buffet with flaps, local PDF), H5 drag

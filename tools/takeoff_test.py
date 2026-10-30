@@ -4,6 +4,7 @@ Usage (with the Python of the simconnect-mcp venv):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\takeoff_test.py <output.csv> [vr_kt=157] [theta_target=10.5] [fm]
   fm: FM 2-20 brake release technique (D1b ground run, Fig. A2-5): Military against the brakes -> release -> max AB
       (default: full AB against the parking brake, released at N1 >= 99 %)
+  qrot: EXPERIMENTAL pitch-rate rotation (2026-10-30, failed first try - see code); default: attitude ramp 3°/s + feed-forward 5000
 Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, trim 5°, parking brake set.
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
 the runway heading -> from vr_kt pull the pitch to theta_target at 3°/s (rotate ~20 kt below liftoff speed, FM 6-5)
@@ -28,6 +29,11 @@ out = sys.argv[1]
 vr = float(sys.argv[2]) if len(sys.argv) > 2 else 157.0
 theta_target = float(sys.argv[3]) if len(sys.argv) > 3 else 10.5
 FM_TECH = "fm" in sys.argv[4:]
+# 2026-10-30: experimental pitch-RATE rotation ("qrot"). First try (..._T3D_takeoff_qrot1): the nose rose ≈ 6°/s, the P term
+# PUSHED (+1 600), pitch fell 5 -> -0.8° right after the first liftoff, the AP fallback took over at 4 ft and the jet bounced
+# along the runway at 180-230 kt and drifted off the centreline (pete: "neben der Piste") -> NOT the default; the default stays
+# the old attitude ramp + feed-forward (known: slight overshoot, FM 6-5)
+QROT = "qrot" in sys.argv[4:]
 DEG = 57.29578
 FULL = 16383
 
@@ -136,10 +142,22 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
         cmd_rud = max(-LIM_RUD, min(LIM_RUD, cmd_rud))
         cmd_elev = 0.0
-        if res["vr_t"] is not None and res["first_air"] is None:
+        if res["vr_t"] is not None and res["first_air"] is None and QROT:
+            # pitch-rate rotation: q_cmd ≤ 2°/s, reduced to 0 approaching the target attitude (no overshoot); PI on the
+            # filtered pitch rate, the integral finds the stick position (FM 6-5: smooth back stick, no fast input)
+            res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
+            q_cmd = max(0.0, min(2.0, 0.8 * (theta_target - s["theta"])))
+            e_q = q_cmd - res["qf"]
+            res["iq"] = max(-1.0, min(4.0, res.get("iq", 0.0) + e_q * dt))
+            cmd_elev = -(600.0 * e_q + 1500.0 * res["iq"])
+            cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
+            theta_cmd = s["theta"]                      # airborne attitude ramp starts from the actual attitude
+        elif res["vr_t"] is not None and res["first_air"] is None:
             cmd_elev = -(FF_TH + KP_TH * (theta_cmd - s["theta"]) - KD_TH * q)
             cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
-        elif res["first_air"] is not None and not ap_on and s["agl"] > 0 and (abs(s["bank"]) > 20 or not 0 < s["theta"] < 25):
+        # fallback only well clear of the ground (2026-10-30: a pitch dip to -0.8° at 4 ft handed over to the slow AP and
+        # left the elevator at 0 while the jet bounced along the runway)
+        elif res["first_air"] is not None and not ap_on and s["agl"] > 100 and (abs(s["bank"]) > 20 or not 0 < s["theta"] < 25):
             # fallback (hand-flown climb-out unstable): old AP handover, vertical speed mode + heading hold
             axis("AXIS_ELEVATOR_SET", 0)
             axis("AXIS_AILERONS_SET", 0)
