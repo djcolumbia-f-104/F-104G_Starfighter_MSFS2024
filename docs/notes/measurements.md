@@ -785,3 +785,10 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Candidate causes (not changed): low-speed AB thrust (D-7137 Table 3: 11 200 static -> 13 640 at M 0.4; the sim's AB
   thrust was validated at M ≥ 0.7 in flight and statically), rolling friction, the rotation technique (FM attitude
   ≈ 5°, script 10.5° with a bounce). Next: log thrust in takeoff_test.py and compare with D-7137 M 0-0.3.
+- **Follow-up (thrust-logged takeoff, ..._D1b_takeoff_thrust.csv + _fm2.csv)**: same result (170 kt after 2 678 ft,
+  187 kt after 3 224 ft). AB net thrust on the roll vs. D-7137 Table 3 (interpolated to 1 460 ft, M 0-0.24):
+  **0.969-0.979** at every speed up to 150 KIAS (static 10 365 lbf). Mid-roll acceleration 26.7 -> 151.5 KIAS in
+  12.4 s = 17.0 ft/s²; T/m 19.1 minus ≈ 2.1 ft/s² for drag (≈ 780 lbf at q ≈ 40 psf with gear/flaps) and rolling friction
+  (≈ 380 lbf) -> consistent. The +10 % = ≈ +3 % from the -2.5 % thrust plus the rotation phase (script pulls to 10.5°
+  from 157 kt -> high induced drag; FM attitude ≈ 5°) and the first 3 s after brake release (14 ft/s²).
+  **D1b ◐ accepted, no cfg change**; technique (rotation attitude/timing) to refine with the takeoff script later.
