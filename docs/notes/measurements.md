@@ -920,3 +920,19 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   touchdown (160-180 kt band 8.6-9 ft/s², nose slightly up). **F3 ◐ open**: either the CG shift changed the gear load
   split (static pitch on the runway 0.8° vs. 0.4° before) or it is run-to-run scatter -> investigate with a
   high-rate rollout log (brake force, gear loads, pitch) before any change.
+
+## 2026-10-30: F3 ground roll investigation - the "+14 %" was skipping after touchdown, not braking
+- New `tools/rollout_log.py` (13 SimVars, ≈ 2 Hz, only below 500 ft AGL; gear compression via CONTACT_POINT_COMPRESSION:n
+  reads 0 - not usable in this form). Landing 18 (..._T3L_landing18_*): first touch 175 KIAS at 22-60 ft/min, then
+  **two skips** (≈ 3.5 s airborne, ≈ 1 000 ft) before the final touchdown at 164 KIAS. Ground roll from the FINAL
+  touchdown 3 025 ft -> scaled (166.5/164)² **-0.3 %** ✓; mid-roll deceleration 12-15 ft/s² as before. The old evaluation
+  counted from the first touch (+15 %). The CG change only moved the nose-gear load share from 12.3 to 12.6 % - not the cause.
+- `landing_test.py`: ground roll now from the final touchdown (reset while airborne), skips counted and reported.
+  Landing 19: 3 skips, 2 717 ft from 159 KIAS -> **-4.8 %** ✓. High-rate log: porpoising pitch +4.8 <-> -2.4° (≈ 1 s) right
+  after the touch - triggered by the script's instant nose-down push (-4.2°, near the 5° stop) at ≈ 175 kt.
+- Fix (technique, not cfg): nose-down push ramped over 3 s, wheel brakes only once the nose is down (pitch < 1°, FM).
+  Landing 20: **1 skip** (2.3 s), 2 853 ft from 161 KIAS -> **-2.6 %** ✓. Remaining skip: first touch at 174 KIAS with
+  22 ft/min and 0.9-1.7° pitch, the nose rises to 4.4° after the main-gear contact and the wing (LAND flaps) still flies.
+- **F3 ✓** (-0.3 / -4.8 / -2.6 % with the corrected measurement). Open (separate item): touchdown dynamics - flare too soft
+  (≈ 20-60 ft/min) and the nose-up after main-gear contact; candidates: flare target sink (≈ 150-250 ft/min), gear
+  spring/damping (compression ratio 1.5, damping 0.7 [S]), main-gear x position vs. the corrected CG.

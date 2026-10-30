@@ -253,17 +253,31 @@ while time.time() - t0 < 600:
             res["t_td"] = t
         res["last_vs"] = vs
     elif phase == "rollout":
-        roll += gs_kt * 1.68781 * dt
+        # 2026-10-30 (landing 18, high-rate rollout log): the jet skipped twice after the first touch (3.5 s airborne,
+        # ≈ 1 000 ft) -> the ground roll counts from the FINAL touchdown (FM A8-3/A8-4 assume no skip); skips are reported
+        if not gnd:
+            roll = 0.0
+            res["air"] = True
+        else:
+            if res.get("air"):
+                res["air"] = False
+                res["skips"] = res.get("skips", 0) + 1
+                res["td_final_ias"] = ias
+            roll += gs_kt * 1.68781 * dt
         # FM 2-25: lower the nose wheel at once (4 000 already gives -4.2° of the 5° nose-down stop; 10 000 tried
-        # 2026-10-30: -5.0°, no benefit, ground roll even longer -> reverted)
-        ev("AXIS_ELEVATOR_SET", 4000)
+        # 2026-10-30: -5.0°, no benefit). 2026-10-30 (landing 19, high-rate log): the instant push at ≈ 175 kt slammed the
+        # nose wheel down and the jet porpoised (pitch +4.8 <-> -2.4°, ≈ 1 s) with 2-3 skips -> ramp the push over 3 s
+        ev("AXIS_ELEVATOR_SET", int(4000 * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
+        nose_down = theta < 1.0 and t - res["t_td"] > 1.0                # FM: brakes after the nose wheel is down
         if CHUTE and not res.get("chute") and t - res["t_td"] > 1.0:     # FM 2-28: chute blossoms as the nose wheel touches
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
         ev("AXIS_RUDDER_SET", int(clamp(-700 * wrap(HDG - hdg) - 3 * c, -8000, 8000)))
-        ev("AXIS_LEFT_BRAKE_SET", 16383)                              # FM A8-3/A8-4: hard braking to the stop
-        ev("AXIS_RIGHT_BRAKE_SET", 16383)
+        if nose_down or res.get("braking"):
+            res["braking"] = True
+            ev("AXIS_LEFT_BRAKE_SET", 16383)                          # FM A8-3/A8-4: hard braking to the stop
+            ev("AXIS_RIGHT_BRAKE_SET", 16383)
         if gs_kt < 3:
             res["roll"] = roll
             break
@@ -320,6 +334,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
 print(f"{len(rows)} samples ({len(rows) / max(rows[-1][0], 1):.1f} Hz) -> {out}" if rows else "no samples")
 if "td" in res:
     print(f"Result: touchdown {res['td']['ias']:.0f} KIAS (FM normal {v_td:.0f}-{v_td + 5:.0f}), "
-          f"{res['td']['s']:.0f} ft past the threshold, ground roll {res.get('roll', float('nan')):.0f} ft")
+          f"{res['td']['s']:.0f} ft past the threshold, ground roll {res.get('roll', float('nan')):.0f} ft from the final touchdown "
+          f"at {res.get('td_final_ias', res['td']['ias']):.0f} KIAS ({res.get('skips', 0)} skip(s) after the first touch)")
 else:
     print(f"Result: no touchdown (phase {phase})")

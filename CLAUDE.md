@@ -6,35 +6,29 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-29 evening) <<<
-**TOMORROW START HERE (note for 2026-10-30):**
-0. Session start: pete loads the flight (EDDM 26L, clear skies). Checks: MCP `check_build` (T1 green), `preflight`,
-   weather (AMBIENT_WIND_VELOCITY ≈ 1 kt, 1013.25 hPa), trim-hold check (AP off -> SimVar trim 5° must stay),
-   `tools/refuel.py` (4 080 lb fuselage, tips EMPTY - a fresh load had 87 gal in each tip). Engine cold?
-   `sim_event ENGINE_AUTO_START`. **Never MCP `position` from the ground** (crashed MSFS 2026-10-29): take off first
-   (`runway_start` + `takeoff`), then position in the air with throttle ≥ 7 000 (5 000 gave a -22° dive).
-1. **Approach N1/FF check** (last open D5 regression item): next landing run (`landing_test.py <csv> 6 2.5`), compare
-   approach N1 (FM Fig. 2-7: 87-90 %) and FF (was 8 270 lb/h at 91 % before TSFC 0.72).
-2. Test plan order (`docs/test-plan.md` section 4): **B7 minimum speeds** (FM Fig. 6-4: LAND flaps shaker 155 / min.
-   control 150 KIAS at 19 500 lb; check that the sim does not allow touchdowns far below the FM speeds), then
-   ~~T3-H~~ (done 2026-10-30: reference conflict D-7137 vs. D-6398, see measurements), D1b takeoff ground
-   run vs. FM Fig. A2-4 (first data point: 2 627 ft at 18 938 lb), D3 climb, H5 drag chute logic.
-3. **CG (2026-10-30)**: CR-2144 0.07/0.164 are configuration CGs, not limits; sim CG moves FORWARD with fuel burn,
-   F-104A AFT (empty CG 0.07 MAC misread) -> work package: F-104G weight-and-balance data, then one change round with
-   full regression. Still open from 2026-10-29 list: 0d NTRS/DTIC primary-source search
-   (landing config / BLC, CG limits - J79 part-power fuel is now covered by the FM charts); MCP `landing` tool parsing.
-Results 2026-10-29 (details `docs/notes/measurements.md`, data index `docs/data/README.md`):
-- ISA re-verification: B6 +905 ft/min ✓, B5 183 KIAS ✓, T3-A/G ✓, T3-F 1.04 (M 0.6-0.95 1.06-1.09), T3-H subsonic
-  -13..-24 % ✗ (open), T3-J 1.60 s ✓, T3-E2 0.34/0.43 ✓.
-- F2 with chute +17.6 % = known deviation: MSFS ground spoiler drag is no drag chute (doubling it changed nothing)
-  -> own logic later (H5).
-- **B4 glide**: clean 10.6 NM/10 000 ft ✓; TAKEOFF flaps 8.5 -> **TAKEOFF flap drag scalar 1 -> 0.42** -> 9.8 NM
-  (-11 %, accepted ◐); T3-D 170 kt (-4.2 %) ✓.
-- **D5 fuel flow** (`tools/cruise_test.py`, FM Fig. A6-1 range + A5-1 endurance, DI 0): cruise FF was 1.66-1.86x the FM
-  (gross-thrust TSFC includes ram drag) -> **ThrustSpecificFuelConsumption 1.26 -> 0.72** -> 0.96-1.07 ✓; AB FF
-  unchanged (full AB uses only the AB TSFC); engine start/idle in flight ✓. Known: static ground FF now low.
-- Data index `docs/data/README.md` written (validity of every log: live weather before landing 10 = no evidence for
-  drag/climb/ground roll).
+## >>> CONTINUE HERE (state 2026-10-30 evening) <<<
+**NEXT START HERE (note for the next session):**
+0. Session start as before (check_build, preflight, weather ≈ 1 kt / 1013.25, trim-hold check, `tools/refuel.py` - the
+   standard state is NOW auxiliary cell EMPTY + 4 080 lb main cells, CG 9.2 % MAC). Never position from the ground; take off
+   first. Never leave the jet at idle after a test. Never set all tanks to 0 (engine flames out).
+1. **Touchdown dynamics (open)**: the scripted landing touches at ≈ 174 KIAS with only 20-60 ft/min and skips once (nose
+   rises 1.7 -> 4.4° after the main-gear contact). Options: flare target sink ≈ 150-250 ft/min; check gear spring/damping
+   [S] (compression ratio 1.5, damping 0.7) and the main-gear x (-0.3 ft) against the corrected CG. `tools/rollout_log.py`
+   for high-rate data (CONTACT_POINT_COMPRESSION:n reads 0 - find the right SimVar form).
+2. Takeoff: climb-out pitch gains now 200/60 (smooth, slightly sluggish near the ground); rotation technique (FM attitude
+   ≈ 5° vs. script 10.5°) still open (D1b +10 %).
+3. Remaining test plan: H2 pitch-up / APC shaker-kicker (reference NASA TN D-6943 buffet with flaps, local PDF), H5 drag
+   chute logic, low-fuel approach at CG ≈ 18 % (new case after the CG rework), MCP `landing` tool parsing.
+Results 2026-10-30 (details `docs/notes/measurements.md`, index `docs/data/README.md`):
+- D5 closed (approach N1 89.5 %, FF 4 311 lb/h); flap travel coupling fixed (LE TAKEOFF stage 10°); takeoff climb-out
+  hand-flown (gear/flap limits); B7 min. speeds 3-7 % below FM (elevator-limited mush; pitch-up -> H2); T3-H explained
+  (D-7137 vs. D-6398 reference conflict); D1b +10 %; D3 time +8 % / fuel +20 % (AB FF rises with Mach, known); D4 Mach 2.056
+  at 40 000 ft (sim IAS reads high supersonic -> limits on EAS); D7 climb max thrust -4 %, military +4 % ✓.
+- **CG rework**: CR-2144 0.070/0.164 c̄ are configuration CGs (50 % fuel + ammo / 20 % fuel), not limits; empty CG 25 % MAC,
+  main cells 6.2 ft, aux 15 ft -> CG travels aft with fuel burn (0.9 % full ... 22.7 % zero fuel). Regression ✓ (T3-D,
+  T3-A/F/G, B6, B7, F3 with the final-touchdown measurement).
+- Tools: climb_test.py, cruise_test.py, rollout_log.py; idle pre-phases (set_pos does not reliably take the speed);
+  runway_start gear-first + settle check; accel_run ends at part power, stops on EAS.
 
 ## Older state (2026-10-28 evening)
 Results 2026-10-28 (details `docs/notes/measurements.md`, cards in `docs/notes/test-cards/`):

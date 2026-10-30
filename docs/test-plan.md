@@ -100,7 +100,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 |---|---|---|---|---|
 | F1 | Approach + flare (dry run) | `landing_test.py ... 4000` (virtual runway) | card T3-L-landing: TD 165-180 KIAS, < 600 ft/min | ✓ dry runs 15-17 (go-around 24-30 ft, flaps retract) |
 | F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ◐ TD ✓; roll +17.6 % (2026-10-29, chute 0.43): ground spoiler drag is no usable chute -> known deviation until H5 |
-| F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-28 calm weather, brakes 0.82: TD 175 KIAS, roll 3 782 ft (+9.4 % scaled) |
+| F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-30 after the CG rework, roll from the FINAL touchdown (skips excluded): -0.3 / -4.8 / -2.6 %; open: touchdown skip (flare/gear dynamics) |
 | F4 | Minimum-run landing | TD 140 kt near the threshold | FM 2-28 | ○ |
 | F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ○ |
 | F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ○ |

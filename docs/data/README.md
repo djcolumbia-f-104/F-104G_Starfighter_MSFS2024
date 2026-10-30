@@ -134,9 +134,13 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3AF_decel_cg` | **T3-A/F/G regression** | CG rework | 1.08 α, CD 1.03, CL band -0.031 | **valid** |
 | `B6_climb4500_cg` | **B6 regression** | idle pre-phase | +982 ft/min | **valid** |
 | `B7_clean_cg` | **B7 clean regression** | | α max 16.2°, min level ≈ 185-188 KIAS | **valid** |
-| `T3L_landing16_nochute_cg` | **F3 regression** | CG rework | TD 175 KIAS; roll +14 % | **valid** (open deviation) |
+| `T3L_landing16_nochute_cg` | F3 regression | CG rework | TD 175 KIAS; roll +14 % from the first touch (skip) | superseded (evaluation from first touch) |
 | `T3D_takeoff_cg_gains` | **T3-D + climb-out gains 200/60** | | 170 kt; climb-out smooth | **valid** |
 | `T3L_landing17_nochute_cg` | F3 with nose-down 10 000 | script trial (reverted) | roll +24 % | dev |
+| `T3L_landing18_*` (+ `_rollout`) | **F3**, high-rate rollout log | CG rework | 2 skips; from final TD -0.3 % | **valid** |
+| `T3L_landing19_*` (+ `_rollout`) | **F3** | final-TD measurement | 3 skips; -4.8 %; porpoising seen | **valid** |
+| `T3L_landing20_*` (+ `_rollout`) | **F3** | nose-down ramp 3 s, brakes after nose down | 1 skip; -2.6 % | **valid** |
+| `T3D_takeoff_cg2` / `cg3` / `cg4` | T3-D | | 171/191, 171, 171 kt | valid (liftoff) |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
