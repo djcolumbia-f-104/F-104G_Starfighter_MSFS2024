@@ -30,6 +30,20 @@ Results 2026-10-30 (details `docs/notes/measurements.md`, index `docs/data/READM
 - Tools: climb_test.py, cruise_test.py, rollout_log.py; idle pre-phases (set_pos does not reliably take the speed);
   runway_start gear-first + settle check; accel_run ends at part power, stops on EAS.
 
+## Older state (2026-10-29 evening)
+Results 2026-10-29 (details `docs/notes/measurements.md`, data index `docs/data/README.md`):
+- ISA re-verification: B6 +905 ft/min ✓, B5 183 KIAS ✓, T3-A/G ✓, T3-F 1.04 (M 0.6-0.95 1.06-1.09), T3-H subsonic
+  -13..-24 % ✗ (open), T3-J 1.60 s ✓, T3-E2 0.34/0.43 ✓.
+- F2 with chute +17.6 % = known deviation: MSFS ground spoiler drag is no drag chute (doubling it changed nothing)
+  -> own logic later (H5).
+- **B4 glide**: clean 10.6 NM/10 000 ft ✓; TAKEOFF flaps 8.5 -> **TAKEOFF flap drag scalar 1 -> 0.42** -> 9.8 NM
+  (-11 %, accepted ◐); T3-D 170 kt (-4.2 %) ✓.
+- **D5 fuel flow** (`tools/cruise_test.py`, FM Fig. A6-1 range + A5-1 endurance, DI 0): cruise FF was 1.66-1.86x the FM
+  (gross-thrust TSFC includes ram drag) -> **ThrustSpecificFuelConsumption 1.26 -> 0.72** -> 0.96-1.07 ✓; AB FF
+  unchanged (full AB uses only the AB TSFC); engine start/idle in flight ✓. Known: static ground FF now low.
+- Data index `docs/data/README.md` written (validity of every log: live weather before landing 10 = no evidence for
+  drag/climb/ground roll).
+
 ## Older state (2026-10-28 evening)
 Results 2026-10-28 (details `docs/notes/measurements.md`, cards in `docs/notes/test-cards/`):
 - Hand-flown landing script complete (dry runs 13-17, outlier rejection, FM go-around flown by the script, 24-30 ft
