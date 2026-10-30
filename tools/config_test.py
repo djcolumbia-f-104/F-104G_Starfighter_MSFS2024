@@ -144,7 +144,9 @@ while time.time() - t0 < 300:
 
     if phase == "pre":
         vs_tgt = clamp(4.0 * (alt0 - alt), -1000.0, 1000.0)
-        if ias <= ias_tgt + 5 or el > 120:
+        # level mode: end the pre-phase high (200 KIAS) - ending at the 170 target at idle let the speed decay to 150 while
+        # the engine spooled up, onto the back side of the drag curve (B5 2026-10-31 run h5b aborted)
+        if ias <= (200.0 if mode == "level" else ias_tgt + 5) or el > 120:
             phase = "test"
             ev("THROTTLE1_SET", 11141)
             print(f"pre-phase done after {el:.0f} s at {ias:.0f} KIAS")
@@ -172,7 +174,10 @@ while time.time() - t0 < 300:
             done = ias < IAS_STOP or alpha > ALPHA_STOP or el > 240
         else:
             bad = ias < 150 or abs(bank) > 30 or not (-20 if GLIDE else -10) < theta < 20 or agl < (3000 if GLIDE else 1500)
-            done = (el > 200 or alt < alt0 - 9000) if GLIDE else (el > 120 or (mode == "climb" and alt > alt0 + 3000 and el > 40))
+            # level: 180 s (2026-10-31 B5: after the idle pre-phase the jet started ≈ 35 ft low and was still accelerating
+            # at 120 s - 177.5 KIAS rising vs. 182.8 steady on 2026-10-29)
+            done = (el > 200 or alt < alt0 - 9000) if GLIDE else (el > (180 if mode == "level" else 120)
+                                                                   or (mode == "climb" and alt > alt0 + 3000 and el > 40))
         if bad or done:
             reason = (f"ABORT: IAS {ias:.0f}, bank {bank:.0f}°, pitch {theta:.0f}°, AGL {agl:.0f}, VS {res['vs_f']:.0f}" if bad
                       else f"test done at {ias:.0f} KIAS, α {g('INCIDENCE_ALPHA') * DEG:.1f}°, {el:.0f} s")

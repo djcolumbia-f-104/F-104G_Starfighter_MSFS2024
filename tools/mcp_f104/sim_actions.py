@@ -92,6 +92,9 @@ elif cmd == "position":
 
 elif cmd == "runway":
     ev("THROTTLE1_SET", 0)
+    # 2026-10-31: after an F2 landing the speed brakes (= drag chute emulation on the ground) stayed out and the next
+    # takeoff ran with the chute drag -> always retract
+    ev("SPOILERS_OFF")
     if g("AUTOPILOT_MASTER") == 1:
         ev("AP_MASTER")
     # 2026-10-30: with the gear UP (after a belly landing) set_pos put the jet down at belly height and the extending gear

@@ -157,6 +157,12 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3L_landing23_nochute` (+ `_rollout`) | **F3** regression | skip detection fix | TD 172 KIAS, 0.5 s hop; +9.8 % | **valid** |
 | `H5_coast_clean` / `H5_coast_sb` | **H5 ground coast-down** | spoiler_limit 52° | 2.62 / 3.40 ft/s² (150 -> 110 KIAS, no wheel brakes) | **valid** |
 | `H5_coast_sb90` / `H5_coast_sb65` | H5 spoiler_limit experiments | drag_coef_spoilers 0.43 | 13.28 / 11.37 ft/s² | **valid** (experiment) |
+| `H5_coast_sb65c012` | **H5 coast, chute emulation** | 65° / 0.12 | 5.23 ft/s² (pred. 5.2) | **valid** |
+| `T3L_landing24_chute` (+ `_rollout`) | **F2 with chute** | 65° / 0.12 | TD 171 KIAS; 1.6 s skip; +0.1 % vs. A8-3 | **valid** |
+| `T3D_takeoff_b5` | T3-D | speed brakes still out (chute drag) | slow takeoff | invalid |
+| `B5_level4500_sb_h5` / `h5b` | B5 | not settled / pre-phase abort | 177.5 rising / abort at 150 | dev |
+| `B5_level4500_sb_h5c` | **B5 regression** | 180 s, pre-phase to 200 KIAS | 181.3 KIAS | **valid** |
+| `T3D_takeoff_f2` | T3-D | | 171 / 191 kt | valid (liftoff) |
 | `T3D_taxi_qrot2b` | rotation law v2 taxi build-up | runway_start heading fix, taxi stop with 0° hold | no push; break-out 3.6°/s; 0.6 s hop; stopped on the centreline | valid (build-up, law not adopted) |
 
 ## Keeping this index

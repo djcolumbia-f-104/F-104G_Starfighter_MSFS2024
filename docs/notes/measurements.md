@@ -1044,3 +1044,21 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   3 733 ft); chute + speed brakes on the ground ΔCD ≈ 0.136 + 0.042 at mean q ≈ ½ q_TD ≈ 51 psf -> +2.95 ft/s² ->
   roll x 0.80 -> F2 scaled ≈ 3 435 x 0.80 ≈ **2 750 ft vs. FM A8-3 2 760 (≈ 0 %)**; FM chute effect -12 % vs. A8-4 is
   exceeded in the sim because F3 itself is +9.7 %.
+
+## 2026-10-31: H5 drag chute emulation VERIFIED (spoiler_limit 65°, drag_coef_spoilers 0.12)
+| Check | Prediction (written before) | Measured |
+|---|---|---|
+| Coast 150 -> 110 KIAS, speed brakes out (..._H5_coast_sb65c012.csv) | ≈ 5.2 ft/s² | **5.23 ft/s²** |
+| F2 landing with chute (landing 24, ..._T3L_landing24_chute + _rollout) | ≈ 2 750 ft (≈ 0 %) | **2 957 ft from the final TD at 172.3 KIAS -> scaled 2 763 ft vs. FM A8-3 2 760 = +0.1 %** ✓ |
+| B5 speed brakes in flight (air limit 52° unchanged) | unchanged (182.8 KIAS) | **181.3 KIAS** (-0.8 %) ✓ (run h5c) |
+- F2 had one real skip (≈ 1.6 s, 120.0 -> 122.1 s) at the first touch (171 KIAS, 206 ft/min); excluded by the
+  final-touchdown measurement. Chute deployed at 172 KIAS (limit 180, FM 2-28).
+- **Side effect found and fixed**: after the F2 landing the speed brakes stayed out; the next takeoff (..._T3D_takeoff_b5,
+  INVALID) accelerated with the chute drag (Vr after 17.5 s instead of 15.8, first liftoff after 3 001 ft) and the jet then
+  flew with speed brakes out. Fixes: `runway_start` sends SPOILERS_OFF; takeoff_test.py retracts and checks the handle.
+- config_test.py level mode (B5) after the idle pre-phase: run h5 not settled at 120 s (177.5 KIAS, still accelerating);
+  run h5b: the pre-phase ended at the 170 KIAS target at idle -> speed decayed to 150 KIAS during the spool-up, back side
+  of the drag curve, abort. Fixes: level mode runs 180 s and its pre-phase ends at 200 KIAS (Military from above).
+- **H5 ✓**: drag chute = speed brake handle on the ground with spoiler_limit 65° > air_spoiler_limit 52° and
+  drag_coef_spoilers 0.12 (ground ΔCD ≈ 0.136). Pilot note: speed brakes OUT on the ground = chute drag (retract for taxi
+  and takeoff). The real chute (MB-7G 180 KIAS limit, jettison) is not modelled as a separate handle (later, cockpit).

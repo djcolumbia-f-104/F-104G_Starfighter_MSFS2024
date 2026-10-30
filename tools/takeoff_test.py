@@ -99,6 +99,12 @@ RWY_HDG = 263.4
 if abs(wrap(s0["hdg"] - RWY_HDG)) > 2.0:
     sys.exit(f"Aircraft heading {s0['hdg']:.1f}° not aligned with runway 26L ({RWY_HDG}°) - aborted (run runway_start again)")
 hdg0 = RWY_HDG
+# speed brakes out on the ground = drag chute emulation (spoiler_limit 65° > air limit) -> must be in for takeoff
+ev_sb = Event(b"SPOILERS_OFF", sm)
+ev_sb()
+time.sleep(2.5)                                          # spoiler_extension_time 2 s
+if (aq.get("SPOILERS_HANDLE_POSITION") or 0) > 0.01:
+    sys.exit("Speed brakes not retracted - aborted")
 if aq.get("BRAKE_PARKING_POSITION") != 1:
     ev["PARKING_BRAKES"]()
 axis("AXIS_ELEVATOR_SET", 0)

@@ -18,6 +18,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
       Side effect to note: speed brakes out on the ground now give the "chute" drag (taxi/takeoff with speed brakes in).
    (2026-10-31: analysis gate added to skill f104-testcard section 2b; SDK pages fetched: spoiler drag = coef x δ[rad],
    springs from max gross weight, native Stall Protection System (shaker + pusher) for H2 - see research.md.)
+   DONE 2026-10-31: B (H5) ✓ - coast 5.23 ft/s² (pred. 5.2), F2 +0.1 % vs. A8-3, B5 181.3 KIAS unchanged; speed brakes
+   now retracted by runway_start/takeoff_test (a takeoff with the chute drag happened once).
    C. Then: faster ground loop for the rotation law (qrot v2 taxi build-up: no push, but 3.6°/s break-out), H2 pitch-up /
       APC (reference NASA TN D-6943, local PDF).
 **State 2026-10-31** (details `docs/notes/measurements.md`, index `docs/data/README.md`):
