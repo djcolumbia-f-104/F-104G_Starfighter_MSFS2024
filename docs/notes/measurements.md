@@ -882,3 +882,17 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   flown at 9.6 %; F-104A data for a G with a different nose and an auxiliary tank). Proposed work package: get F-104G
   weight-and-balance data (FM Section V loading/CG chart, D-6398/D-7137 test-aircraft CG, a G weight report), then one
   change round with full regression (T3-A/F/G, T3-D, T3-L, B5/B6, landings).
+
+## 2026-10-30: CG rework (pete's decision: correct now) - change, regression pending
+- Key detail: the two CR-2144 configurations differ in ammunition too - nominal "clean, 750 rounds", power approach
+  "clean" -> 16 300 - 14 126 = 2 174 lb = 30 % fuel (1 747 lb) + ≈ 427 lb ammunition. Fit in the F-104A frame (zero-fuel
+  weight without ammo 12 961 lb, ammo at ≈ 13 ft [S], auxiliary cell drains first): main-cell centroid **6.2 ft**
+  (≈ F.S. 398, around the inlet ducts), zero-fuel CG 0.34 ft -> empty CG without pilot ≈ **0 ft = 25 % MAC**.
+- Change (needs Build All + FULL restart): `empty_weight_CG_position` 1.7 -> 0.0; Center1 -1.6 -> 6.2 ft; Center2
+  5.0 -> 15.0 ft (ahead of the forward main cell [S]); CG limits -0.05 / 0.25 [S]; `tools/refuel.py` standard state now
+  as in flight: auxiliary cell EMPTY, 4 080 lb in the main cells (was Center2 full + 3 150 lb).
+- Predicted CG (G weights): full internal ≈ 0.4 %, test standard 4 080 lb ≈ 8.7 % (was 9.6 %), 50 % ≈ 11.8 %, 20 % ≈ 17.5 %,
+  zero fuel ≈ 22 % MAC -> aft travel with fuel burn as the real aircraft; the test standard moves only ≈ 1 % MAC.
+- Regression plan: CG at the fuel states (CG_PERCENT), trim-hold check, T3-D takeoff (incl. new climb-out), T3-A/F/G
+  deceleration, B6 climb, B7 clean (elevator-limited α), T3-L approach trim + F3 landing; low-fuel approach (20 %) as a
+  new check (CG ≈ 17.5 %: trim and stability).
