@@ -1034,3 +1034,13 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Chute emulation: spoiler_limit 65° + **drag_coef_spoilers 0.43 -> 0.12** (≈ +0.12 ground ΔCD, chute estimate for FM -12 %).
   Pending: Build All + reload, coast check (expect ≈ 4.5-5 ft/s²), F2 landing vs. FM A8-3 2 760 ft, regression: in-flight
   speed brakes (air limit 52° unchanged) and F3 (no speed brakes on the ground -> unaffected).
+
+## 2026-10-31: H5 drag chute emulation - analysis and prediction (analysis gate, before flying)
+- Formula (SDK flight_model.cfg): ground spoiler drag = drag_coef_spoilers x δ [rad] when δ > air limit -> 0.12 x 1.134 rad =
+  **ΔCD 0.136** on the ground (+ the air speed-brake 0.042 is replaced; measured 52° value 0.042).
+- Coast-down prediction (150 -> 110 KIAS, mean q ≈ 57.2 psf, 601 slug): clean 2.62 ft/s² + 0.136 x 57.2 x 196.1 / 601 =
+  +2.54 -> **≈ 5.2 ft/s²** with speed brakes out.
+- F2 prediction: F3 (no chute, no speed brakes) mean deceleration V_TD² / (2 s) ≈ 11.5 ft/s² (landing 23: 173.4 KIAS,
+  3 733 ft); chute + speed brakes on the ground ΔCD ≈ 0.136 + 0.042 at mean q ≈ ½ q_TD ≈ 51 psf -> +2.95 ft/s² ->
+  roll x 0.80 -> F2 scaled ≈ 3 435 x 0.80 ≈ **2 750 ft vs. FM A8-3 2 760 (≈ 0 %)**; FM chute effect -12 % vs. A8-4 is
+  exceeded in the sim because F3 itself is +9.7 %.
