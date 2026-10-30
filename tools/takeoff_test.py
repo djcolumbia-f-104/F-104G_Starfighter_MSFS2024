@@ -1,7 +1,9 @@
 """Test T3-D: takeoff run, controlled via SimConnect (Claude flies the takeoff per FM 6-5).
 
 Usage (with the Python of the simconnect-mcp venv):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\takeoff_test.py <output.csv> [vr_kt=157] [theta_target=10.5]
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\takeoff_test.py <output.csv> [vr_kt=157] [theta_target=10.5] [fm]
+  fm: FM 2-20 brake release technique (D1b ground run, Fig. A2-5): Military against the brakes -> release -> max AB
+      (default: full AB against the parking brake, released at N1 >= 99 %)
 Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, trim 5°, parking brake set.
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
 the runway heading -> from vr_kt pull the pitch to theta_target at 3°/s (rotate ~20 kt below liftoff speed, FM 6-5)
@@ -25,6 +27,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 out = sys.argv[1]
 vr = float(sys.argv[2]) if len(sys.argv) > 2 else 157.0
 theta_target = float(sys.argv[3]) if len(sys.argv) > 3 else 10.5
+FM_TECH = "fm" in sys.argv[4:]
 DEG = 57.29578
 FULL = 16383
 
@@ -82,12 +85,14 @@ if aq.get("BRAKE_PARKING_POSITION") != 1:
     ev["PARKING_BRAKES"]()
 axis("AXIS_ELEVATOR_SET", 0)
 axis("AXIS_RUDDER_SET", 0)
-ev["THROTTLE1_SET"](FULL)
+ev["THROTTLE1_SET"](11141 if FM_TECH else FULL)             # FM 2-20: Military -> brakes off -> AB
 t_spool = time.time()
 while time.time() - t_spool < 12 and (aq.get("TURB_ENG_N1:1") or 0) < 99:
     time.sleep(0.2)
 print(f"N1 {aq.get('TURB_ENG_N1:1') or 0:.1f} % after {time.time() - t_spool:.1f} s -> brake released")
 ev["PARKING_BRAKES"]()
+if FM_TECH:
+    ev["THROTTLE1_SET"](FULL)
 
 # Gains for a ~3 Hz control loop (run 2 with 2500/1500 and 1500/900 oscillated and ended in the ground)
 KP_HDG, KD_HDG = 700.0, 400.0            # counts per ° and per °/s (positive axis = nose LEFT, T3-D run 1)

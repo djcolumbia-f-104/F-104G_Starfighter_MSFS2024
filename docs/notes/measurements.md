@@ -770,3 +770,18 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - **Verdict T3-H ◐ explained**: the sim follows D-7137 (thrust -3..+1 %, drag +3..+7 %); the remaining 10 000 ft
   deficit (-13..-24 % in ISA, of which ≈ -10..-14 % is the reference conflict and ≈ -5 % the drag/thrust residual plus
   n = 2 band noise) is not a sim error. No change (a drag cut would improve 10 000 ft and worsen 20 000 ft).
+
+## 2026-10-30: D1b takeoff ground run vs. FM Fig. A2-5 (PDF 458) - +10 % (tolerance edge)
+- Chart: "Takeoff ground run distance - maximum thrust, normal performance, hard surface level runway" (data basis
+  flight test, J79-GE-11A); note: ground run changes 5.5 % per 5 kt deviation from the normal takeoff speed.
+  Reading method calibrated on the FM sample problem (PDF 453: 21 020 lb, 3 000 ft, 40 °C -> 4 800 ft; my trace of the
+  21 000 lb line on that row: 4 740 ft, -1 %). **Our condition 19 000 lb, 1 500 ft, 15 °C, zero wind/slope: ≈ 2 630 ft**
+  (±150 ft).
+- `takeoff_test.py` new option `fm` (FM 2-20 technique: Military against the brakes -> release -> AB). Run
+  ..._D1b_takeoff_fm1.csv (19 008 lb, wind 1 kt): first liftoff 171 kt after 2 690 ft, sustained 188 kt after 3 253 ft -
+  identical to the AB-against-brakes runs (the sim's AB lights almost at once). Normalised to the FM normal takeoff
+  speed 177.6 kt (V² / the 5.5 %-per-5 kt rule): **≈ 2 900-2 920 ft vs. FM 2 630 = +10 %** ◐ (2026-10-29 run: 2 627 ft
+  to 170 kt at 18 938 lb -> 2 860 ft, +9..10 %). Mean acceleration sim ≈ 15.4 ft/s² vs. FM ≈ 17 ft/s².
+- Candidate causes (not changed): low-speed AB thrust (D-7137 Table 3: 11 200 static -> 13 640 at M 0.4; the sim's AB
+  thrust was validated at M ≥ 0.7 in flight and statically), rolling friction, the rotation technique (FM attitude
+  ≈ 5°, script 10.5° with a bounce). Next: log thrust in takeoff_test.py and compare with D-7137 M 0-0.3.

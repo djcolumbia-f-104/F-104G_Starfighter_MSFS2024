@@ -78,7 +78,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
 | D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29) |
-| D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-4 (ground run vs. weight, PDF ≈ 458), ±10 % | ○ (idea 2026-10-28) |
+| D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-5 (ground run, max thrust, PDF 458), ±10 % | ◐ +10 % (2 900 vs. 2 630 ft at 19 000 lb, 1 500 ft, 15 °C); low-speed AB thrust to check |
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ explained: sim follows D-7137; D-7137 model itself vs. D-6398 = 0.86-0.90 at 10 000 ft, 1.03-1.12 at 20 000 ft (ISA 20 000 ft sim 0.97-1.08) |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
