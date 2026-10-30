@@ -6,32 +6,34 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-30 evening) <<<
-**NEXT START HERE (note for the next session):**
-**!! 2026-10-30 late: two takeoff-script incidents (pitch-rate rotation trial: bounce along/off the runway; taxi build-up:
-   lifted off after the taxi end, pitched to 28°, came down off the runway). runway_start placed the jet at 273° instead of
-   263.4°. Analyse OFFLINE first (measurements.md end), no live tuning of takeoff laws. Default takeoff = old attitude law.**
+## >>> CONTINUE HERE (state 2026-10-31 afternoon) <<<
 **RESUME HERE (Claude can continue directly):**
-   A. pete reloads the flight (the jet stands off the runway at 48.3461 N 11.7809 E after the taxi incident), EDDM 26L,
-      clear skies; then the session-start checks of item 0.
-   B. Review the offline fixes in `tools/takeoff_test.py` (commit ca71162): runway heading 263.4° + 2° alignment check,
-      taxi stop holds 0° pitch actively, taxi end at 165 kt / 2.5°. Find out why `runway_start` set 273° (compare the
-      heading right after set_pos with RUNWAY[2] in tools/mcp_f104/sim_actions.py; re-position if off).
-   (A, B done 2026-10-31: runway_start heading check fixed. C done: taxi build-up safe, but qrot break-out 3.6°/s ->
-   NOT adopted, default attitude law stays; faster ground loop = next idea.)
-   C. Only then the taxi build-up of rotation law v2: `takeoff_test.py <csv> 157 10.5 taxi` (no liftoff; pass: pitch rate
-      ≤ 3°/s, no push, smooth attitude, stops on the centreline). If it passes: one real takeoff with `qrot`, compare with
-      the default (liftoff speed vs. FM 177.6 kt, no bounce). If not: keep the default attitude law.
-   D. Then item 1 (touchdown skip) and the rest of the list below. 2026-10-31: gear loads normal (no CG load shift), skip
-      parked; low-fuel approach at CG 15.6 % ✓ (elevator -1.1° push with 5.2° trim, stable); found: the flare bleeds only
-      ≈ 10 kt (TD 170 vs. FM 158-163) - likely part of the skip (touching fast) -> next: flare speed bleed (idle earlier).
-      MCP landing/takeoff tools updated (reconnect /mcp).
-      DONE 2026-10-31: flare speed bleed (speed target ramp to the FM touchdown speed, idle while fast, flare gain x2.2)
-      -> TD 171-172 KIAS, skips practically gone (0-0.5 s); F3 +9.6/+9.8 % ✓; skip counter ignores failed reads.
+   A. pete: Build All was started before the break (drag chute emulation cfg, commit ec36069) -> reload the flight
+      (EDDM 26L, clear skies); check_build must be green (no T1 warning), then the session-start checks of item 0.
+   B. **H5 drag chute**: coast check `tools/coast_test.py <csv> sb` after runway_start (expect ≈ 4.5-5 ft/s² from 150 to
+      110 KIAS; 52° gave 3.40, clean 2.62), then F2 landing with chute `landing_test.py <csv> 6 2.5` (take off first) vs.
+      FM A8-3 2 760 ft (scale with (166.5/final-TD KIAS)²; F3 without chute is +9.6/+9.8 %, so F2 ≈ -12 % of that). Tune
+      drag_coef_spoilers if needed (ground ΔCD ≈ 1.03 x drag_coef_spoilers at spoiler_limit 65°). Regression: in-flight
+      speed brakes (S11e ΔCD 0.046; air_spoiler_limit 52° unchanged), F3 (no speed brakes on the ground, unaffected).
+      Side effect to note: speed brakes out on the ground now give the "chute" drag (taxi/takeoff with speed brakes in).
+   C. Then: faster ground loop for the rotation law (qrot v2 taxi build-up: no push, but 3.6°/s break-out), H2 pitch-up /
+      APC (reference NASA TN D-6943, local PDF).
+**State 2026-10-31** (details `docs/notes/measurements.md`, index `docs/data/README.md`):
+- runway_start: settle check incl. heading ±1° and ground speed (the 273° placement came from a fast jet before respawn).
+- Rotation law v2 (option `qrot`) taxi build-up safe but not adopted; default attitude law stays.
+- Landing: flare speed bleed to the FM touchdown speed (idle while fast, flare gain x2.2) -> TD 171-172 KIAS, skips
+  practically gone; skip counter ignores failed reads; F3 +9.6 / +9.8 % ✓. Low-fuel approach at CG 15.6 % stable ✓.
+- H5: on the ground MSFS applies drag_coef_spoilers ONLY if spoiler_limit > air_spoiler_limit (coast tests 52°/65°/90°:
+  3.40 / 11.37 / 13.28 ft/s²); chute emulation 65° + drag_coef_spoilers 0.12 built, not yet verified.
+- MCP landing/takeoff tools updated (reconnect /mcp). Flight reloads carry 19 010-19 340 lb after refuel (payload varies).
+
+## Previous resume block (2026-10-30 late, done)
+**!! 2026-10-30 late: two takeoff-script incidents (pitch-rate rotation trial: bounce along/off the runway; taxi build-up:
+   lifted off after the taxi end, pitched to 28°, came down off the runway) - fixed/analysed 2026-10-31 (A-D done).**
 0. Session start as before (check_build, preflight, weather ≈ 1 kt / 1013.25, trim-hold check, `tools/refuel.py` - the
    standard state is NOW auxiliary cell EMPTY + 4 080 lb main cells, CG 9.2 % MAC). Never position from the ground; take off
    first. Never leave the jet at idle after a test. Never set all tanks to 0 (engine flames out).
-1. **Touchdown dynamics (open)**: the scripted landing touches at ≈ 174 KIAS with only 20-60 ft/min and skips once (nose
+1. **Touchdown dynamics (DONE 2026-10-31 by the flare speed bleed; old note)**: the scripted landing touches at ≈ 174 KIAS with only 20-60 ft/min and skips once (nose
    rises 1.7 -> 4.4° after the main-gear contact). Options: flare target sink ≈ 150-250 ft/min; check gear spring/damping
    [S] (compression ratio 1.5, damping 0.7) and the main-gear x (-0.3 ft) against the corrected CG. `tools/rollout_log.py`
    for high-rate data (CONTACT_POINT_COMPRESSION:n reads 0 - find the right SimVar form).

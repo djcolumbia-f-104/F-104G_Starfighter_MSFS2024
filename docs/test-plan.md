@@ -123,7 +123,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | H1 | Own SAS logic (roll/pitch/yaw dampers) | FM 6-3 Fig. 6-1, CR-2144 SAS on | – |
 | H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | – |
 | H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | – |
-| H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | – |
+| H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | ◐ 2026-10-31: no SDK chute; ground spoiler drag acts only with spoiler_limit > air_spoiler_limit -> emulation 65° + drag_coef_spoilers 0.12, to verify with F2 |
 | H4 | Rudder/aileron limiters with gear | FM 6-3 | ○ (A4) |
 
 ## 4. Iteration order (next sessions)
