@@ -172,6 +172,11 @@ log here; this index says under which conditions each log was flown and whether 
 | `H2_to` (+ `_fast`) | **H2 TAKEOFF** | 15 000 ft | shaker 181.8, kicker 165.1 KIAS | **valid** |
 | `H2_land` (+ `_fast`) | **H2 LAND** | 12 000 ft | shaker 144.4, kicker 136 KIAS | **valid** |
 | `H2_reg_F3` (dated 10-30, run 10-31) | F3 regression | no chute, 17 590 lb | TD 167, roll 2 875 ft from final TD 163 (hop) | valid (rollout = landing 23) |
+| `T3D_takeoff_pre_srot` | T3-D baseline (old law) | 19 180 lb | 170 / 190 kt (touch-back) | valid (old law, superseded by srot) |
+| `srot_hold185` / `srot_hold175` | rotation build-up in the air | gear down, TAKEOFF, trim 5°, stick -6 400 | α 10.17° / 10.27° | **valid** (hold185 settle phase disturbed, hold part valid) |
+| `T3D_taxi_srot` | srot taxi build-up | | break-out 166 kt at stick -5 159 | valid (build-up) |
+| `T3D_takeoff_srot1` / `srot2` | srot 12 kt ramp / + predictive guard | | 175 / 174 kt, fast rotation; srot2 nose drop at 10 ft | valid (design iterations, superseded) |
+| `T3D_takeoff_srot3` / `srot4` | **T3-D with srot (default)** | 19 180 lb, 25 kt ramp | **178 / 178 kt single**, 2 937 / 2 919 ft | **valid** (T3-D ✓, D1b +9 %) |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

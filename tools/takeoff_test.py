@@ -4,10 +4,12 @@ Usage (with the Python of the simconnect-mcp venv):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\takeoff_test.py <output.csv> [vr_kt=157] [theta_target=10.5] [fm]
   fm: FM 2-20 brake release technique (D1b ground run, Fig. A2-5): Military against the brakes -> release -> max AB
       (default: full AB against the parking brake, released at N1 >= 99 %)
-  qrot: EXPERIMENTAL pitch-rate rotation (2026-10-30, failed first try - see code); default: attitude ramp 3°/s + feed-forward 5000
+  default (2026-10-31): stick-schedule rotation srot (stick ramps over 25 kt from vr to S_HOLD, see code)
+  old: previous attitude ramp 3°/s + feed-forward 5000; qrot: EXPERIMENTAL pitch-rate rotation (failed 2026-10-30)
+  taxi: rotation build-up without liftoff (with the selected law)
 Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, trim 5°, parking brake set.
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
-the runway heading -> from vr_kt pull the pitch to theta_target at 3°/s (rotate ~20 kt below liftoff speed, FM 6-5)
+the runway heading -> from vr_kt the rotation law (default srot: stick schedule; rotate ~20 kt below liftoff speed, FM 6-5)
 -> climb-out hand-flown (2026-10-30; the trim-based MSFS AP took over at 30 ft and held the jet at 20-35 ft for 12 s
 while it accelerated to 330 kt -> gear up at 330 KIAS, TAKEOFF flaps up at 376 KIAS, both over the FM limits):
 pitch to 15° (softer gains scaled with (185/IAS)²), wings level by aileron, gear UP when definitely airborne (1 s,
@@ -33,9 +35,17 @@ FM_TECH = "fm" in sys.argv[4:]
 # PUSHED (+1 600), pitch fell 5 -> -0.8° right after the first liftoff, the AP fallback took over at 4 ft and the jet bounced
 # along the runway at 180-230 kt and drifted off the centreline (pete: "neben der Piste") -> NOT the default; the default stays
 # the old attitude ramp + feed-forward (known: slight overshoot, FM 6-5)
-QROT = "qrot" in sys.argv[4:] or "taxi" in sys.argv[4:]
+# 2026-10-31: stick-schedule rotation ("srot"): from vr the stick ramps in 1.2 s to S_HOLD, the elevator for the liftoff
+# attitude in the air (build-up tools/stick_hold_test.py: stick -6 400 at trim 5° -> α 10.17° at 196 / 10.27° at 172 KIAS,
+# speed-independent, short period well damped) - the airframe rotates by its own static stability, the slow loop only adds
+# pitch-rate damping, a slow attitude integrator and the tail-strike guard. The same law runs through the first liftoff
+# (no gain switch -> no nose drop / touch-back) until 35 ft AGL, then a bumpless transfer to the climb-out law.
+# DEFAULT since 2026-10-31 (srot3: break-out 168 kt, ≈ 6°/s, single liftoff 178 kt = FM, no nose drop); old law: option `old`
+QROT = "qrot" in sys.argv[4:]
+SROT = not QROT and "old" not in sys.argv[4:]
+S_HOLD = -6600.0                          # [M] -6 400 -> α 10.2° (stick_hold_test); target 10.5° -> + 0.3° x 965 counts/°
 # build-up for a new rotation law (testcard rule 2026-10-30): high-speed taxi - apply the rotation law from vr until pitch
-# 3° or 168 kt, then idle, lower the nose gently, brake to a stop (no liftoff)
+# 2.5° or 165 kt, then idle, hold the nose at 0°, brake to a stop (no liftoff)
 TAXI = "taxi" in sys.argv[4:]
 DEG = 57.29578
 FULL = 16383
@@ -161,7 +171,29 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
         cmd_rud = max(-LIM_RUD, min(LIM_RUD, cmd_rud))
         cmd_elev = 0.0
-        if res["vr_t"] is not None and res["first_air"] is None and QROT:
+        if res["vr_t"] is not None and SROT and not res.get("srot_done"):
+            res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
+            # ramp over 25 kt ≈ 2.5 s (srot1/2 with 12 kt: the stick kept rising fast after the break-out at ≈ 166 kt ->
+            # ≈ 10°/s rotation, 12.5° at liftoff; FM 6-5: fast stick input = dynamic overshoot)
+            ff = S_HOLD * max(0.0, min(1.0, (s["ias"] - vr) / 25.0))
+            if s["theta"] > 3.0:                                          # nose wheel off: slow attitude trim
+                res["ith"] = max(-10.0, min(10.0, res.get("ith", 0.0) + (theta_target - s["theta"]) * dt))
+            cmd_elev = ff - 150.0 * res.get("ith", 0.0) + 150.0 * res["qf"]   # +axis = nose down: rate relieves the pull
+            # tail strike guard (contact 12.3°). 2026-10-31 srot2: a guard on the predicted attitude (θ + 0.3 s x q, from 10.5°)
+            # released the stick completely at liftoff (bang-bang) -> nose 12.3 -> 4° at 10 ft, pitch swings 4-15° -> reverted;
+            # the cause (stick still rising fast after the break-out) is treated by the slower ramp instead
+            if s["gnd"] and s["theta"] > 11.0:
+                cmd_elev += 2000.0 * (s["theta"] - 11.0)
+            cmd_elev = max(-LIM_PULL, min(0.0, cmd_elev))                 # never push during the rotation
+            res["srot_cmd"] = cmd_elev
+            theta_cmd = s["theta"]                                        # climb-out ramp starts from the actual attitude
+            if TAXI and (s["theta"] >= 2.5 or s["ias"] >= 165):
+                aborted = f"taxi test end at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
+            if not s["gnd"] and s["agl"] > 35:
+                res["srot_done"] = s["t"]                                 # bumpless transfer to the climb-out law
+                res["srot_off"] = None
+                print(f"srot -> climb-out law at {s['agl']:.0f} ft, {s['ias']:.0f} KIAS, pitch {s['theta']:.1f}°")
+        elif res["vr_t"] is not None and res["first_air"] is None and QROT:
             # pitch-rate rotation: q_cmd ≤ 2°/s, reduced to 0 approaching the target attitude (no overshoot); PI on the
             # filtered pitch rate, the integral finds the stick position (FM 6-5: smooth back stick, no fast input)
             # v2 (after qrot1 pushed the nose down): never push during the rotation (output pull..0), lower gains,
@@ -176,7 +208,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             if TAXI and (s["theta"] >= 2.5 or s["ias"] >= 165):                # well below liftoff (≈ 170 kt)
                 aborted = f"taxi test end at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
             theta_cmd = s["theta"]                      # airborne attitude ramp starts from the actual attitude
-        elif res["vr_t"] is not None and res["first_air"] is None:
+        elif res["vr_t"] is not None and res["first_air"] is None and not SROT:
             cmd_elev = -(FF_TH + KP_TH * (theta_cmd - s["theta"]) - KD_TH * q)
             cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
         # fallback only well clear of the ground (2026-10-30: a pitch dip to -0.8° at 4 ft handed over to the slow AP and
@@ -201,6 +233,11 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             # 2026-10-30 (pete: "schwingt beim Starten"): 400/150 gave a pitch limit cycle 1° <-> 21° (≈ 1.5 s) - the airborne
             # loop runs at only ≈ 1.3 Hz (more reads) -> lower gains
             cmd_elev = -(0.5 * FF_TH * ks + ks * (200.0 * (theta_cmd - s["theta"]) - 60.0 * q))
+            if SROT:
+                # bumpless transfer: start from the last srot command, offset decays over 5 s
+                if res.get("srot_off") is None:
+                    res["srot_off"] = res.get("srot_cmd", cmd_elev) - cmd_elev
+                cmd_elev += res["srot_off"] * max(0.0, 1.0 - (s["t"] - res["srot_done"]) / 5.0)
             cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
             p_rate = (s["bank"] - prev["bank"]) / dt
             axis("AXIS_AILERONS_SET", max(-8000, min(8000, -(KP_B * s["bank"] + KD_B * p_rate))))

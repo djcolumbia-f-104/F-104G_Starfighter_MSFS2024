@@ -77,8 +77,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
-| D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29) |
-| D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-5 (ground run, max thrust, PDF 458), ±10 % | ◐ +10 % (2 900 vs. 2 630 ft at 19 000 lb, 1 500 ft, 15 °C); low-speed AB thrust to check |
+| D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29); 2026-10-31 stick-schedule rotation (srot): 178 kt single liftoff = FM 177.9 (0 %), no touch-back |
+| D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-5 (ground run, max thrust, PDF 458), ±10 % | ◐ +10 % (2 900 vs. 2 630 ft at 19 000 lb, 1 500 ft, 15 °C); low-speed AB thrust to check; with srot rotation +9 % (2 865 ft normalised) |
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ explained: sim follows D-7137; D-7137 model itself vs. D-6398 = 0.86-0.90 at 10 000 ft, 1.03-1.12 at 20 000 ft (ISA 20 000 ft sim 0.97-1.08) |
 | D3 | Level acceleration | M 0.9 -> 1.8 at 35 000 ft (740 KIAS limit at M ≈ 1.8) | Fig. A9-1 time/fuel/distance | ◐ time +8 %, distance +3 % ✓; fuel +20 % (AB FF rises with Mach, known) |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ✓ M 2.056 at 40 000 ft, still accelerating 0.18 M/min at M 1.96 (sim IAS reads high supersonic -> limits on EAS) |

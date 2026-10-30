@@ -1089,3 +1089,33 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Script fixes: config_test slow mode Military pre-phase until ias_start (set_pos speed), recovery unloads (integrator
   reset, pull ≤ -6 000; it had pulled to α 17° through the kicker), log columns el_cmd / elev_pos / yoke_y.
 - **H2 ◐** (accepted with documented limits; adaptive pusher with α anticipation = option later).
+
+## 2026-10-31: takeoff rotation redesigned - stick-schedule law `srot` (now default); T3-D 178 kt = FM in one liftoff
+- Analysis (gate 2b) of the old law (attitude ramp + feed-forward 5 000, loop ≈ 3.5 Hz): (1) the nose wheel breaks out at
+  ≈ 164-166 kt and the pitch rises ≈ 10°/s - one loop cycle (0.29 s) is too slow for that, overshoot to 8-9° with 4-5°
+  commanded; (2) at the first liftoff the script switched to the airborne law (half feed-forward, (185/IAS)² gains): the
+  command jumped from ≈ -4 000 to -1 900, the nose fell 8.7 -> 2.1° and the jet touched again (sustained liftoff 188-191 kt).
+- Design: stick schedule (open loop, like a pilot) to the elevator that holds the liftoff attitude IN THE AIR, slow
+  corrections only (pitch-rate relief, slow attitude integrator, tail-strike guard > 11° on the ground), the same law
+  through the first liftoff up to 35 ft, then a bumpless transfer to the climb-out law (offset decays over 5 s).
+- Build-up in the air (new `tools/stick_hold_test.py`, gear down, TAKEOFF flaps, trim 5°, 15 000 ft): stick -6 400 ->
+  α 10.17° at 196 KIAS and 10.27° at 172 KIAS (static stability: speed-independent), short period damped (≈ 1.5 s, first
+  overshoot ≈ 1°) -> S_HOLD = -6 600 for 10.5°. (First hold run: set_pos left 154 KIAS, the settle loop pulled into the
+  kicker -> settle phase now waits for the IAS, pull ≤ -8 000.)
+- Taxi build-up (`srot taxi`, ..._T3D_taxi_srot.csv): break-out at ≈ 166 kt with stick -5 159 ✓ (pred. 163-166); the stop
+  routine's full push after the nose had risen to 6.9° gave a short hop and a -4.3° nose slam (safe, as before).
+- Takeoffs (19 180 lb, trim 5°, after runway_start + refuel):
+  | run | ramp | break-out | rotation | max pitch gnd / at liftoff | liftoff | roll |
+  |---|---|---|---|---|---|---|
+  | srot1 | 12 kt | 166 kt | ≈ 10°/s | 10.4 / 12.5° (tail 12.3°!) | 175 kt single | 2 870 ft |
+  | srot2 | 12 kt + predictive guard | 166 kt | ≈ 11°/s | 7.8 / 11.2°, then the guard released the stick -> nose 12 -> 4° at 10 ft, swings 4-15° ✗ | 174 kt | 2 807 ft |
+  | **srot3** | **25 kt** | 168 kt | ≈ 6°/s | 7.2 / 8.9°, smooth rise to 13-14° | **178 kt single** | 2 937 ft |
+  | **srot4** (MCP, default) | 25 kt | - | - | 6.6 / 8.1° | **178 kt single** | 2 919 ft |
+  Predictive guard reverted (bang-bang); the cause - stick still rising fast after the break-out (FM 6-5: fast stick input
+  = dynamic overshoot; "once rotation and nosewheel lift-off occurs, further aft stick is unnecessary") - is removed by the
+  25 kt ramp. Prediction for srot3 (break-out 168-170, ≤ 6°/s, ≤ 11.5°, liftoff 177-181, no nose drop) met.
+- **T3-D ✓**: liftoff 178 kt vs. FM Fig. A2-3 155 + 4.43 x 5.18 = 177.9 kt (**0 %**, before +3.4 % / sustained 188-191 kt)
+  in ONE liftoff, no bounce. **D1b**: 2 919 ft x (19 000/19 180)² ≈ 2 865 ft vs. FM Fig. A2-5 2 630 ft = **+9 %** (before
+  +10 %) -> the rotation was only a small part; remaining: -2.5 % AB thrust at low speed + brake-release phase (◐ unchanged).
+- `takeoff_test.py`: srot default; old law = option `old`, `qrot` experimental; `taxi` works with the selected law; refuses
+  trim outside 4-6°. MCP `takeoff` uses the default (srot).

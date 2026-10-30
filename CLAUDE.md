@@ -26,8 +26,13 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    unit degrees confirmed): shaker clean/TAKEOFF/LAND 220/182/144 vs. FM 220.5/184.5/148.6, kicker clean 197 (+1 %), TAKEOFF
    165 (-6 %); SDK simple pusher = leaky α limiter (no hold, push_rate has no effect). Regression T3-D / F3 ✓. Card H2-apc.md.
    **Always runway_start after a flight reload** (trim 0° otherwise; takeoff_test now refuses it). New `tools/fastlog.py`.
-   D. Next: rotation ground loop (item C first half); optional adaptive SPS pusher (PID with α anticipation) if the kick
-      character matters; F3 metric (hop position moves the "final touchdown") - consider measuring from V = 165 KIAS.
+   DONE 2026-10-31: takeoff rotation redesigned as a stick schedule (`srot`, now DEFAULT in takeoff_test.py / MCP takeoff):
+   stick ramps over 25 kt from vr to S_HOLD -6 600 (= α 10.5° in the air, build-up tools/stick_hold_test.py), same law
+   through the first liftoff to 35 ft, bumpless transfer. T3-D 178 kt single liftoff = FM (0 %), rotation ≈ 6°/s, no
+   touch-back (2 runs); D1b +9 %. Old law: option `old`.
+   D. Next: optional adaptive SPS pusher (PID with α anticipation) if the kick character matters; F3 metric (hop position
+      moves the "final touchdown") - consider measuring from V = 165 KIAS; touchdown skip (gear springs from max gross
+      weight, SDK) still open; test plan remaining items (see docs/test-plan.md).
 **State 2026-10-31** (details `docs/notes/measurements.md`, index `docs/data/README.md`):
 - runway_start: settle check incl. heading ±1° and ground speed (the 273° placement came from a fast jet before respawn).
 - Rotation law v2 (option `qrot`) taxi build-up safe but not adopted; default attitude law stays.
