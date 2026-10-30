@@ -41,6 +41,12 @@ ias_stop + 40, FM clean-up; if the script fails: reposition (MCP `position`, air
 | 2026-10-30 | clean bu1, 10 000 ft -> 200 | α 13.9° / CL 0.70 at 202 KIAS, altitude ±450 ft/min | lift table consistent |
 | 2026-10-30 | clean bu2, 15 000 ft -> stall | invalid: α 16.2° limited by the script elevator clamp (12.45°) | clamp -> full 17° in slow mode |
 | 2026-10-30 | **clean bu3** | elevator 17° stop, α max ≈ 16.2°, 0.91 g at 180 KIAS -> min. level speed ≈ 188-190 KIAS vs. FM min. control ≈ 197 (-4 %) ✓; mush, no pitch-up, no departure | behaviour -> H2 |
+| 2026-10-30 | TAKEOFF bu1, 10 000 ft -> 180 | α 11.2° / CL 0.86 at 182 KIAS | after LE stage 10° + FULL restart |
+| 2026-10-30 | **TAKEOFF bu2**, 15 000 ft -> limit | elevator stop ≈ 160 KIAS, α max 15.8°, 0.91-0.95 g -> min. level ≈ 165-168 vs. FM ≈ 178 (-6..-7 %) ◐ | mush, no departure |
+| 2026-10-30 | LAND bu1, 10 000 ft -> 150 | α 11.1° / CL 1.23 at 152 KIAS | T3-L consistent |
+| 2026-10-30 | **LAND bu2**, 12 000 ft -> limit | elevator stop ≈ 137 KIAS, α max 15.5°, 0.93 g -> min. level ≈ 141-144 vs. FM ≈ 148 (-3..-5 %) ✓ | |
 
-Next: TAKEOFF and LAND configuration after the LE flap change (Build All + FULL restart).
+## Result
+Minimum level speeds 3-7 % below FM Fig. 6-4 minimum control speeds, limited by elevator authority (α ≈ 15.5-16.2°),
+benign mush instead of pitch-up -> B7 ◐ (accepted; TAKEOFF marginally outside ±5 %). Pitch-up / APC = H2.
 

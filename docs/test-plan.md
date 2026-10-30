@@ -58,7 +58,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ◐ clean -4 %, TAKEOFF -11 % (drag scalar 0.42) |
 | B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ✓ 2026-10-28 after LAND flap drag 0.12 -> 0.08: 194 KIAS (was 164) |
 | B6 | Go-around climb | landing config, Military, sawtooth climbs 160-200 KIAS | Fig. 6-8: ≈ 1 400 ft/min at 165-175 KIAS (20 500 lb, SL) | ✓ 2026-10-28 after the flap drag change: +1 061 ft/min (FM ≈ 1 050-1 250; was +389) |
-| B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ○ (sim stall debug 120 kt with flaps - check) |
+| B7 | Minimum speeds / stall approach (old T3-L "stall/APC") | 1 kt/s deceleration to the shaker speed, clean/TAKEOFF/LAND, 1 g and 40°/60° bank | Fig. 6-4 shaker (min. control), e.g. 19 500 lb: 225 (200) / 190 (180) / 155 (150) KIAS; no full stalls (pitch-up) | ◐ min. level speed clean -4 % / TAKEOFF -6..-7 % / LAND -3..-5 % vs. min. control (elevator-limited, mush, no pitch-up -> H2) |
 | B8 | Approach configuration (T3-L) | LAND flaps at altitude | CR-2144 CL 0.845 at α 4.1° | ✓ |
 | B9 | Maneuvering flaps | TAKEOFF flaps, gear up, wind-up turn | +≈ 1 g available load factor (FM 6-2) | ○ |
 

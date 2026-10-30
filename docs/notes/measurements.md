@@ -736,3 +736,21 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   mushes (sink > 2 000 ft/min), wings level, no pitch-up, no departure. FM Fig. 6-4 at 19 000 lb: shaker ≈ 222, min.
   control ≈ 197 KIAS; FM 6-5 kicker/pitch-up scaled ≈ 196 KIAS -> sim ≈ 4 % below the FM minimum control speed ✓
   (±5 %), but the behaviour differs (mush instead of pitch-up) -> pitch-up/APC shaker-kicker = test plan H2.
+
+## 2026-10-30: after the LE flap change (Build All + FULL restart): flap path, new climb-out, B7 TAKEOFF/LAND
+- **Flap path** (ground): UP->TAKEOFF TE 15.0 / LE 10.0, ->LAND 45.0 / 29.9, LAND->TAKEOFF **15.0 / 10.0** ✓ (hysteresis gone).
+- **T3-D + new climb-out** (..._T3D_takeoff_climbout1.csv, 19 007 lb, FM 177.6 kt): first liftoff 169 kt, sustained
+  188 kt (+5.9 %; the last four runs 184-188 kt, the sustained value depends on the short bounce after the first
+  liftoff; mean +4.3 %) ✓ unchanged by the LE stage. Climb-out: gear up at ≈ 222 KIAS / 24 ft ✓ (< 260), Military,
+  max 243 KIAS, bank ±0.1°, steady climb to 1 500 ft ✓; pitch drifts from 15° to ≈ 19.5° (no integral term) and the
+  TAKEOFF flaps stay out because 260 KIAS is not reached (FM-correct) -> cosmetic, open.
+- **B7 TAKEOFF flaps** (19 000 lb): to 180 KIAS (10 000 ft) α 11.2° / CL 0.86 at 182 KIAS; to the limit (15 000 ft):
+  elevator 17° stop at ≈ 160 KIAS, α max ≈ 15.8°, 0.91-0.95 g at 158-161 KIAS -> CL_eff ≈ 1.05 -> **min. level speed
+  ≈ 165-168 KIAS vs. FM min. control ≈ 178 (-6..-7 %)** ◐, mush, no departure.
+- **B7 LAND flaps + gear** (19 000 lb): to 150 KIAS (10 000 ft) α 11.1° / CL 1.23 at 152 KIAS (T3-L consistent); to the
+  limit (12 000 ft): elevator 17° stop at ≈ 137 KIAS, α max ≈ 15.5°, 0.93 g at 136 KIAS -> CL_eff ≈ 1.44 -> **min. level
+  speed ≈ 141-144 KIAS vs. FM min. control ≈ 148 (-3..-5 %)** ✓.
+- **B7 summary**: in all three configurations the sim's minimum level speed is set by elevator authority (17° stop,
+  α ≈ 15.5-16.2°), 3-7 % below the FM minimum control speeds (clean -4 %, TAKEOFF -6..-7 %, LAND -3..-5 %); the jet
+  mushes wings-level instead of pitching up (clean/TAKEOFF) -> pitch-up, APC shaker/kicker = H2 (own logic). The
+  sim stall-speed values in the cfg (full_flaps_stall_speed 121) are never reached in level flight.
