@@ -124,6 +124,9 @@ log here; this index says under which conditions each log was flown and whether 
 | `D4_mach2_35k` | D4 attempt 31 300 -> 33 000 ft | climbing back after positioning | stopped at 740 KIAS (M 1.77) | dev |
 | `D4_mach2_40k` / `_40k_b` | D4 attempts | climbing back to 40 000 ft | stopped by the sim-IAS 740 limit at M 1.80 / 1.90 | dev |
 | `D4_mach2_40k_c` | **D4 top speed** | 38 300 -> 40 150 ft, ISA | M 2.056 in 222 s from M 1.25 | **valid** |
+| `T3D_takeoff_day4c` | T3-D | after a bad respawn (bounce) | liftoff 125 kt, 13.2° on the ground | invalid |
+| `T3D_takeoff_day4d` | T3-D | fixed runway_start | 170 / 187 kt | **valid** |
+| `D7_climb_m090` (+ `_simlog`) | **D7 max thrust climb M 0.90** | 19 005 lb, ISA+3 | 10 000 -> 35 000 ft 1.09 min vs. FM 1.13 | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

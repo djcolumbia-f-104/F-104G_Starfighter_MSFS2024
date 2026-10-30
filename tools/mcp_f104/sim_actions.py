@@ -94,14 +94,29 @@ elif cmd == "runway":
     ev("THROTTLE1_SET", 0)
     if g("AUTOPILOT_MASTER") == 1:
         ev("AP_MASTER")
-    sm.set_pos(0, RUNWAY[0], RUNWAY[1], 0, 0.0, 0.0, RUNWAY[2], 1)
+    # 2026-10-30: with the gear UP (after a belly landing) set_pos put the jet down at belly height and the extending gear
+    # then pushed it up -> it bounced on the runway and the next takeoff was invalid (liftoff 125 kt, 13° on the ground).
+    # Gear down FIRST, then position, then wait until it sits still (re-position once if not).
     ev("GEAR_DOWN")
+    t_g = time.time()
+    while time.time() - t_g < 15 and (g("GEAR_TOTAL_PCT_EXTENDED") or 0) < 0.99:
+        time.sleep(0.5)
+    for attempt in range(2):
+        sm.set_pos(0, RUNWAY[0], RUNWAY[1], 0, 0.0, 0.0, RUNWAY[2], 1)
+        if g("BRAKE_PARKING_POSITION") != 1:
+            ev("PARKING_BRAKES")
+        still, t_s = 0, time.time()
+        while time.time() - t_s < 12 and still < 4:
+            time.sleep(0.5)
+            pitch = -(g("PLANE_PITCH_DEGREES") or 0) * DEG
+            ok = g("SIM_ON_GROUND") == 1 and abs(g("VERTICAL_SPEED") or 0) < 30 and -0.5 < pitch < 1.5                 and (g("GEAR_TOTAL_PCT_EXTENDED") or 0) > 0.99
+            still = still + 1 if ok else 0
+        if still >= 4:
+            break
     ev("FLAPS_1")
     ev("ELEVATOR_TRIM_SET", 7447)                         # 5° nose up (16383 = 11°)
-    if g("BRAKE_PARKING_POSITION") != 1:
-        ev("PARKING_BRAKES")
     time.sleep(6)                                         # flaps extending (5 s)
-    print(f"on runway EDDM 26L; {state()}")
+    print(f"on runway EDDM 26L{'' if still >= 4 else ' - NOT SETTLED, do not take off'}; {state()}")
 
 elif cmd == "approach":
     # T3-L: decelerate (idle + speed brakes), gear down < 255 KIAS, LAND flaps < 230 KIAS (FM: 240-210), then hold the
@@ -163,7 +178,9 @@ elif cmd == "accel":
         if hits >= 2:
             break
         time.sleep(1)
-    ev("THROTTLE1_SET", 0)
+    # 2026-10-30: idle here left the jet in AP ALT hold at idle after D4 -> it sank unattended and belly-landed
+    # ≈ 230 NM west of EDDM -> part power that holds altitude (the next tool repositions anyway)
+    ev("THROTTLE1_SET", 9000)
     dur = time.time() - t0
     s1 = state()
     log.wait()

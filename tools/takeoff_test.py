@@ -75,6 +75,10 @@ lat0, lon0 = aq.get("PLANE_LATITUDE"), aq.get("PLANE_LONGITUDE")
 print(f"Start position (for msfs_set_aircraft_position): lat {lat0}, lon {lon0}, heading {s0['hdg']:.1f}° true")
 if not s0["gnd"]:
     sys.exit("Aircraft is not on the ground - aborted")
+# 2026-10-30: a bouncing jet after a bad respawn gave an invalid takeoff -> it must sit still before the run
+if abs(aq.get("VERTICAL_SPEED") or 0) > 30 or not -0.5 < s0["theta"] < 1.5 or (aq.get("GEAR_TOTAL_PCT_EXTENDED") or 0) < 0.99:
+    sys.exit(f"Aircraft not settled (pitch {s0['theta']:.1f}°, VS {aq.get('VERTICAL_SPEED') or 0:.0f}, gear "
+             f"{aq.get('GEAR_TOTAL_PCT_EXTENDED')}) - aborted")
 # The lever position alone is not enough (run 5: lever TAKEOFF, flaps 0° because hydraulic without a hydraulic system)
 flap = rad(aq.get("TRAILING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
 print(f"Flaps trailing edge {flap:.1f}°, trim {rad(aq.get('ELEVATOR_TRIM_POSITION')) * DEG:.2f}°")

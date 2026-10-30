@@ -823,3 +823,24 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   (real aircraft: pilot limit, FM 5) -> cockpit/systems later.
 - Positioning at 35 000-44 000 ft with Military: the jet sinks ≈ 4 000-5 000 ft (α 0 after set_pos) -> position
   ≈ 4 000 ft above the target altitude.
+
+## 2026-10-30: incidents - unattended belly landing, bad respawn; tools fixed
+- After the D4 run accel_run set the throttle to IDLE; the jet stayed in AP ALT hold at idle, sank unattended and
+  belly-landed ≈ 230 NM west of EDDM (48.40 N 7.51 E, gear up, no crash flagged). Fix: accel_run ends at throttle 9000.
+- `runway_start` from that state: set_pos with the gear UP put the jet down at belly height, GEAR_DOWN afterwards pushed
+  it up -> it bounced on the runway (pete) and the next takeoff was invalid (..._T3D_takeoff_day4c.csv: liftoff 125 kt,
+  13.2° on the ground > 12.3° tail contact). Fix: gear down first, then set_pos, then wait until the jet sits still
+  (on ground, |VS| < 30, pitch -0.5..1.5°, gear 100 %; one re-position), else "NOT SETTLED"; takeoff_test.py aborts if
+  the jet is not settled. Verified: runway_start from the belly-landed state -> settled; takeoff 170 / 187 kt normal.
+
+## 2026-10-30: D7 maximum thrust climb at M 0.90 vs. FM Fig. A3-7 (PDF 480) - PASSED
+- FM Fig. A3-7 "Maximum thrust climb control, climb speed Mach 0.90" (data basis flight test; schedule M 0.90 at all
+  altitudes, SL 595 / 20 000 ft 425 / 35 000 ft 310 KIAS). Lines only for drag index 20-80 -> DI 0 extrapolated linearly
+  from DI 20/40 (nearly straight in this range). 19 000 lb, standard day; altitude lines identified on a 260 dpi zoom with
+  labels (a first reading had taken the 37 500/42 500 ft dashed lines for 35 000/40 000 ft): time from SL 10 000 ft
+  0.20, 20 000 ft 0.52, 25 000 ft 0.69, 30 000 ft 0.97, **35 000 ft 1.33 min** (DI 20: 0.22 ... 1.46).
+- New `tools/climb_test.py` (set_pos 9 000 ft ≈ M 0.9, full AB, elevator holds the Mach via an integrated VS command,
+  aileron heading hold, round-off from 33 000 ft, Military at 35 000 ft, AP ALT hold at the end). Run
+  ..._D7_climb_m090.csv: 19 005 lb, OAT 0.1 °C at 9 000 ft (≈ ISA+3), mean M 0.90-0.93 (0.945 in the first 5 000 ft),
+  pitch up to 50° (FM Fig. 6-7: 40-50°): **10 000 -> 35 000 ft in 1.09 min (FM DI 0 1.13, -4 %)**, 20 000 -> 35 000 ft
+  0.82 min (FM 0.81, +1 %), 25 000 -> 35 000 ft 0.59 min (FM 0.64, -8 %) ✓ (reading ±5 %).
