@@ -1015,3 +1015,14 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Landing 23 (regression of the script fixes): TD 172 KIAS at 99 ft/min; one real 0.5 s hop right after the first touch
   (before: 2-3.5 s skips); roll from the final touchdown (173.5 KIAS) 3 733 ft -> scaled **+9.8 %** ✓.
 - F3 ✓ (+9.6 / +9.8 %, at the upper edge of ±10 %); touchdown skip essentially fixed by technique (no cfg change).
+
+## 2026-10-31: H5 drag chute research - which drag acts on the ground (coast-down test)
+- New `tools/coast_test.py`: runway_start -> full AB to 160 KIAS with the nose actively held at 0° (no rotation), idle,
+  coast WITHOUT wheel brakes 155 -> 100 KIAS, then full brakes; speed brakes (SPOILERS_ON) out or in.
+- ..._H5_coast_clean.csv: mean deceleration 150 -> 110 KIAS **2.62 ft/s²**; ..._H5_coast_sb.csv (speed brakes out, handle
+  1.0): **3.40 ft/s²** (idle net thrust -325 lbf both). Δ 0.78 ft/s² x 596 slug ≈ 465 lbf at q ≈ 57 psf -> **ΔCD ≈ 0.042**
+  = the in-flight speed-brake value (S11e 0.046, `drag_coef_air_spoilers`). -> On the ground MSFS applies the AIR spoiler
+  drag; `drag_coef_spoilers` (0.43, our "chute") has no effect at all - explains the 2026-10-29 result (doubling changed
+  nothing). (Both runs ended with a harmless "abort" during the final braking at ≈ 46 KIAS: read glitch / heading 5.3°.)
+- Consequence for H5: a chute needs a ground-only drag of ΔCD ≈ 0.10-0.15 on top. Candidate without code: `spoiler_limit`
+  (ground deflection) > `air_spoiler_limit` (52°), if the drag scales with the deflection; otherwise own logic (WASM/XML).
