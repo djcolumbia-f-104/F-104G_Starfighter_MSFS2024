@@ -862,3 +862,23 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   10 -> 20 000 ft 0.87 min (FM 0.90, -3 %), -> 25 000 ft 1.48 (1.47, +1 %), -> 30 000 ft 2.28 (2.02, +13 %), **-> 35 000 ft
   3.50 min (FM 3.36, +4 %)** ✓. The 30 000 ft mark is where the DI 0 extrapolation is least certain.
   Energy-height evaluation of the max thrust run: 10 -> 35 000 ft ratio 1.03.
+
+## 2026-10-30: CG check (pete's input "CG limits 0.07-0.164 MAC from CR-2144") - not limits; CG travel reversed
+- CR-2144 PDF 40 (F-104A): **0.070 c̄ and 0.164 c̄ are the CG positions of the two analysed configurations, not limits**:
+  nominal (clean, 750 rounds, 50 % internal fuel, 16 300 lb) c.g. 0.070 c̄; power approach (clean, 20 % internal fuel,
+  flaps 45° + BLC, gear down, 14 126 lb) c.g. 0.164 c̄. The FM gives no numeric CG limits (2026-10-25). The cfg comment
+  "CR-2144: 0.07 (combat) to 0.164 (approach)" at CG_forward_limit is correct as positions, not as limits.
+- **Sim CG vs. fuel** (SimVar CG_PERCENT, tips empty, Center2 drains first): full internal 5 887 lb 12.4 %, 70 % (test
+  standard) 9.6 %, 50 % (Center2 empty) 11.1 %, 20 % 7.7 %, zero fuel 5.1 % MAC -> **the sim CG moves FORWARD as fuel
+  burns; the F-104A moves AFT** (7.0 % at 50 % -> 16.4 % at 20 %).
+- Cause: `empty_weight_CG_position` = 0.07 MAC was taken from the CR-2144 nominal case (which includes 50 % fuel and
+  ammunition), and the tanks were then moved aft (first +6/+11 ft gave -4.8 % MAC, now Center1 -1.6 ft) to reach ≈ 7-10 %
+  at the test fuel state (AP-8 matched one point only).
+- Desk fit to both CR-2144 points with our weights (zero fuel 14 930 lb, Center1 only at 20 %): Center1 ≈ +9.9 ft ahead
+  of the datum (≈ F.S. 353, between cockpit and wing - plausible for the F-104 fuselage cells), zero-fuel CG ≈ +0.1 ft
+  (≈ 24 % MAC). Consequence: at the test standard (70 %, Center2 ahead of Center1) the CG would be ≈ 1 % MAC instead of
+  9.6 %.
+- **Not changed** (big change to validated values: T3-A normalization, T3-G trim gradient, takeoff/landing trim, all
+  flown at 9.6 %; F-104A data for a G with a different nose and an auxiliary tank). Proposed work package: get F-104G
+  weight-and-balance data (FM Section V loading/CG chart, D-6398/D-7137 test-aircraft CG, a G weight report), then one
+  change round with full regression (T3-A/F/G, T3-D, T3-L, B5/B6, landings).

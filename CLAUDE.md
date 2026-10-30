@@ -19,7 +19,9 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    control 150 KIAS at 19 500 lb; check that the sim does not allow touchdowns far below the FM speeds), then
    ~~T3-H~~ (done 2026-10-30: reference conflict D-7137 vs. D-6398, see measurements), D1b takeoff ground
    run vs. FM Fig. A2-4 (first data point: 2 627 ft at 18 938 lb), D3 climb, H5 drag chute logic.
-3. Still open from 2026-10-29 list: 0c CG limits 0.07-0.164 MAC in CR-2144; 0d NTRS/DTIC primary-source search
+3. **CG (2026-10-30)**: CR-2144 0.07/0.164 are configuration CGs, not limits; sim CG moves FORWARD with fuel burn,
+   F-104A AFT (empty CG 0.07 MAC misread) -> work package: F-104G weight-and-balance data, then one change round with
+   full regression. Still open from 2026-10-29 list: 0d NTRS/DTIC primary-source search
    (landing config / BLC, CG limits - J79 part-power fuel is now covered by the FM charts); MCP `landing` tool parsing.
 Results 2026-10-29 (details `docs/notes/measurements.md`, data index `docs/data/README.md`):
 - ISA re-verification: B6 +905 ft/min ✓, B5 183 KIAS ✓, T3-A/G ✓, T3-F 1.04 (M 0.6-0.95 1.06-1.09), T3-H subsonic
