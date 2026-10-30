@@ -93,7 +93,12 @@ flap = rad(aq.get("TRAILING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
 print(f"Flaps trailing edge {flap:.1f}°, trim {rad(aq.get('ELEVATOR_TRIM_POSITION')) * DEG:.2f}°")
 if not 10 <= flap <= 20:
     sys.exit("Flaps not in TAKEOFF (15°) - aborted")
-hdg0 = s0["hdg"]
+# 2026-10-30: runway_start once left the jet at 273° -> the script held that heading and rolled diagonally across the runway.
+# Use the runway heading (EDDM 26L 263.4° true) and refuse to start if the jet is not aligned
+RWY_HDG = 263.4
+if abs(wrap(s0["hdg"] - RWY_HDG)) > 2.0:
+    sys.exit(f"Aircraft heading {s0['hdg']:.1f}° not aligned with runway 26L ({RWY_HDG}°) - aborted (run runway_start again)")
+hdg0 = RWY_HDG
 if aq.get("BRAKE_PARKING_POSITION") != 1:
     ev["PARKING_BRAKES"]()
 axis("AXIS_ELEVATOR_SET", 0)
@@ -157,7 +162,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             if raw < 0 or e_q > 0:
                 res["iq"] = max(0.0, min(6.0, res.get("iq", 0.0) + e_q * dt))
             cmd_elev = max(-LIM_PULL, min(0.0, -(300.0 * e_q + 1000.0 * res["iq"])))
-            if TAXI and (s["theta"] >= 3.0 or s["ias"] >= 168):
+            if TAXI and (s["theta"] >= 2.5 or s["ias"] >= 165):                # well below liftoff (≈ 170 kt)
                 aborted = f"taxi test end at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
             theta_cmd = s["theta"]                      # airborne attitude ramp starts from the actual attitude
         elif res["vr_t"] is not None and res["first_air"] is None:
@@ -230,7 +235,9 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             while True:
                 st = state(full=False)
                 eh = wrap(hdg0 - st["hdg"])
-                axis("AXIS_ELEVATOR_SET", 3000 * min(1.0, (time.time() - t_s) / 3.0))
+                # 2026-10-30 incident: a 0 -> push ramp left the 5° nose-up takeoff trim in charge at ≈ 170 kt -> airborne, 28°.
+                # Hold the attitude at 0° actively (push as needed, up to the full nose-down stop)
+                axis("AXIS_ELEVATOR_SET", max(0.0, min(16383.0, 3000.0 + 2500.0 * st["theta"])))
                 axis("AXIS_RUDDER_SET", max(-LIM_RUD, min(LIM_RUD, -KP_HDG * eh)))
                 if st["theta"] < 1.0 and time.time() - t_s > 1.0:
                     ev["AXIS_LEFT_BRAKE_SET"](16383) if ev.get("AXIS_LEFT_BRAKE_SET") else None

@@ -969,3 +969,9 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   299° (probably off the runway), gear 100 %, engine idle, no crash flag. To analyse OFFLINE before any further sim test:
   the runway_start heading, why the pitch rose after the taxi-end (elevator command/sign in the stop loop, trim 5° at idle
   ≈ 170 kt), and a safer taxi criterion (stop at nose-wheel lift-off speed - 15 kt, not at 3° pitch).
+- Offline analysis and script fixes (not yet flown): (a) the taxi stop routine ramped the elevator from 0 to a push over
+  3 s - with the 5° nose-up takeoff trim and TAKEOFF flaps at ≈ 170 kt neutral elevator is enough to lift off and pitch up
+  -> the stop now holds 0° pitch actively (3 000 + 2 500 per degree, up to the full nose-down stop); (b) takeoff_test.py
+  uses the runway heading 263.4° as reference and refuses to start if the jet is more than 2° off (the 273° placement
+  remains unexplained). Next session: re-run the taxi build-up only after reviewing these changes; criterion taxi end
+  ≤ 165 kt.
