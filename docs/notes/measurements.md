@@ -936,3 +936,21 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - **F3 ✓** (-0.3 / -4.8 / -2.6 % with the corrected measurement). Open (separate item): touchdown dynamics - flare too soft
   (≈ 20-60 ft/min) and the nose-up after main-gear contact; candidates: flare target sink (≈ 150-250 ft/min), gear
   spring/damping (compression ratio 1.5, damping 0.7 [S]), main-gear x position vs. the corrected CG.
+
+## 2026-10-30: touchdown skip and takeoff rotation - findings, open items
+- **Touchdown** (landing 20, simlog): during the flare the controller PULLS (elevator +1.0..1.5°); after the first touch
+  at 174 KIAS / 22 ft/min the jet floats up to 7 ft for ≈ 5 s (VS +75..+170 ft/min) before the final touchdown at 158 KIAS.
+  Lift at 174 KIAS with LAND flaps in ground effect still carries the jet: `lift_coef_ground_effect_mach_table` is the SDK
+  template value (≈ ×1.08 lift at M 0.26) - unvalidated for the F-104 (low aspect ratio), no source yet -> not changed.
+- Flare target -150 -> **-250 ft/min** (landing 21, ..._T3L_landing21_*): TD 178 KIAS at 279 ft/min, still 1 skip; ground roll
+  from the final touchdown (173 KIAS) 3 448 ft -> scaled **+2 %** ✓. Even a firm touchdown skips -> gear spring/damping
+  [S] (compression ratio 1.5, damping 0.7) and/or the template ground effect are the candidates (open, needs a source or
+  a dedicated test: drop/touchdown test at fixed sink rates).
+- **Takeoff rotation** (pete: "pulls too early and too hard"): FM 2-20/6-5 back stick 20-25 kt below takeoff speed, nose wheel
+  lift-off 10-20 kt below, attitude ≈ 5°, "fast stick input = dynamic overshoot, nose may fall back". The script (feed-forward
+  5000 + attitude ramp 3°/s from 157 kt) overshoots (8.9° at liftoff with 5° commanded) and the jet often lifts at ≈ 170 kt,
+  touches again and lifts for good at 185-191 kt. Trial 3000 + 2°/s (..._T3D_takeoff_softrot.csv): same overshoot on the ground
+  (5.3° at 2.8° commanded), weak climb-out (5-7° pitch at 5-7 ft up to 230 kt) -> reverted. Note: with the calibrated TAKEOFF
+  flap lift the sim cannot lift off at a 5° attitude below ≈ 200 kt, so the FM "≈ 5°" is probably a different reference
+  (attitude indicator / initial rotation). **Open: redesign the rotation as a pitch-rate command (≈ 2°/s) with a proper
+  build-up**, then re-check T3-D (liftoff speed, no bounce) and D1b.

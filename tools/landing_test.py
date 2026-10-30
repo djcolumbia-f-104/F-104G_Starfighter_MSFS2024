@@ -212,7 +212,9 @@ while time.time() - t0 < 600:
                 print(f"flare at {agl:.0f} ft AGL, {ias:.0f} KIAS, {s:.0f} ft from the threshold, path error {path_err:+.0f} ft, "
                       f"sink {res['vs_f']:.0f} ft/min")
         if phase == "flare":
-            vs_tgt = -150 + (res["vs0"] + 150) * clamp((agl - 20) / 100, 0.0, 1.0)
+            # 2026-10-30: -150 gave 20-60 ft/min touchdowns at ≈ 174 KIAS and a float/skip of ≈ 5 s (template ground
+            # effect ≈ +8 % lift, gear rebound) -> firmer touchdown, ≈ 250 ft/min (no float, FM: avoid holding off)
+            vs_tgt = -250 + (res["vs0"] + 250) * clamp((agl - 20) / 100, 0.0, 1.0)
         # dry run 10: flare gains too soft (pitch 1.9 -> 5.1° in 9 s, sink 864 ft/min at TD) -> x1.6 in the flare
         fly(vs_tgt, 1.6 if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to

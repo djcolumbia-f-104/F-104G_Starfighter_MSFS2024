@@ -15,8 +15,10 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    rises 1.7 -> 4.4° after the main-gear contact). Options: flare target sink ≈ 150-250 ft/min; check gear spring/damping
    [S] (compression ratio 1.5, damping 0.7) and the main-gear x (-0.3 ft) against the corrected CG. `tools/rollout_log.py`
    for high-rate data (CONTACT_POINT_COMPRESSION:n reads 0 - find the right SimVar form).
-2. Takeoff: climb-out pitch gains now 200/60 (smooth, slightly sluggish near the ground); rotation technique (FM attitude
-   ≈ 5° vs. script 10.5°) still open (D1b +10 %).
+2. **Takeoff rotation (pete: pulls too early/hard)**: attitude + feed-forward overshoots on the ground (FM 6-5 "dynamic
+   overshoot"), bounce at ≈ 170 kt; softer FF tried and reverted -> redesign as pitch-rate command (≈ 2°/s) with build-up.
+   Flare now -250 ft/min; the remaining touchdown skip points to gear spring/damping [S] or the template ground effect
+   (`lift_coef_ground_effect_mach_table` ≈ +8 % at M 0.26) - needs a source or a dedicated touchdown test.
 3. Remaining test plan: H2 pitch-up / APC shaker-kicker (reference NASA TN D-6943 buffet with flaps, local PDF), H5 drag
    chute logic, low-fuel approach at CG ≈ 18 % (new case after the CG rework), MCP `landing` tool parsing.
 Results 2026-10-30 (details `docs/notes/measurements.md`, index `docs/data/README.md`):

@@ -101,7 +101,11 @@ if FM_TECH:
 # Gains for a ~3 Hz control loop (run 2 with 2500/1500 and 1500/900 oscillated and ended in the ground)
 KP_HDG, KD_HDG = 700.0, 400.0            # counts per ° and per °/s (positive axis = nose LEFT, T3-D run 1)
 KP_TH, KD_TH = 800.0, 200.0              # counts per ° and per °/s (positive axis = nose down, rounds D/E)
-FF_TH = 5000.0                           # feed-forward "pull the stick" (run 3 with 2500: only 6-7° on the ground)
+# feed-forward "pull the stick" (run 3 with 2500: only 6-7° on the ground). 2026-10-30 (pete: "pulls too early and too
+# hard"): 5000 + 3°/s over-rotates (8.9° at liftoff with 5° commanded, nose falls back = FM 6-5 "dynamic overshoot").
+# Tried 3000 + 2°/s: same overshoot on the ground and a weak climb-out (5-7° pitch at 5-7 ft up to 230 kt) -> reverted;
+# open: redesign the rotation as a pitch-rate command (≈ 2°/s) instead of attitude + feed-forward
+FF_TH = 5000.0
 LIM_RUD, LIM_PULL, LIM_PUSH = 8000, 12000, 3000
 KP_B, KD_B = 250.0, 150.0                # aileron on bank (landing_test.py; +axis increases raw bank)
 THETA_CLIMB = 15.0                       # [S] climb-out attitude
