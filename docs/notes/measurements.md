@@ -994,3 +994,9 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   rollout_log.py's "CONTACT_POINT_COMPRESSION:n" form reads 0 in Python-SimConnect.
 - MCP server: `landing` tool updated to the hand-flown script (args high_ft, chute; output incl. skips and the
   final-touchdown ground roll), `takeoff` docstring/filters updated (needs an MCP server reconnect to take effect).
+- **Low-fuel approach at aft CG** (new case after the CG rework; dry run on a virtual runway 4 000 ft up,
+  ..._2026-10-31_T3L_dry18_lowfuel*.csv): fuel 1 650 lb (landing_test.py refuses < 1 500 lb), 16 749 lb, CG 15.6 % MAC
+  (1 180 lb would give 17.2 %). Approach 180 KIAS, α 3.0°, N1 88.4 % (FM 87-90 %), elevator -1.1° (push) with the fixed
+  5.2° approach trim (test standard CG 9.2 %: 0.0°), pitch steadiness σ 0.61° (0.45°) -> stable, trim shift in the expected
+  direction ✓. Virtual touchdown 170 KIAS vs. FM 158-163 at this weight: the scripted flare bleeds too little speed (≈ 10 kt
+  instead of ≈ 20) - technique item, also relevant for the touchdown skip (touching fast = wing still flying).

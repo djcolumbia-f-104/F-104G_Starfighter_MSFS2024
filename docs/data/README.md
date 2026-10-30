@@ -150,6 +150,8 @@ log here; this index says under which conditions each log was flown and whether 
 ### 2026-10-31 (clear skies, wind 1 kt, 1013.25 hPa)
 | Log | Test | Conditions / cfg | Result | Status |
 |---|---|---|---|---|
+| `T3L_dry18_lowfuel` (+ `_simlog`) | **low-fuel approach, CG 15.6 %** | dry run 4 000 ft, 16 749 lb | α 3.0°, elevator -1.1°, stable; virtual TD 170 KIAS (FM 158-163) | **valid** |
+| `T3D_takeoff_lowfuel` | T3-D | | 170 / 190 kt | valid (liftoff) |
 | `T3D_taxi_qrot2b` | rotation law v2 taxi build-up | runway_start heading fix, taxi stop with 0° hold | no push; break-out 3.6°/s; 0.6 s hop; stopped on the centreline | valid (build-up, law not adopted) |
 
 ## Keeping this index
