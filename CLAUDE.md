@@ -26,6 +26,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
       parked; low-fuel approach at CG 15.6 % ✓ (elevator -1.1° push with 5.2° trim, stable); found: the flare bleeds only
       ≈ 10 kt (TD 170 vs. FM 158-163) - likely part of the skip (touching fast) -> next: flare speed bleed (idle earlier).
       MCP landing/takeoff tools updated (reconnect /mcp).
+      DONE 2026-10-31: flare speed bleed (speed target ramp to the FM touchdown speed, idle while fast, flare gain x2.2)
+      -> TD 171-172 KIAS, skips practically gone (0-0.5 s); F3 +9.6/+9.8 % ✓; skip counter ignores failed reads.
 0. Session start as before (check_build, preflight, weather ≈ 1 kt / 1013.25, trim-hold check, `tools/refuel.py` - the
    standard state is NOW auxiliary cell EMPTY + 4 080 lb main cells, CG 9.2 % MAC). Never position from the ground; take off
    first. Never leave the jet at idle after a test. Never set all tanks to 0 (engine flames out).

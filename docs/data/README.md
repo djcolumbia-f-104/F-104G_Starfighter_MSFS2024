@@ -152,6 +152,9 @@ log here; this index says under which conditions each log was flown and whether 
 |---|---|---|---|---|
 | `T3L_dry18_lowfuel` (+ `_simlog`) | **low-fuel approach, CG 15.6 %** | dry run 4 000 ft, 16 749 lb | α 3.0°, elevator -1.1°, stable; virtual TD 170 KIAS (FM 158-163) | **valid** |
 | `T3D_takeoff_lowfuel` | T3-D | | 170 / 190 kt | valid (liftoff) |
+| `T3L_dry19_flarebleed` / `dry20_flareidle` / `dry21_flaregain` | flare speed bleed development | virtual runway 4 000 ft | TD 177 / 171 (699 ft/min) / **170 KIAS, 363 ft/min** | dev (dry21 = pass) |
+| `T3L_landing22_nochute` (+ `_rollout`) | **F3**, new flare | | TD 171 KIAS / 226 ft/min, no skip; +9.6 % | **valid** |
+| `T3L_landing23_nochute` (+ `_rollout`) | **F3** regression | skip detection fix | TD 172 KIAS, 0.5 s hop; +9.8 % | **valid** |
 | `T3D_taxi_qrot2b` | rotation law v2 taxi build-up | runway_start heading fix, taxi stop with 0° hold | no push; break-out 3.6°/s; 0.6 s hop; stopped on the centreline | valid (build-up, law not adopted) |
 
 ## Keeping this index

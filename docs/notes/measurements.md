@@ -1000,3 +1000,18 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   5.2° approach trim (test standard CG 9.2 %: 0.0°), pitch steadiness σ 0.61° (0.45°) -> stable, trim shift in the expected
   direction ✓. Virtual touchdown 170 KIAS vs. FM 158-163 at this weight: the scripted flare bleeds too little speed (≈ 10 kt
   instead of ≈ 20) - technique item, also relevant for the touchdown skip (touching fast = wing still flying).
+
+## 2026-10-31: flare speed bleed - touchdown on the FM speed, skips practically gone; F3 ✓
+- Cause of the fast touchdowns: below 100 ft the script held 83 % N1 (FM 2-25: keeps the BLC alive in the real jet); the
+  sim models no rpm-dependent BLC, so the speed hardly decayed (TD 170 vs. 158-163 at 16 700 lb, 174-178 vs. 170-175 at
+  19 000 lb) and the wing was still flying at the touch.
+- Script change (landing_test.py): in the flare the speed target ramps from v_app to the middle of the FM touchdown band
+  (v_td + 2.5) between 100 and 20 ft AGL; PI throttle idle..Military, IDLE while more than 3 kt fast (dry 19: the PI alone
+  only reached throttle ≈ 5 300, TD 177); flare elevator gain x1.6 -> x2.2 (dry 20: TD 171 KIAS but 699 ft/min).
+  Dry 21 (virtual runway 4 000 ft): **TD 170 KIAS (FM 170-175), 363 ft/min, pitch 4.1°** ✓.
+- Landing 22 (F3, real): TD 171 KIAS at 226 ft/min; the script reported "1 skip" but the high-rate log shows NONE - a failed
+  SIM_ON_GROUND read (returns 0) was counted -> skip now only if off the ground AND AGL > 2 ft; the roll keeps integrating
+  on a failed read. Ground roll (high-rate log, from the touchdown at 173.3 KIAS) 3 714 ft -> scaled **+9.6 %** ✓.
+- Landing 23 (regression of the script fixes): TD 172 KIAS at 99 ft/min; one real 0.5 s hop right after the first touch
+  (before: 2-3.5 s skips); roll from the final touchdown (173.5 KIAS) 3 733 ft -> scaled **+9.8 %** ✓.
+- F3 ✓ (+9.6 / +9.8 %, at the upper edge of ±10 %); touchdown skip essentially fixed by technique (no cfg change).

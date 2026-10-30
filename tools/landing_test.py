@@ -216,18 +216,24 @@ while time.time() - t0 < 600:
             # effect ≈ +8 % lift, gear rebound) -> firmer touchdown, ≈ 250 ft/min (no float, FM: avoid holding off)
             vs_tgt = -250 + (res["vs0"] + 250) * clamp((agl - 20) / 100, 0.0, 1.0)
         # dry run 10: flare gains too soft (pitch 1.9 -> 5.1° in 9 s, sink 864 ft/min at TD) -> x1.6 in the flare
-        fly(vs_tgt, 1.6 if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
+        # 2026-10-31 (dry 20): with idle in the flare the sink grew to ≈ 700 ft/min at TD (target 250) -> x2.2
+        fly(vs_tgt, 2.2 if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
         # thrust/BLC loss, sink rose again) -> gain 40 towards 83 %
-        if phase != "flare" or agl >= 100:
-            err = v_app - ias
+        # 2026-10-31: the FM 83 % rpm rule (it keeps the BLC alive in the real jet) bled only ≈ 10 kt in the flare (TD 170
+        # vs. FM 158-163 KIAS); the sim models no rpm-dependent BLC -> in the flare the speed target ramps from v_app to
+        # the FM touchdown speed between 100 and 20 ft AGL and the same PI throttle (idle..Military) flies it
+        spd_tgt = v_app if phase != "flare" else v_td + 2.5 + (v_app - v_td - 2.5) * clamp((agl - 20) / 80, 0.0, 1.0)
+        if True:
+            err = spd_tgt - ias
             res["i_spd"] = clamp(res.get("i_spd", 0.0) + err * dt, -60.0, 60.0)
             # dry run 13 (19 170 lb): Military could not hold the speed level in landing config (170 -> 157 KIAS) ->
             # AB allowed in the level segment (FM 2-24 heavy weight: Military may not be enough); approach ≤ Military
-            thr = clamp(9000.0 + 250.0 * err + 25.0 * res["i_spd"], 2000.0, 16383.0 if phase == "level" else 11141.0)
-        else:
-            thr = clamp(thr + 40.0 * (83.0 - g("TURB_ENG_N1:1")) * dt, 0.0, 11141.0)
+            thr = clamp(9000.0 + 250.0 * err + 25.0 * res["i_spd"], 0.0 if phase == "flare" else 2000.0,
+                        16383.0 if phase == "level" else 11141.0)
+            if phase == "flare" and ias > spd_tgt + 3:                # dry run 19: PI only went to ≈ 5 300 -> idle while fast
+                thr = 0.0
         ev("THROTTLE1_SET", int(thr))
         if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 and not res.get("gear_go"):
             res["gear_go"] = True                                    # gear not down 2 NM out -> go around
@@ -257,11 +263,13 @@ while time.time() - t0 < 600:
     elif phase == "rollout":
         # 2026-10-30 (landing 18, high-rate rollout log): the jet skipped twice after the first touch (3.5 s airborne,
         # ≈ 1 000 ft) -> the ground roll counts from the FINAL touchdown (FM A8-3/A8-4 assume no skip); skips are reported
-        if not gnd:
+        # a failed read returns 0 for SIM_ON_GROUND -> count a skip only when really off the ground (landing 22: a "skip"
+        # that the high-rate log does not show)
+        if not gnd and agl > 2:
             roll = 0.0
             res["air"] = True
-        else:
-            if res.get("air"):
+        else:                                                         # on the ground (or a failed read)
+            if res.get("air") and gnd:
                 res["air"] = False
                 res["skips"] = res.get("skips", 0) + 1
                 res["td_final_ias"] = ias
