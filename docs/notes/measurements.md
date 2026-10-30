@@ -792,3 +792,18 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   (≈ 380 lbf) -> consistent. The +10 % = ≈ +3 % from the -2.5 % thrust plus the rotation phase (script pulls to 10.5°
   from 157 kt -> high induced drag; FM attitude ≈ 5°) and the first 3 s after brake release (14 ft/s²).
   **D1b ◐ accepted, no cfg change**; technique (rotation attitude/timing) to refine with the takeoff script later.
+
+## 2026-10-30: D3 level acceleration 35 000 ft vs. FM Fig. A9-1 (PDF 561) - time ✓, fuel +20 %
+- FM Fig. A9-1 (maximum thrust level flight acceleration, 35 000 ft, no external stores, data basis flight test),
+  standard day, from M 0.9 to M 1.8 (x axis runs to M 2.0): 18 000 lb 2.55 min / 37 NM / 880 lb; 20 000 lb 3.2 min /
+  41 NM / 1 010 lb -> **at 18 986 lb ≈ 2.87 min, ≈ 39 NM, ≈ 945 lb**.
+- Sim (..._D3_accel35k.csv, MCP accel_run, 34 950-35 100 ft, OAT -50.8 °C ≈ ISA+3.5, 18 986 lb at M 0.9):
+  **3.10 min (+8 % ✓), 40.2 NM (+3 % ✓), 1 137 lb (+20 % ✗)**.
+- AB fuel flow vs. D-7137 Table 4 (interpolated in δ between 30 000/40 000 ft): M 1.0 +2 %, 1.2 +3 %, 1.4 +9 %, 1.6 +15 %,
+  1.8 +20 %; at 10 000 ft (ISA accel) M 0.8-1.2: 0.94-1.01. -> the AB fuel flow error grows with Mach, not altitude:
+  FF = AB TSFC x AB gross-thrust increment, which contains the ram drag (same mechanism as the dry cruise FF, D5). The SDK
+  has no Mach-dependent FF factor; `AfterBurnThrustSpecificFuelConsumption` would trade the validated M ≈ 1 values
+  against M 1.8. **Known deviation, no change** (+9..+20 % AB fuel at M 1.4-1.8).
+- Both 35 000 ft runs stopped at the 740 KIAS script limit (FM 750 KIAS, Fig. 5-2): at 33 000-35 000 ft that is
+  M ≈ 1.77-1.82 (supersonic pitot), so Mach 2.0 is only reachable higher up (D4 at 40 000 ft). First suspected a
+  spurious read; accel_run now requires the stop condition on two consecutive reads anyway.

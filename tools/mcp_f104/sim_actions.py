@@ -147,12 +147,17 @@ elif cmd == "accel":
     ev("THROTTLE1_SET", 16383)
     t0 = time.time()
     trail = []
+    hits = 0
     while time.time() - t0 < max_s:
         m = g("AIRSPEED_MACH") or 0
         if not trail or time.time() - trail[-1][0] > 20:
             trail.append((time.time(), round(m, 2), round(g("PLANE_ALTITUDE") or 0),
                           round((g("ELEVATOR_TRIM_POSITION") or 0) * DEG, 1)))
-        if m >= mach_stop or (g("AIRSPEED_INDICATED") or 0) > 740:      # 750 KIAS limit (FM Fig. 5-2)
+        hit = m >= mach_stop or (g("AIRSPEED_INDICATED") or 0) > 740      # 750 KIAS limit (FM Fig. 5-2)
+        # stop must hold on two consecutive reads (failed reads); note 2026-10-30: at 33 000-35 000 ft 740 KIAS is reached
+        # at M ≈ 1.77-1.82 (supersonic pitot) - that is the FM 750 KIAS limit, M 2.0 only higher up (D4 at 40 000 ft)
+        hits = hits + 1 if hit else 0
+        if hits >= 2:
             break
         time.sleep(1)
     ev("THROTTLE1_SET", 0)

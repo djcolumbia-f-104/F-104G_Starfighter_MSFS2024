@@ -80,7 +80,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29) |
 | D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-5 (ground run, max thrust, PDF 458), ±10 % | ◐ +10 % (2 900 vs. 2 630 ft at 19 000 lb, 1 500 ft, 15 °C); low-speed AB thrust to check |
 | D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ explained: sim follows D-7137; D-7137 model itself vs. D-6398 = 0.86-0.90 at 10 000 ft, 1.03-1.12 at 20 000 ft (ISA 20 000 ft sim 0.97-1.08) |
-| D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
+| D3 | Level acceleration | M 0.9 -> 1.8 at 35 000 ft (740 KIAS limit at M ≈ 1.8) | Fig. A9-1 time/fuel/distance | ◐ time +8 %, distance +3 % ✓; fuel +20 % (AB FF rises with Mach, known) |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
 | D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ✓ after TSFC 1.26 -> 0.72: 0.96-1.07 (M 0.5-0.85, 5-30 kft); was 1.66-1.86 |
 | D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ○ |
