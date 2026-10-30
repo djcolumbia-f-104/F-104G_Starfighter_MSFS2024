@@ -87,10 +87,13 @@ def runway_start() -> str:
 
 @mcp.tool()
 def takeoff(name: str = "T3D_takeoff", vr_kt: float = 157, theta_deg: float = 10.5) -> str:
-    """T3-D scripted takeoff (tools/takeoff_test.py) from the runway; returns liftoff speed, pitch, ground roll.
-    Compare with FM Fig. A2-3: liftoff ≈ 155 + 4.43 kt per 1 000 lb above 14 000 lb."""
+    """T3-D scripted takeoff (tools/takeoff_test.py) from runway_start (aligned 263.4° ± 2°, else refused); full AB,
+    attitude rotation from vr, hand-flown climb-out (gear up when airborne, Military, flaps up ≥ 260 KIAS), AP ALT hold at
+    1 500 ft. Returns first and sustained liftoff speed, pitch, ground roll, gear/flaps-up speeds.
+    Compare with FM Fig. A2-3: liftoff ≈ 155 + 4.43 kt per 1 000 lb above 14 000 lb (D1b ground run: Fig. A2-5).
+    Options fm / qrot / taxi only via the script directly (taxi = rotation build-up without liftoff)."""
     rc, out = run(SIMPY, "tools/takeoff_test.py", csv_path(name), vr_kt, theta_deg, timeout=240)
-    return pick(out, r"Flaps|liftoff|Liftoff|Abort|Result|Vr|STDERR|takes over")
+    return pick(out, r"Flaps|liftoff|Liftoff|Gear up|Abort|Result|Vr|STDERR|FALLBACK|not aligned|not settled")
 
 
 @mcp.tool()
@@ -129,14 +132,20 @@ def approach(name: str = "T3L_approach", target_ias: float = 200, hold_s: int = 
 
 
 @mcp.tool()
-def landing(name: str = "T3L_landing", start_nm: float = 6, glide_deg: float = 3) -> str:
-    """T3-L scripted approach and landing on EDDM 26L (tools/landing_test.py): repositions start_nm out on the glide
-    path with gear + LAND flaps, AP HDG (localizer from cross-track) + AP VS (glide path) + throttle loop on the FM
-    final approach speed, flare, touchdown, brakes. Returns touchdown IAS/sink/position and ground roll.
+def landing(name: str = "T3L_landing", start_nm: float = 6, glide_deg: float = 2.5, high_ft: float = 0,
+            chute: bool = True) -> str:
+    """F1-F3 hand-flown approach and landing on EDDM 26L (tools/landing_test.py, rewritten 2026-10-27/28): the jet must be
+    AIRBORNE (never position from the ground). Level segment, glide path intercept from below (hand-flown elevator PI on
+    VS + aileron PID on the localizer, PI throttle on the FM final speed), flare to -250 ft/min, touchdown, nose down over
+    3 s, brakes once the nose is down, chute (ground spoiler drag) if chute=True. high_ft > 0 = dry run on a virtual
+    runway that high (ends with an FM go-around). Returns touchdown IAS/sink, skips and the ground roll measured from the
+    FINAL touchdown (2026-10-30: the jet often skips once after the first touch).
     FM ground roll at 17 900 lb, 1 500 ft field, 12 °C, no wind: 3 130 ft without chute (Fig. A8-4), 2 760 ft with the
-    18-ft chute (Fig. A8-3); +5 kt headwind ≈ -4 %. The chute is the ground spoiler drag (speed brake handle)."""
-    rc, out = run(SIMPY, "tools/landing_test.py", csv_path(name), start_nm, glide_deg, timeout=700)
-    return pick(out, r"weight|flare|TOUCHDOWN|GO-AROUND|Result|samples|STDERR")
+    18-ft chute (Fig. A8-3); scale with (166.5 / final-touchdown KIAS)². The MSFS ground spoiler drag is no usable chute
+    (F2 +17.6 %, known deviation, H5)."""
+    args = [csv_path(name), start_nm, glide_deg, high_ft] + ([] if chute else ["nochute"])
+    rc, out = run(SIMPY, "tools/landing_test.py", *args, timeout=900)
+    return pick(out, r"weight|glide path|flare|TOUCHDOWN|skip|GO-AROUND|drag chute|Result|samples|ABORT|STDERR")
 
 
 @mcp.tool()

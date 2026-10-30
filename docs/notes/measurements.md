@@ -988,3 +988,9 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   centreline (heading error ≤ 0.1°) ✓. -> per plan **no real takeoff with qrot; the default attitude law stays**. The
   break-out is faster than the ≈ 3.5 Hz ground loop (5 SimVar reads per cycle); next idea: a faster rotation loop
   (fewer reads) before any further rotation-law work.
+- Touchdown skip, gear loads: CONTACT POINT COMPRESSION read via the simconnect MCP with `index` (nose 0.44, mains 0.48 /
+  0.48 of the maximum; static design ≈ 0.67 at compression ratio 1.5) - similar, nothing bottomed -> no sign of a shifted
+  load distribution after the CG rework. Skip cause still open (parked; it no longer biases the ground-roll measurement).
+  rollout_log.py's "CONTACT_POINT_COMPRESSION:n" form reads 0 in Python-SimConnect.
+- MCP server: `landing` tool updated to the hand-flown script (args high_ft, chute; output incl. skips and the
+  final-touchdown ground roll), `takeoff` docstring/filters updated (needs an MCP server reconnect to take effect).
