@@ -17,6 +17,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    B. Review the offline fixes in `tools/takeoff_test.py` (commit ca71162): runway heading 263.4° + 2° alignment check,
       taxi stop holds 0° pitch actively, taxi end at 165 kt / 2.5°. Find out why `runway_start` set 273° (compare the
       heading right after set_pos with RUNWAY[2] in tools/mcp_f104/sim_actions.py; re-position if off).
+   (A, B done 2026-10-31: runway_start heading check fixed. C done: taxi build-up safe, but qrot break-out 3.6°/s ->
+   NOT adopted, default attitude law stays; faster ground loop = next idea.)
    C. Only then the taxi build-up of rotation law v2: `takeoff_test.py <csv> 157 10.5 taxi` (no liftoff; pass: pitch rate
       ≤ 3°/s, no push, smooth attitude, stops on the centreline). If it passes: one real takeoff with `qrot`, compare with
       the default (liftoff speed vs. FM 177.6 kt, no bounce). If not: keep the default attitude law.

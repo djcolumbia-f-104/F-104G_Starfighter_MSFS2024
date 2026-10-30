@@ -975,3 +975,16 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   uses the runway heading 263.4° as reference and refuses to start if the jet is more than 2° off (the 273° placement
   remains unexplained). Next session: re-run the taxi build-up only after reviewing these changes; criterion taxi end
   ≤ 165 kt.
+
+## 2026-10-31: resume - runway_start heading fix, taxi build-up of rotation law v2 (safe), qrot not adopted
+- Fresh flight load on 26L at 263.43° true; weight after refuel.py 19 178 lb (yesterday 19 010 - the loaded flight carries
+  ≈ 170 lb more payload; noted, CG still ≈ 9-10 %). Checks ✓ (T1, preflight, wind 1 kt / 1013.25, trim hold).
+- `runway_start`: the settle check now includes the heading (±1° of 263.4°) and ground speed < 1 kt, up to 3 attempts, and
+  prints the heading (cause of yesterday's 273°: the jet was moving fast before the respawn and turned after set_pos).
+  Verified: 263.4°.
+- **Taxi build-up, rotation law v2** (..._2026-10-31_T3D_taxi_qrot2b.csv; takeoff_test.py ... taxi): pull only (-1 092 ->
+  -1 854) ✓, no push ✓; but the nose broke free at ≈ 165-170 kt (nose-wheel unloading): 1.1 -> 3.0° in 0.5 s ≈ 3.6°/s ✗ (≤ 3);
+  taxi end at 167 kt / 2.0°, the active 0° pitch hold kept the jet down except a 0.6 s hop at 173 kt; stopped on the
+  centreline (heading error ≤ 0.1°) ✓. -> per plan **no real takeoff with qrot; the default attitude law stays**. The
+  break-out is faster than the ≈ 3.5 Hz ground loop (5 SimVar reads per cycle); next idea: a faster rotation loop
+  (fewer reads) before any further rotation-law work.

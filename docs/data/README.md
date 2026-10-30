@@ -147,6 +147,11 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3D_takeoff_qrot1` | T3-D pitch-rate rotation trial | experimental, failed | 169 kt then bounce along the runway to 203 kt, off the centreline | invalid |
 | `T3D_taxi_qrot2` | rotation v2 taxi build-up | runway_start heading 273° | lifted off after taxi end, pitch 28°, off the runway | invalid (incident) |
 
+### 2026-10-31 (clear skies, wind 1 kt, 1013.25 hPa)
+| Log | Test | Conditions / cfg | Result | Status |
+|---|---|---|---|---|
+| `T3D_taxi_qrot2b` | rotation law v2 taxi build-up | runway_start heading fix, taxi stop with 0° hold | no push; break-out 3.6°/s; 0.6 s hop; stopped on the centreline | valid (build-up, law not adopted) |
+
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
 mark the old row superseded and name the replacement log.

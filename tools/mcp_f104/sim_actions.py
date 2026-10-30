@@ -101,7 +101,9 @@ elif cmd == "runway":
     t_g = time.time()
     while time.time() - t_g < 15 and (g("GEAR_TOTAL_PCT_EXTENDED") or 0) < 0.99:
         time.sleep(0.5)
-    for attempt in range(2):
+    # 2026-10-30: once the jet ended up at 273° instead of 263.4° (it was moving fast before the respawn and turned after
+    # set_pos) and the takeoff rolled diagonally -> the settle check includes the heading (±1°), up to 3 attempts
+    for attempt in range(3):
         sm.set_pos(0, RUNWAY[0], RUNWAY[1], 0, 0.0, 0.0, RUNWAY[2], 1)
         if g("BRAKE_PARKING_POSITION") != 1:
             ev("PARKING_BRAKES")
@@ -109,14 +111,16 @@ elif cmd == "runway":
         while time.time() - t_s < 12 and still < 4:
             time.sleep(0.5)
             pitch = -(g("PLANE_PITCH_DEGREES") or 0) * DEG
-            ok = g("SIM_ON_GROUND") == 1 and abs(g("VERTICAL_SPEED") or 0) < 30 and -0.5 < pitch < 1.5                 and (g("GEAR_TOTAL_PCT_EXTENDED") or 0) > 0.99
+            hdg_err = ((g("PLANE_HEADING_DEGREES_TRUE") or 0) * DEG - RUNWAY[2] + 180) % 360 - 180
+            ok = g("SIM_ON_GROUND") == 1 and abs(g("VERTICAL_SPEED") or 0) < 30 and -0.5 < pitch < 1.5                 and (g("GEAR_TOTAL_PCT_EXTENDED") or 0) > 0.99 and abs(hdg_err) < 1.0 and (g("GROUND_VELOCITY") or 0) < 1
             still = still + 1 if ok else 0
         if still >= 4:
             break
     ev("FLAPS_1")
     ev("ELEVATOR_TRIM_SET", 7447)                         # 5° nose up (16383 = 11°)
     time.sleep(6)                                         # flaps extending (5 s)
-    print(f"on runway EDDM 26L{'' if still >= 4 else ' - NOT SETTLED, do not take off'}; {state()}")
+    print(f"on runway EDDM 26L{'' if still >= 4 else ' - NOT SETTLED, do not take off'}, heading "
+          f"{(g('PLANE_HEADING_DEGREES_TRUE') or 0) * DEG:.1f}° true; {state()}")
 
 elif cmd == "approach":
     # T3-L: decelerate (idle + speed brakes), gear down < 255 KIAS, LAND flaps < 230 KIAS (FM: 240-210), then hold the
