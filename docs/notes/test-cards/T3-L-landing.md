@@ -89,6 +89,7 @@ Script CSV `docs/data/flighttest_<date>_T3L_<name>.csv` + `..._simlog.csv` (α, 
 
 | 2026-10-28 | dry 14 (19 180 lb) | TD 172 KIAS ✓, 444 ft/min ✓, pitch 3.8°, -55 ft ✓; end state clean ✓; level segment steady 168 KIAS at Military (AB lights only at ~100 % lever); **go-around via the trim-based AP sank 558 ft below the (virtual) runway** | go-around hand-flown too (same controllers, +1 500 ft/min, Maximum to 300 KIAS), AP only when clean ≥ 260 KIAS |
 | 2026-10-28 | **dry 15** (18 090 lb) | **PASS all**: level ±35 ft, 177-185 KIAS; glide path 0..+31 ft, bank ±0.9°; **TD 168 KIAS** (FM 165-170), **461 ft/min**, pitch 3.7°, -60 ft; **go-around lost 30 ft** (FM ≤ 100), climb ≤ 3 300 ft/min, pitch ≤ 12°, bank ±3°; end state clean, AP on, 7 000 ft | ready for the real landing F2 |
+| 2026-10-30 | landing 15 (F3, no chute, TSFC 0.72) | TD 174 KIAS ✓, roll 3 730 ft -> +9.1 % ✓; approach N1 89.5 %, FF 4 311 lb/h | regression after the fuel-flow change |
 
 B5 data point 2 (dry 14): steady level flight at Military, ≈ 6 500 ft MSL, 19 180 lb, gear + LAND flaps: 168 KIAS,
 α ≈ 7°, net thrust ≈ 6 080 lbf -> CL ≈ 1.02, CD ≈ 0.32 (q ≈ 96 psf).

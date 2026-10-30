@@ -79,6 +79,6 @@ Option (b): `ThrustSpecificFuelConsumption` 1.26 -> 0.72 (predicted -5..+7 % at 
 
 ## Regression 2026-10-29 (TSFC 0.72): PASSED
 B 1.07, C 1.04, E1 0.96 (±10 %) ✓; AB fuel flow unchanged (full AB uses only the AB TSFC); engine start, idle in flight,
-T3-D ✓. Open: approach N1/FF with the next landing. Pitfall: MCP `position` from the ground crashed MSFS; position
+T3-D ✓. Approach (2026-10-30, landing 15): N1 89.5 % (FM 87-90 %) ✓, FF 4 311 lb/h (was 8 270). Pitfall: MCP `position` from the ground crashed MSFS; position
 only when airborne, throttle ≥ 7 000.
 

@@ -107,6 +107,12 @@ log here; this index says under which conditions each log was flown and whether 
 | `AB_accel10k_tsfc072` | **AB FF regression** | TSFC 0.72, full AB 10 000 ft | FF unchanged (M 1.0-1.2: 0.996-1.007) | **valid** |
 | `D5_cruise_B_reg` / `D5_cruise_C_reg` / `D5_endur_5k_reg` | **D5 regression** | TSFC 0.72 | 1.07 / 1.04 / 0.96 ✓ | **valid** |
 
+### 2026-10-30 (clear skies, wind 1 kt, 1013.25 hPa)
+| Log | Test | Conditions / cfg | Result | Status |
+|---|---|---|---|---|
+| `T3D_takeoff_day4` | T3-D | 19 009 lb | first 171 / sustained 185 kt ✓ | **valid** |
+| `T3L_landing15_nochute` (+ `_simlog`) | **F3** + approach N1/FF | TSFC 0.72 | +9.1 % ✓; N1 89.5 %, FF 4 311 lb/h | **valid** |
+
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
 mark the old row superseded and name the replacement log.

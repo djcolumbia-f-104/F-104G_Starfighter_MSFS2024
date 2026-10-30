@@ -703,3 +703,14 @@ basis flight test (J79-GE-11A); FF_FM = TAS / NMPP.
 - **Idle in flight** (5 000 ft, 35 s): N1 67 %, FF ≈ 300 lb/h, net -800..-1 150 lbf, combustion stays on ✓; Military
   after idle: 99.3 % N1, 6 648 lbf, 6 407 lb/h at ≈ 215 KIAS ✓.
 - Open: approach N1/FF (next landing run), A/E2 not re-flown (bracketed by B/E1).
+
+## 2026-10-30: approach N1/FF (last D5 regression item) and F3 regression - PASSED
+Session start checks ✓ (T1, preflight, wind 1 kt / 1013.25 hPa, trim hold; fresh load again had 87 gal per tip ->
+refuel.py). Takeoff first (T3D_takeoff_day4: first liftoff 171 kt, sustained 185 kt, 19 009 lb - same as 2026-10-29),
+refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
+- **Approach** (glide path 2.5°, 40 samples, ≈ 2 100 ft MSL, 18 918 lb, 190.5 KIAS, -866 ft/min, α 3.6°):
+  **N1 89.5 %** (FM Fig. 2-7: 87-90 % at 16 100 lb / 175 KIAS) ✓; **FF 4 311 lb/h** at 4 546 lbf net (landing 7 with
+  TSFC 1.26: 8 270 lb/h at 5 170 lbf). No FM fuel-flow value for the approach -> plausibility only.
+- **F3 landing 15** (no chute): TD 174 KIAS (FM 170-175 ✓), 44 ft/min, -4 ft; ground roll 3 730 ft -> scaled to
+  166.5 KIAS 3 416 ft vs. FM A8-4 3 130 = **+9.1 % ✓** (landing 12: +9.4 %).
+- D5 regression complete.
