@@ -11,6 +11,16 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 **!! 2026-10-30 late: two takeoff-script incidents (pitch-rate rotation trial: bounce along/off the runway; taxi build-up:
    lifted off after the taxi end, pitched to 28°, came down off the runway). runway_start placed the jet at 273° instead of
    263.4°. Analyse OFFLINE first (measurements.md end), no live tuning of takeoff laws. Default takeoff = old attitude law.**
+**RESUME HERE (Claude can continue directly):**
+   A. pete reloads the flight (the jet stands off the runway at 48.3461 N 11.7809 E after the taxi incident), EDDM 26L,
+      clear skies; then the session-start checks of item 0.
+   B. Review the offline fixes in `tools/takeoff_test.py` (commit ca71162): runway heading 263.4° + 2° alignment check,
+      taxi stop holds 0° pitch actively, taxi end at 165 kt / 2.5°. Find out why `runway_start` set 273° (compare the
+      heading right after set_pos with RUNWAY[2] in tools/mcp_f104/sim_actions.py; re-position if off).
+   C. Only then the taxi build-up of rotation law v2: `takeoff_test.py <csv> 157 10.5 taxi` (no liftoff; pass: pitch rate
+      ≤ 3°/s, no push, smooth attitude, stops on the centreline). If it passes: one real takeoff with `qrot`, compare with
+      the default (liftoff speed vs. FM 177.6 kt, no bounce). If not: keep the default attitude law.
+   D. Then item 1 (touchdown skip) and the rest of the list below.
 0. Session start as before (check_build, preflight, weather ≈ 1 kt / 1013.25, trim-hold check, `tools/refuel.py` - the
    standard state is NOW auxiliary cell EMPTY + 4 080 lb main cells, CG 9.2 % MAC). Never position from the ground; take off
    first. Never leave the jet at idle after a test. Never set all tanks to 0 (engine flames out).
