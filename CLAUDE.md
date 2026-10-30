@@ -17,8 +17,7 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    approach N1 (FM Fig. 2-7: 87-90 %) and FF (was 8 270 lb/h at 91 % before TSFC 0.72).
 2. Test plan order (`docs/test-plan.md` section 4): **B7 minimum speeds** (FM Fig. 6-4: LAND flaps shaker 155 / min.
    control 150 KIAS at 19 500 lb; check that the sim does not allow touchdowns far below the FM speeds), then
-   **T3-H subsonic drag investigation** (ISA: drag +6..11 % at M 0.6-0.95 -> excess thrust -13..-24 %; repeat with
-   longer bands, higher logger rate, also 20 000 ft; candidate: Oswald factor / transonic rise), D1b takeoff ground
+   ~~T3-H~~ (done 2026-10-30: reference conflict D-7137 vs. D-6398, see measurements), D1b takeoff ground
    run vs. FM Fig. A2-4 (first data point: 2 627 ft at 18 938 lb), D3 climb, H5 drag chute logic.
 3. Still open from 2026-10-29 list: 0c CG limits 0.07-0.164 MAC in CR-2144; 0d NTRS/DTIC primary-source search
    (landing config / BLC, CG limits - J79 part-power fuel is now covered by the FM charts); MCP `landing` tool parsing.

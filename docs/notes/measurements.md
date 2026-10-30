@@ -754,3 +754,19 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   α ≈ 15.5-16.2°), 3-7 % below the FM minimum control speeds (clean -4 %, TAKEOFF -6..-7 %, LAND -3..-5 %); the jet
   mushes wings-level instead of pitching up (clean/TAKEOFF) -> pitch-up, APC shaker/kicker = H2 (own logic). The
   sim stall-speed values in the cfg (full_flaps_stall_speed 121) are never reached in level flight.
+
+## 2026-10-30: T3-H subsonic investigation - explained (reference conflict D-7137 vs. D-6398), no change
+- **Steady-level drag** from the D5 cruise/endurance logs (unaccelerated, D = T cos α - W sin γ; best drag data we
+  have, no dV/dt noise): CD_sim/CD_D-7137 = M 0.50 1.04, 0.555 1.05, 0.70 1.05, 0.80 1.06/1.07, 0.85 1.03 (CL 0.2-0.3)
+  -> **subsonic drag +3..+7 %, mean ≈ +5 %** ✓ (the accel/decel band values 1.06-1.11 carry dV/dt noise).
+- **AB net thrust** (ISA accel 10 000 ft vs. D-7137 Table 3): M 0.8 -2.6 %, 0.9 +0.7 %, 1.0 +1 % ✓.
+- **Reference check**: D-7137's own thrust-minus-drag model (Table 3 - Table 2, 18 000 lb) vs. the D-6398 measured
+  excess thrust: 10 000 ft M 0.70-0.85 **0.86-0.90**, 20 000 ft **1.03-1.12** (M 0.95-1.2 at 20 000 ft 1.01-1.13, M 1.3-1.4
+  1.25-1.50). A perfect D-7137 replica therefore shows -10..-14 % at 10 000 ft and +3..+12 % at 20 000 ft vs. D-6398 -
+  the same opposite-sign pattern found supersonically on 2026-10-25 and at 40 000 ft (T3-I).
+- **New ISA run 20 000 ft** (..._T3H_accel20k_isa.csv, M 0.63 -> 1.30 in 80 s, 18 920 lb, OAT -20.8 °C): Fn,ex
+  sim/D-6398 M 0.65 0.88 (n = 2, AB light-up), M 0.70-1.25 **0.97-1.08** ✓; drag (accel) 1.04/1.08/1.03 (M 0.6-0.8/
+  0.8-0.95/0.95-1.2).
+- **Verdict T3-H ◐ explained**: the sim follows D-7137 (thrust -3..+1 %, drag +3..+7 %); the remaining 10 000 ft
+  deficit (-13..-24 % in ISA, of which ≈ -10..-14 % is the reference conflict and ≈ -5 % the drag/thrust residual plus
+  n = 2 band noise) is not a sim error. No change (a drag cut would improve 10 000 ft and worsen 20 000 ft).

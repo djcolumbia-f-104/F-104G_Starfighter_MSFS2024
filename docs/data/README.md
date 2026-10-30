@@ -117,6 +117,7 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3D_takeoff_climbout1` | **T3-D + hand-flown climb-out** | LE TAKEOFF 10°, FULL restart | 169 / 188 kt, gear up 222 KIAS ✓ | **valid** |
 | `B7_to_bu1` / `bu2` | **B7 TAKEOFF** | 10 000 / 15 000 ft | α-IAS ✓ / min. level 165-168 KIAS | **valid** |
 | `B7_land_bu1` / `bu2` | **B7 LAND** | 10 000 / 12 000 ft | α-IAS ✓ / min. level 141-144 KIAS | **valid** |
+| `T3H_accel20k_isa` | **T3-H / T3-F 20 000 ft ISA** | M 0.63 -> 1.30 | Fn,ex 0.97-1.08 (M ≥ 0.70), drag 1.05 | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

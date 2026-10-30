@@ -53,7 +53,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
 | B1 | Lift (T3-A) | idle deceleration 16 500 ft | NASA TN D-7137, ±0.03 | ✓ |
-| B2 | Drag (T3-F) | idle deceleration, dV/dt | D-7137 ±10 % | ✓ 1.00-1.04 |
+| B2 | Drag (T3-F) | idle deceleration, dV/dt | D-7137 ±10 % | ✓ ISA steady-level (D5 logs) 1.03-1.07 at M 0.5-0.85; accel/decel 1.04-1.05 mean |
 | B3 | Trim gradient (T3-G) | from B1 data | CR-96008 | ✓ |
 | B4 | **Glide L/D** | idle (≈ windmilling), gear up, TAKEOFF flaps, 245 KIAS, 20 000 -> 10 000 ft; flaps up 275 KIAS | Fig. 3-8: 9 NM per 10 000 ft with RAT (no RAT: ≈ 11 NM), gear down 5.5 NM | ◐ clean -4 %, TAKEOFF -11 % (drag scalar 0.42) |
 | B5 | **Landing-configuration drag + thrust** | gear + LAND flaps + speed brakes at Military, low altitude, stabilise | flat/level ≈ 190-200 KIAS (FM 3-41); final 175 KIAS needs 87-90 % for 700-800 ft/min | ✓ 2026-10-28 after LAND flap drag 0.12 -> 0.08: 194 KIAS (was 164) |
@@ -79,7 +79,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 |---|---|---|---|---|
 | D1 | Takeoff (T3-D) | scripted, max AB | Fig. A2-3 / Fig. 2-6 (190 KIAS @ 20 800 lb), ±5 % | ✓ -4.2 % (ISA, LE flaps, 2026-10-29) |
 | D1b | Takeoff ground run | `takeoff_test.py`, calm/ISA, distance brake release -> liftoff | FM Fig. A2-4 (ground run vs. weight, PDF ≈ 458), ±10 % | ○ (idea 2026-10-28) |
-| D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ subsonic ✓, supersonic ±20-30 % |
+| D2 | Excess thrust / climb (T3-H) | level max-AB accelerations | D-6398 Fig. 6 | ◐ explained: sim follows D-7137; D-7137 model itself vs. D-6398 = 0.86-0.90 at 10 000 ft, 1.03-1.12 at 20 000 ft (ISA 20 000 ft sim 0.97-1.08) |
 | D3 | Level acceleration | M 1.0 -> 2.0 at 35 000 ft | Fig. 6-10 time/fuel/distance | ○ |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ○ |
 | D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ✓ after TSFC 1.26 -> 0.72: 0.96-1.07 (M 0.5-0.85, 5-30 kft); was 1.66-1.86 |
