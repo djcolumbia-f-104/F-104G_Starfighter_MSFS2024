@@ -144,3 +144,19 @@ Sources: [Aircraft Creation Workflow](https://docs.flightsimulator.com/msfs2024/
   "Lockheed F-104 Test Pilot's Notebook" attributed to "Glenn L. Rea" - UNVERIFIED (no source given). Conclusion: use
   our local primary sources - CR-2144 (CG limits), FM appendix Parts 6/9 (fuel flow, D5), FM 1-74/2-24 (BLC),
   FM Fig. A8-3/A8-4 (chute, brakes).
+
+## 2026-10-30: primary-source search for F-104 weight and balance (item 0d)
+- NTRS API (`/api/citations/search?q=...`): "F-104 center of gravity fuel" and "F-104 weight balance" -> 0 hits;
+  "F-104" -> 153 hits, none on mass properties / CG vs. fuel. Web search: nothing F-104G-specific.
+- FM T.O. 1F-104G-1: Section V (PDF 389) "with any combination of standard external load items the center of gravity
+  remains within limits" - no numbers. Section I fuel system (PDF 59-64): forward main cell, aft main tank of three
+  cells (aft centre cell between the inlet ducts, aft right/left cells around the inlet ducts), auxiliary cell ahead of the
+  forward main cell, transferred into the forward main cell first -> all internal fuel lies between cockpit and wing,
+  ahead of the engine -> CG must move aft with fuel burn (as CR-2144: 0.070 c̄ at 50 % -> 0.164 c̄ at 20 %).
+- Found and stored: **NASA TN D-6943** (Friend & Sefic 1972, NTRS 19720022354), "Flight measurements of buffet
+  characteristics of the F-104 airplane for selected wing-flap deflections" -> `docs/sources/NASA_TN-D-6943_F-104_Buffet_Flaps.pdf`
+  (local, not in repo). No CG data (15 000-18 000 lb, CG accelerometer at F.S. 421), but buffet onset, lift curves and
+  wing rock with LE/TE flap deflections -> reference for B7 / H2 (stall approach, pitch-up) later.
+- CG work package status: only two F-104A points; a two-point fit with the main cells lumped into one tank gives an
+  implausible -6 % MAC at full fuel -> the cell split (forward main cell vs. aft cells) and their feed order are needed
+  before changing the cfg.
