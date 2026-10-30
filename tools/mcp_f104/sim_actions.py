@@ -153,9 +153,12 @@ elif cmd == "accel":
         if not trail or time.time() - trail[-1][0] > 20:
             trail.append((time.time(), round(m, 2), round(g("PLANE_ALTITUDE") or 0),
                           round((g("ELEVATOR_TRIM_POSITION") or 0) * DEG, 1)))
-        hit = m >= mach_stop or (g("AIRSPEED_INDICATED") or 0) > 740      # 750 KIAS limit (FM Fig. 5-2)
-        # stop must hold on two consecutive reads (failed reads); note 2026-10-30: at 33 000-35 000 ft 740 KIAS is reached
-        # at M ≈ 1.77-1.82 (supersonic pitot) - that is the FM 750 KIAS limit, M 2.0 only higher up (D4 at 40 000 ft)
+        # FM limit 750 KEAS (Fig. 6-6, M 2.0 / 750 KEAS). NOT the sim's AIRSPEED_INDICATED: MSFS computes it
+        # isentropically without the normal shock ahead of the pitot (2026-10-30: 740 "KIAS" at M 1.77 / 33 000 ft,
+        # Rayleigh pitot gives ≈ 680 KCAS, EAS ≈ 604) -> stop on EAS = TAS x sqrt(rho / rho0)
+        eas = (g("AIRSPEED_TRUE") or 0) * ((g("AMBIENT_DENSITY") or 0) / 0.0023769) ** 0.5
+        hit = m >= mach_stop or eas > 740
+        # stop must hold on two consecutive reads (failed reads)
         hits = hits + 1 if hit else 0
         if hits >= 2:
             break
@@ -164,7 +167,7 @@ elif cmd == "accel":
     dur = time.time() - t0
     s1 = state()
     log.wait()
-    print(f"accel {s0['mach']} -> {s1['mach']} in {dur:.0f} s (stop at M {mach_stop} / 740 KIAS); "
+    print(f"accel {s0['mach']} -> {s1['mach']} in {dur:.0f} s (stop at M {mach_stop} / 740 KEAS); "
           f"alt {s0['alt_ft']} -> {s1['alt_ft']}; OAT {s0['oat_c']} °C; weight {s0['weight_lb']}; fuel left {s1['fuel_lb']}")
     print("trail (Mach, alt, trim°):", [(m, a, tr) for _, m, a, tr in trail])
     print("log:", csv_path)

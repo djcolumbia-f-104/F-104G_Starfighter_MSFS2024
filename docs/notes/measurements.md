@@ -807,3 +807,19 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Both 35 000 ft runs stopped at the 740 KIAS script limit (FM 750 KIAS, Fig. 5-2): at 33 000-35 000 ft that is
   M ≈ 1.77-1.82 (supersonic pitot), so Mach 2.0 is only reachable higher up (D4 at 40 000 ft). First suspected a
   spurious read; accel_run now requires the stop condition on two consecutive reads anyway.
+
+## 2026-10-30: D4 top speed - Mach 2.05 at 40 000 ft ✓; finding: MSFS indicated airspeed reads high supersonic
+- **Sim IAS supersonic**: AIRSPEED_INDICATED showed 740 kt at M 1.77 / 33 000 ft. Pitot with the normal shock
+  (Rayleigh) gives ≈ 680 KCAS, EAS ≈ 604 kt; the isentropic formula without the shock gives ≈ 746 kt = the sim value.
+  -> MSFS computes IAS without the normal shock ahead of the pitot: ≈ +60 kt at M 1.8, growing with Mach. The FM limit
+  is 750 KEAS (Fig. 6-6: M 2.0 / 750 KEAS). The accel_run stop (740 "KIAS") had therefore ended the D3 and two D4 runs
+  at M 1.77-1.90 -> accel_run now stops on EAS = TAS x sqrt(σ) > 740. Later (cockpit, AP-9): our own ASI gauge must use
+  the Rayleigh pitot formula, the sim variable is not usable above M 1.
+- **D4** (..._D4_mach2_40k_c.csv; positioned at 44 000 ft, sank to ≈ 38 000 ft, then AB with the AP climbing back to
+  40 150 ft; 18 976 lb, OAT -53.1 °C = ISA): M 1.25 -> **2.056 in 222 s**; dM/dt 0.21-0.26 per min up to M 1.8,
+  still 0.18 per min at M 1.96 (while climbing ≈ 1 000 ft/min) -> thrust-wise Mach 2 is reachable with margin, as the FM
+  says (the limit is the engine inlet temperature 121 °C, reached at M ≈ 1.98 at -53 °C; 136 °C at M 2.05). Net thrust
+  11 100 lbf at M 1.96 (T3-I: thrust ✓ vs. D-7137 to M 1.8). **D4 ✓**. The sim has no inlet temperature limit/warning
+  (real aircraft: pilot limit, FM 5) -> cockpit/systems later.
+- Positioning at 35 000-44 000 ft with Military: the jet sinks ≈ 4 000-5 000 ft (α 0 after set_pos) -> position
+  ≈ 4 000 ft above the target altitude.

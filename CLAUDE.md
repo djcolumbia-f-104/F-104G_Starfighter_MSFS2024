@@ -243,6 +243,8 @@ Packages/, _PackageInt/, PackagesMetadata/   build output
     (`use_gross_thrust_on_fuelflow`); with full AB only the AB TSFC is used. Gross thrust includes the ram drag, so
     TSFC is calibrated in cruise (D5, FM Fig. A6-1/A5-1: 0.72), not statically (1.26 gave 1.7-1.9x cruise fuel flow).
   - MCP `position` from the ground (runway, idle) crashed MSFS (2026-10-29): position only when airborne, throttle ≥ 7 000.
+  - AIRSPEED_INDICATED is computed without the normal shock ahead of the pitot: supersonic it reads high (740 at
+    M 1.77 / 33 000 ft vs. ≈ 680 KCAS / 604 KEAS). Use EAS (TAS x sqrt(σ)) for limits; own ASI gauge later (AP-9).
   - Starting from the world map ignores .flt files (yaw damper off) -> send `YAW_DAMPER_ON`.
   - `htail_area = 0` becomes 0.1 ft² (warning in debug, harmless).
   - Flaps are modelled as an INCIDENCE increment of the flapped wing section (≈ 0.62 x angle x lift scalar): above

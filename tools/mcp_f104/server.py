@@ -141,7 +141,7 @@ def landing(name: str = "T3L_landing", start_nm: float = 6, glide_deg: float = 3
 
 @mcp.tool()
 def accel_run(name: str = "accel", mach_stop: float = 1.2, max_s: int = 240) -> str:
-    """Level full-afterburner acceleration with logging (simlog 3 Hz, ~1 Hz real) until mach_stop, 740 KIAS or
+    """Level full-afterburner acceleration with logging (simlog 3 Hz, ~1 Hz real) until mach_stop, 740 KEAS (TAS x sqrt(sigma); the sim IAS reads high supersonic) or
     max_s; throttle to idle at the end. Use for T3-H/T3-I/T3-F; then analyse('climb'|'drag', name)."""
     return run(SIMPY, "tools/mcp_f104/sim_actions.py", "accel", csv_path(name), mach_stop, max_s,
                timeout=max_s + 120)[1].strip()

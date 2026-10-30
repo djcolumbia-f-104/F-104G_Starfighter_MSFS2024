@@ -122,6 +122,8 @@ log here; this index says under which conditions each log was flown and whether 
 | `D1b_takeoff_fm2` + `D1b_takeoff_thrust` (simlog) | D1b repeat with thrust log | same | 2 678 ft / 3 224 ft; roll thrust 0.97-0.98 x D-7137 | **valid** |
 | `D3_accel35k` | **D3** 35 000 ft M 0.87 -> 1.82 | 18 986 lb, ISA+3.5 | 3.10 min / 40.2 NM / 1 137 lb vs. FM 2.87 / 39 / 945 | **valid** |
 | `D4_mach2_35k` | D4 attempt 31 300 -> 33 000 ft | climbing back after positioning | stopped at 740 KIAS (M 1.77) | dev |
+| `D4_mach2_40k` / `_40k_b` | D4 attempts | climbing back to 40 000 ft | stopped by the sim-IAS 740 limit at M 1.80 / 1.90 | dev |
+| `D4_mach2_40k_c` | **D4 top speed** | 38 300 -> 40 150 ft, ISA | M 2.056 in 222 s from M 1.25 | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
