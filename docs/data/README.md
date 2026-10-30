@@ -177,6 +177,10 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3D_taxi_srot` | srot taxi build-up | | break-out 166 kt at stick -5 159 | valid (build-up) |
 | `T3D_takeoff_srot1` / `srot2` | srot 12 kt ramp / + predictive guard | | 175 / 174 kt, fast rotation; srot2 nose drop at 10 ft | valid (design iterations, superseded) |
 | `T3D_takeoff_srot3` / `srot4` | **T3-D with srot (default)** | 19 180 lb, 25 kt ramp | **178 / 178 kt single**, 2 937 / 2 919 ft | **valid** (T3-D ✓, D1b +9 %) |
+| `F3_bumpless1` (+ `_fast`) | F3 (bumpless rollout ramp) | | false gear-not-down go-around (failed read) | **INVALID** (script) |
+| `F3_bumpless2` (+ `_fast`) | F3 | 17 848 lb | TD 168, flare command at TD +1 719, 1 "skip" | valid (diagnosis) |
+| `F3_bumpless3` (+ `_fast` with gear compression) | F3 | 18 947 lb | mains touch at 3.1° / 181 ft/min, 1 ft float ≈ 1.9 s, roll 3 512 ft from final TD | valid (float analysis -> H3) |
+| `T3D_takeoff_srot5` (dated 10-30, run 10-31) | T3-D srot (MCP) | 19 180 lb | 178 kt single, flaps up 262 KIAS after the climb-out | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

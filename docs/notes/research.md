@@ -176,3 +176,20 @@ Fetched from docs.flightsimulator.com/msfs2024/retail/...: `additional-flight-mo
   IAS on/off) and pusher (simple or adaptive, `SPS_flight_control_limiter_*`, `stall_protection_flight_control_limiter_PID`)
   = the F-104 APC shaker + kicker (FM 6-5: shaker at AoA indicator 4¼-4¾ units, kicker at 5, kicker inoperative with gear
   down / LAND flaps) -> H2 can probably use it; needs the AoA-indicator-unit -> α mapping and a condition for gear/flaps.
+
+## 2026-10-31: BLC (flap blowing) - sources for an rpm-dependent flap lift (test plan H3, card H3-blc-rpm.md)
+- FM 2-24/2-25 (PDF 156/157): BLC lift depends on engine airflow, greatest at low speed, low altitude and > 80 % rpm,
+  some effect retained at lower power; abrupt thrust reduction -> rolloff tendency + rapid sink; flare to 82-83 %, IDLE as
+  the main gear touches; approach ≈ 88 %. FM 1-73: BLC operates automatically with the flaps in LAND (TE flaps only).
+- NTRS API ("F-104 boundary layer control", "blowing ... F-104", "F-104 flap blowing"): nothing F-104-specific. Web search:
+  only secondary sources (17th-stage bleed, "landing speed only 5 % higher than earlier fighters", an unverified
+  "≈ 40 kt lower approach speed"). NACA TR-1369 / RM A58E05 = blowing BLC on 35°/45° swept-wing airplanes (not F-104;
+  comparison only). **NASA TN D-6943 flew with the BLC OFF** and TE/LE flaps only up to ≈ 13° -> no blown-flap data, but it
+  confirms appreciable unblown TE flap lift at small deflections.
+- MSFS: no native power-dependent flap lift (flaps-position-inhibit: air/ground/increasing/decreasing only;
+  speed-factor: airspeed only). TRAILING_EDGE_FLAPS_LEFT/RIGHT_PERCENT and LEADING_EDGE_FLAPS_*_PERCENT are settable
+  (SimConnect); ground test: TE override holds, LE unaffected, the next lever move restores -> design = effective TE
+  deflection from N1 (driver script for tests, gauge later).
+- Sources: https://ntrs.nasa.gov/api/citations/19720022354/downloads/19720022354.pdf (TN D-6943),
+  https://www.abbottaerospace.com/downloads/naca-report-1369-blowing-type-boundary-layer-control-as-applied-to-the-trailing-edge-flaps-of-a-35deg-swept-wing-airplane/,
+  https://916-starfighter.de/Hamilton_story.htm, https://en.wikipedia.org/wiki/Blown_flap

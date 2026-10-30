@@ -6,7 +6,7 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-31 afternoon) <<<
+## >>> CONTINUE HERE (state 2026-10-31 evening) <<<
 **RESUME HERE (Claude can continue directly):**
    A. pete: Build All was started before the break (drag chute emulation cfg, commit ec36069) -> reload the flight
       (EDDM 26L, clear skies); check_build must be green (no T1 warning), then the session-start checks of item 0.
@@ -30,9 +30,16 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
    stick ramps over 25 kt from vr to S_HOLD -6 600 (= α 10.5° in the air, build-up tools/stick_hold_test.py), same law
    through the first liftoff to 35 ft, bumpless transfer. T3-D 178 kt single liftoff = FM (0 %), rotation ≈ 6°/s, no
    touch-back (2 runs); D1b +9 %. Old law: option `old`.
-   D. Next: optional adaptive SPS pusher (PID with α anticipation) if the kick character matters; F3 metric (hop position
-      moves the "final touchdown") - consider measuring from V = 165 KIAS; touchdown skip (gear springs from max gross
-      weight, SDK) still open; test plan remaining items (see docs/test-plan.md).
+   DONE 2026-10-31 evening: landing "skip" = a 1 ft float after the idle cut (gear compression logged via fastlog
+   `NAME:i|unit` custom request; gear springs/damping NOT the cause, effective damping 0.85). Cause per FM 2-24/2-25: the
+   BLC flap lift collapses with the power in the real jet, constant in the sim. landing_test: bumpless rollout ramp,
+   gear-check read filter; takeoff_test: flaps up at 260 KIAS after the climb-out.
+   **>>> START HERE NEXT SESSION: H3 BLC rpm dependence, card `docs/notes/test-cards/H3-blc-rpm.md` (analysis done,
+   plan steps 1-5)**: ΔCL_BLC ≈ 0.135, f(N1) 0.3 idle .. 1.0 ≥ 83 %, realised as an EFFECTIVE TE flap deflection via the
+   settable SimVar TRAILING_EDGE_FLAPS_LEFT/RIGHT_PERCENT (ground test ✓, no cfg change). Step 1 = in-air build-up
+   (12 000 ft, LAND+gear, ≈ 190 KIAS): TE 100 -> 54 -> 42 -> 100 % to find which lift scalar MSFS applies; then
+   tools/blc_driver.py, dry run, F3 (prediction +9.6 -> ≈ +2 %, no float), regression T3-L/B6, F2 chute re-tune.
+   Later options: adaptive SPS pusher (α anticipation); the BLC driver as an in-aircraft gauge (AP-9).
 **State 2026-10-31** (details `docs/notes/measurements.md`, index `docs/data/README.md`):
 - runway_start: settle check incl. heading ±1° and ground speed (the 273° placement came from a fast jet before respawn).
 - Rotation law v2 (option `qrot`) taxi build-up safe but not adopted; default attitude law stays.
