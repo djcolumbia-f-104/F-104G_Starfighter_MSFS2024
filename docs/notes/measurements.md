@@ -844,3 +844,21 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   ..._D7_climb_m090.csv: 19 005 lb, OAT 0.1 °C at 9 000 ft (≈ ISA+3), mean M 0.90-0.93 (0.945 in the first 5 000 ft),
   pitch up to 50° (FM Fig. 6-7: 40-50°): **10 000 -> 35 000 ft in 1.09 min (FM DI 0 1.13, -4 %)**, 20 000 -> 35 000 ft
   0.82 min (FM 0.81, +1 %), 25 000 -> 35 000 ft 0.59 min (FM 0.64, -8 %) ✓ (reading ±5 %).
+
+## 2026-10-30: D7 military climb at M 0.85 vs. FM Fig. A3-10 (PDF 486) - PASSED; climb_test.py hardened
+- FM Fig. A3-10 "Military thrust climb control, climb speed Mach 0.85" (flight test; SL 565 / 20 000 ft 400 / 35 000 ft
+  290 KIAS). DI 20-80 lines only -> DI 0 extrapolated from DI 20/30 (the lines fan out strongly at the top: least
+  certain above 25 000 ft). 19 000 lb, standard day; altitude lines by pixel scan/track: time from SL 10 000 ft 0.80,
+  20 000 ft 1.70, 25 000 ft 2.27, 30 000 ft 2.82, 35 000 ft ≈ 4.16 min (DI 20: ... 35 000 ft 5.72).
+- Run 1: aborted at once (pitch 71°): set_pos gave M ≈ 1.1 instead of ≈ 0.85 and the large Mach error became a huge VS
+  command. Run 2 (..._D7_climb_mil085.csv): started at M 0.93, zoomed 10 -> 20 000 ft in 14 s at 67°, then M 0.77-0.82
+  (below the schedule) -> evaluated by energy height only: 20 -> 35 000 ft ratio 1.11 (segments up to 1.33) - off schedule.
+- **climb_test.py fixes** (script change -> regression): proportional term limited to ±8 000 ft/min, VS cut above 55°
+  pitch, start speed scaled with the target Mach, wait for plausible attitude after set_pos, and an **idle pre-phase**
+  holding ≈ 9 000 ft until the Mach is on the schedule (set_pos does not reliably take the speed: one regression attempt
+  appeared at M 1.27 / 735 KIAS after a high-altitude flight -> pitch 72° abort).
+- **Regression max thrust** (..._D7_climb_m090_reg.csv): 10 000 -> 35 000 ft **1.09 min** again (identical intervals) ✓.
+- **Military run 3** (..._D7_climb_mil085b.csv, 19 002 lb, ISA+3, pre-phase 24 s, **M 0.850 throughout**, pitch ≤ 19°):
+  10 -> 20 000 ft 0.87 min (FM 0.90, -3 %), -> 25 000 ft 1.48 (1.47, +1 %), -> 30 000 ft 2.28 (2.02, +13 %), **-> 35 000 ft
+  3.50 min (FM 3.36, +4 %)** ✓. The 30 000 ft mark is where the DI 0 extrapolation is least certain.
+  Energy-height evaluation of the max thrust run: 10 -> 35 000 ft ratio 1.03.

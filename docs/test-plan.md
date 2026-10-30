@@ -84,7 +84,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ✓ M 2.056 at 40 000 ft, still accelerating 0.18 M/min at M 1.96 (sim IAS reads high supersonic -> limits on EAS) |
 | D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ✓ after TSFC 1.26 -> 0.72: 0.96-1.07 (M 0.5-0.85, 5-30 kft); was 1.66-1.86 |
 | D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ○ |
-| D7 | Climb schedule | max thrust / military climb | Fig. 6-7 climb angles, appendix climb charts | ✓ max thrust M 0.90 (Fig. A3-7, DI 0): 10 000 -> 35 000 ft 1.09 vs. 1.13 min, pitch ≤ 50°; military climb open |
+| D7 | Climb schedule | max thrust / military climb | Fig. 6-7 climb angles, appendix climb charts | ✓ max thrust M 0.90 (Fig. A3-7, DI 0): 10 000 -> 35 000 ft 1.09 vs. 1.13 min, pitch ≤ 50°; military M 0.85 (Fig. A3-10): 3.50 vs. 3.36 min (+4 %) |
 
 ### Phase E - Transonic / supersonic
 

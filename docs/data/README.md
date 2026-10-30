@@ -127,6 +127,9 @@ log here; this index says under which conditions each log was flown and whether 
 | `T3D_takeoff_day4c` | T3-D | after a bad respawn (bounce) | liftoff 125 kt, 13.2° on the ground | invalid |
 | `T3D_takeoff_day4d` | T3-D | fixed runway_start | 170 / 187 kt | **valid** |
 | `D7_climb_m090` (+ `_simlog`) | **D7 max thrust climb M 0.90** | 19 005 lb, ISA+3 | 10 000 -> 35 000 ft 1.09 min vs. FM 1.13 | **valid** |
+| `D7_climb_mil085` (+ `_simlog`) | D7 military, run 2 | started at M 0.93, then below schedule | energy-height ratio 1.11 | dev (off schedule) |
+| `D7_climb_m090_reg` (+ `_simlog`) | **D7 max thrust regression** | hardened climb_test.py | 1.09 min (identical) | **valid** |
+| `D7_climb_mil085b` (+ `_simlog`) | **D7 military climb M 0.85** | 19 002 lb, ISA+3, on schedule | 10 -> 35 000 ft 3.50 vs. FM 3.36 min | **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

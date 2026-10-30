@@ -1,7 +1,8 @@
 """D7 maximum thrust climb at the FM schedule M 0.90 (FM Fig. A3-7, PDF 480): time from 10 000 to 35 000 ft.
 
 Usage (with the Python of the simconnect-mcp venv; the jet must be AIRBORNE - never position from the ground):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\climb_test.py <output.csv> [mach=0.90] [alt_stop=37000]
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\climb_test.py <output.csv> [mach=0.90] [alt_stop=37000] [mil]
+  mil: Military thrust climb (FM Fig. A3-10, schedule M 0.85) instead of maximum thrust
 Sequence: set_pos at 9 000 ft MSL (≈ 7 600 ft AGL east of EDDM) at ≈ M 0.9, gear/flaps up, AP off, full AB; elevator
 holds the Mach through an integrated vertical-speed command (faster -> climb steeper; same structure as the glide mode of
 config_test.py), ailerons hold the heading; from 33 000 ft the climb is rounded off (VS ≤ 6 x altitude to go),
@@ -22,6 +23,9 @@ sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 out = sys.argv[1]
 mach_tgt = float(sys.argv[2]) if len(sys.argv) > 2 else 0.90
 alt_stop = float(sys.argv[3]) if len(sys.argv) > 3 else 37000.0
+MIL = "mil" in sys.argv[4:]
+THROTTLE = 11141 if MIL else 16383
+RUN_S = 480 if MIL else 200
 DEG = 57.29578
 HDG = 263.4                                     # EDDM 26L direction (true), as config_test.py
 LAT, LON = 48.36, 12.10
@@ -62,24 +66,34 @@ if g("SIM_ON_GROUND") == 1 or g("FUEL_TOTAL_QUANTITY_WEIGHT") < 2500:
     sys.exit("ABORT: on the ground (never position from the ground) or fuel < 2 500 lb")
 ap_master(False)
 ev("SPOILERS_OFF")
-sm.set_pos(9000, LAT, LON, 520, -2.0, 0.0, HDG, 0)      # speed ≈ IAS (≈ M 0.9 at 9 000 ft), pitch negative = nose up
-time.sleep(1.0)
+# speed ≈ IAS (520 gave M ≈ 0.91-0.95 at 9 000 ft), pitch negative = nose up
+sm.set_pos(9000, LAT, LON, int(500 * mach_tgt / 0.90), -2.0, 0.0, HDG, 0)
+# 2026-10-30: right after set_pos the sim reports transient attitudes (pitch 71-72° within 1.5 s -> false aborts; the
+# runway respawn showed pitch 23° / bank -42°) -> wait until pitch and bank are plausible before controlling
+t_w = time.time()
+while time.time() - t_w < 8:
+    time.sleep(0.5)
+    if abs(g("PLANE_PITCH_DEGREES") * DEG) < 15 and abs(g("PLANE_BANK_DEGREES") * DEG) < 10:
+        break
 ev("GEAR_UP")
 ev("FLAPS_UP")
 ap_master(False)
 for _ in range(5):
     aq.set("ELEVATOR_TRIM_POSITION", 2.0 / DEG)
     time.sleep(0.2)
-ev("THROTTLE1_SET", 16383)
+# 2026-10-30: set_pos does not reliably take the speed (after a high-altitude flight the jet appeared at M 1.27 /
+# 735 KIAS at 9 000 ft -> pitch 72° abort) -> pre-phase: idle, hold ≈ 9 000 ft until the Mach is on the schedule
+pre = (g("AIRSPEED_MACH") or 0) > mach_tgt + 0.02
+ev("THROTTLE1_SET", 0 if pre else THROTTLE)
 w0 = g("TOTAL_WEIGHT")
 print(f"climb M {mach_tgt} from {g('PLANE_ALTITUDE'):.0f} ft, weight {w0:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C")
 log = subprocess.Popen([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "simlog.py"),
-                        out.replace(".csv", "_simlog.csv"), "240", "3"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                        out.replace(".csv", "_simlog.csv"), str(RUN_S + 40), "3"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
 res = {"integ": 0.0, "integ_b": 0.0, "vs_cmd": 0.0}
 rows, reason, mil = [], "time", False
 t0 = prev_t = time.time()
-while time.time() - t0 < 200:
+while time.time() - t0 < RUN_S:
     t = time.time()
     dt = max(t - prev_t, 0.05)
     prev_t = t
@@ -98,10 +112,21 @@ while time.time() - t0 < 200:
     el = t - t0
     # Mach hold by elevator: faster than the schedule -> climb steeper (integrated VS command + proportional part)
     err_m = m - mach_tgt
+    if pre:
+        if m <= mach_tgt + 0.01 or el > 90:
+            pre = False
+            ev("THROTTLE1_SET", THROTTLE)
+            print(f"pre-phase done after {el:.0f} s at M {m:.3f}, {alt:.0f} ft")
+        err_m = 0.0
     # [S] gains: the AB accelerates ≈ 0.02 M/s at 9 000 ft and the schedule needs 20 000-30 000 ft/min -> the VS command
     # must build up within ≈ 10 s (ft/min per Mach per s, ft/min per Mach)
     res["vs_cmd"] = clamp(res["vs_cmd"] + 60000.0 * err_m * dt, 0.0, 60000.0)
-    vs_tgt = clamp(res["vs_cmd"] + 150000.0 * err_m, -2000.0, 60000.0)
+    # proportional part limited (2026-10-30 military run 1: start at M ≈ 1.1 -> +37 000 ft/min command -> pitch 71°)
+    vs_tgt = clamp(res["vs_cmd"] + clamp(150000.0 * err_m, -8000.0, 8000.0), -2000.0, 60000.0)
+    if theta > 55:
+        vs_tgt = min(vs_tgt, res["vs_f"] - 2000.0)
+    if pre:
+        vs_tgt = clamp(3.0 * (9000.0 - alt), -1500.0, 1500.0)
     if alt > 33000:                                               # round off the climb
         vs_tgt = min(vs_tgt, 6.0 * (alt_stop + 1000 - alt))
     if alt > 35000 and not mil:
