@@ -33,14 +33,17 @@ FM_TECH = "fm" in sys.argv[4:]
 # PUSHED (+1 600), pitch fell 5 -> -0.8° right after the first liftoff, the AP fallback took over at 4 ft and the jet bounced
 # along the runway at 180-230 kt and drifted off the centreline (pete: "neben der Piste") -> NOT the default; the default stays
 # the old attitude ramp + feed-forward (known: slight overshoot, FM 6-5)
-QROT = "qrot" in sys.argv[4:]
+QROT = "qrot" in sys.argv[4:] or "taxi" in sys.argv[4:]
+# build-up for a new rotation law (testcard rule 2026-10-30): high-speed taxi - apply the rotation law from vr until pitch
+# 3° or 168 kt, then idle, lower the nose gently, brake to a stop (no liftoff)
+TAXI = "taxi" in sys.argv[4:]
 DEG = 57.29578
 FULL = 16383
 
 sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
 ae = AircraftEvents(sm)
-ev = {n: ae.find(n) for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "AXIS_AILERONS_SET", "THROTTLE1_SET", "PARKING_BRAKES", "GEAR_UP",
+ev = {n: ae.find(n) for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "AXIS_AILERONS_SET", "AXIS_LEFT_BRAKE_SET", "AXIS_RIGHT_BRAKE_SET", "THROTTLE1_SET", "PARKING_BRAKES", "GEAR_UP",
                               "FLAPS_UP", "AP_MASTER", "AP_ALT_VAR_SET_ENGLISH", "AP_ALT_HOLD_ON", "AP_VS_VAR_SET_ENGLISH",
                               "AP_HDG_HOLD_ON", "HEADING_BUG_SET")}
 # not in the library's catalog (ae.find -> None, run 5 crashed) -> map directly
@@ -145,12 +148,17 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         if res["vr_t"] is not None and res["first_air"] is None and QROT:
             # pitch-rate rotation: q_cmd ≤ 2°/s, reduced to 0 approaching the target attitude (no overshoot); PI on the
             # filtered pitch rate, the integral finds the stick position (FM 6-5: smooth back stick, no fast input)
+            # v2 (after qrot1 pushed the nose down): never push during the rotation (output pull..0), lower gains,
+            # integrate only while not saturated at 0
             res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
             q_cmd = max(0.0, min(2.0, 0.8 * (theta_target - s["theta"])))
             e_q = q_cmd - res["qf"]
-            res["iq"] = max(-1.0, min(4.0, res.get("iq", 0.0) + e_q * dt))
-            cmd_elev = -(600.0 * e_q + 1500.0 * res["iq"])
-            cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
+            raw = -(300.0 * e_q + 1000.0 * res.get("iq", 0.0))
+            if raw < 0 or e_q > 0:
+                res["iq"] = max(0.0, min(6.0, res.get("iq", 0.0) + e_q * dt))
+            cmd_elev = max(-LIM_PULL, min(0.0, -(300.0 * e_q + 1000.0 * res["iq"])))
+            if TAXI and (s["theta"] >= 3.0 or s["ias"] >= 168):
+                aborted = f"taxi test end at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
             theta_cmd = s["theta"]                      # airborne attitude ramp starts from the actual attitude
         elif res["vr_t"] is not None and res["first_air"] is None:
             cmd_elev = -(FF_TH + KP_TH * (theta_cmd - s["theta"]) - KD_TH * q)
@@ -215,6 +223,24 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             aborted = f"Abort: heading deviation {err_h:.1f}°"
         elif res["liftoff"] is None and s["t"] - t0 > 90:
             aborted = "Abort: 90 s without liftoff"
+        if aborted and TAXI and "taxi" in aborted:
+            # gentle stop: idle, nose down over 3 s, wheel brakes once the nose is down, heading hold by rudder
+            ev["THROTTLE1_SET"](0)
+            t_s = time.time()
+            while True:
+                st = state(full=False)
+                eh = wrap(hdg0 - st["hdg"])
+                axis("AXIS_ELEVATOR_SET", 3000 * min(1.0, (time.time() - t_s) / 3.0))
+                axis("AXIS_RUDDER_SET", max(-LIM_RUD, min(LIM_RUD, -KP_HDG * eh)))
+                if st["theta"] < 1.0 and time.time() - t_s > 1.0:
+                    ev["AXIS_LEFT_BRAKE_SET"](16383) if ev.get("AXIS_LEFT_BRAKE_SET") else None
+                    ev["AXIS_RIGHT_BRAKE_SET"](16383) if ev.get("AXIS_RIGHT_BRAKE_SET") else None
+                w.writerow([round(st["t"] - t0, 2), round(st["ias"], 1), int(st["gnd"]), round(st["theta"], 2), 0, round(eh, 2),
+                            0, 0, round(st["gs"], 1), 0, 0])
+                if st["gs"] < 3 or time.time() - t_s > 60:
+                    break
+                time.sleep(0.05)
+            break
         if aborted:
             ev["THROTTLE1_SET"](0)
             ev["PARKING_BRAKES"]()

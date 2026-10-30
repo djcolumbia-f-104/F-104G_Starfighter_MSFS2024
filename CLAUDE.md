@@ -8,6 +8,9 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 
 ## >>> CONTINUE HERE (state 2026-10-30 evening) <<<
 **NEXT START HERE (note for the next session):**
+**!! 2026-10-30 late: two takeoff-script incidents (pitch-rate rotation trial: bounce along/off the runway; taxi build-up:
+   lifted off after the taxi end, pitched to 28°, came down off the runway). runway_start placed the jet at 273° instead of
+   263.4°. Analyse OFFLINE first (measurements.md end), no live tuning of takeoff laws. Default takeoff = old attitude law.**
 0. Session start as before (check_build, preflight, weather ≈ 1 kt / 1013.25, trim-hold check, `tools/refuel.py` - the
    standard state is NOW auxiliary cell EMPTY + 4 080 lb main cells, CG 9.2 % MAC). Never position from the ground; take off
    first. Never leave the jet at idle after a test. Never set all tanks to 0 (engine flames out).

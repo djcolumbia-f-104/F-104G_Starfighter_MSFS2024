@@ -961,3 +961,11 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   "neben der Piste"). Recovered by the AP climb (no damage). Fixes: default back to the old attitude rotation; fallback only
   above 100 ft AGL. Lesson: a new takeoff control law needs a build-up first (e.g. a high-speed taxi run with the rotation
   only up to nose-wheel lift-off and throttle idle, or the law tested in the air at the same speed with gear/flaps down).
+- **Taxi build-up for rotation law v2 FAILED - live testing stopped** (..._T3D_taxi_qrot2.csv): (1) `runway_start` put the
+  jet down at 273.1° true instead of 263.4° (cause unknown - new gear-first/settle code or the set_pos heading; the takeoff
+  script holds the heading found at brake release -> it rolled diagonally, pete: "du rollst schief weg"); (2) the rotation
+  law v2 reached 3.9° at 167 kt (taxi end criterion), but the stop routine did not keep the jet on the ground: airborne at
+  ≈ 170 kt, pitch up to 28° at idle, then -9.8°, hard touchdown, heading 25° off, stopped at 48.3461 N 11.7809 E, heading
+  299° (probably off the runway), gear 100 %, engine idle, no crash flag. To analyse OFFLINE before any further sim test:
+  the runway_start heading, why the pitch rose after the taxi-end (elevator command/sign in the stop loop, trim 5° at idle
+  ≈ 170 kt), and a safer taxi criterion (stop at nose-wheel lift-off speed - 15 kt, not at 3° pitch).
