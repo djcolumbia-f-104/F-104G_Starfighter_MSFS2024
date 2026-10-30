@@ -1026,3 +1026,11 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   nothing). (Both runs ended with a harmless "abort" during the final braking at ≈ 46 KIAS: read glitch / heading 5.3°.)
 - Consequence for H5: a chute needs a ground-only drag of ΔCD ≈ 0.10-0.15 on top. Candidate without code: `spoiler_limit`
   (ground deflection) > `air_spoiler_limit` (52°), if the drag scales with the deflection; otherwise own logic (WASM/XML).
+- **spoiler_limit experiments** (Build All + reload each): 90° (..._H5_coast_sb90.csv): coast 150 -> 110 KIAS **13.28 ft/s²**
+  -> ground ΔCD ≈ 0.59 total; 65° (..._H5_coast_sb65.csv, 19 340 lb - the reloaded flight carries ≈ 160 lb more payload):
+  **11.37 ft/s²** -> ≈ 0.49 total. Interpretation: with the ground limit ABOVE the air limit MSFS adds the ground spoiler
+  drag `drag_coef_spoilers` (0.43) on top of the air spoiler drag (0.042): factor ≈ 1.03 at 65°, 1.28 at 90°; with equal
+  limits (52°) it is not applied (2026-10-29 "no effect").
+- Chute emulation: spoiler_limit 65° + **drag_coef_spoilers 0.43 -> 0.12** (≈ +0.12 ground ΔCD, chute estimate for FM -12 %).
+  Pending: Build All + reload, coast check (expect ≈ 4.5-5 ft/s²), F2 landing vs. FM A8-3 2 760 ft, regression: in-flight
+  speed brakes (air limit 52° unchanged) and F3 (no speed brakes on the ground -> unaffected).
