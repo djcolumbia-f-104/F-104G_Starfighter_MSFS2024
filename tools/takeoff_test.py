@@ -93,6 +93,11 @@ flap = rad(aq.get("TRAILING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
 print(f"Flaps trailing edge {flap:.1f}°, trim {rad(aq.get('ELEVATOR_TRIM_POSITION')) * DEG:.2f}°")
 if not 10 <= flap <= 20:
     sys.exit("Flaps not in TAKEOFF (15°) - aborted")
+# 2026-10-31 (H2_reg_takeoff): a fresh flight load has trim 0°; without runway_start the climb-out loop could not raise the
+# nose (pitch ≈ 1° up to 330 KIAS, skipping at 4-10 ft) and the AP fallback later dived to 8 ft AGL at 435 kt -> FM takeoff trim 5°
+trim = rad(aq.get("ELEVATOR_TRIM_POSITION")) * DEG
+if not 4.0 <= trim <= 6.0:
+    sys.exit(f"Trim {trim:.1f}° is not the FM takeoff trim 5° - aborted (run runway_start first)")
 # 2026-10-30: runway_start once left the jet at 273° -> the script held that heading and rolled diagonally across the runway.
 # Use the runway heading (EDDM 26L 263.4° true) and refuse to start if the jet is not aligned
 RWY_HDG = 263.4

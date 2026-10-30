@@ -183,6 +183,9 @@ while time.time() - t0 < 300:
                       else f"test done at {ias:.0f} KIAS, α {g('INCIDENCE_ALPHA') * DEG:.1f}°, {el:.0f} s")
             print(reason)
             phase = "recovery" if SLOW else "clean-up"
+            # 2026-10-31 (H2 clean_bu2): the integrator wound up during the deceleration kept pulling in the recovery
+            # (α 17° at 207-224 KIAS through the kicker) -> unload: reset it (pull limited in the recovery, see below)
+            res["integ"] = 0.0
             ev("SPOILERS_OFF")
             ev("THROTTLE1_SET", 16383)
     elif phase == "recovery":
@@ -213,7 +216,9 @@ while time.time() - t0 < 300:
     # gains tuned at ~185 KIAS; scale with 1/q (glide run 1: pitch oscillation 0..15° at 250-380 KIAS)
     ks = clamp((185.0 / max(ias, 100.0)) ** 2, 0.25, 1.5)
     # B7 run 2 (2026-10-30): -12 000 = 12.45° elevator limited α to 16.3° -> full nose-up authority (17°) in the slow test
-    ev("AXIS_ELEVATOR_SET", int(clamp(ks * (KP_VS * err_fps + KI_VS * res["integ"] + KQ * q), -16383 if SLOW else -12000, 6000)))
+    pull_lim = -16383 if SLOW and phase == "test" else -6000 if phase == "recovery" else -12000
+    res["el_cmd"] = int(clamp(ks * (KP_VS * err_fps + KI_VS * res["integ"] + KQ * q), pull_lim, 6000))
+    ev("AXIS_ELEVATOR_SET", res["el_cmd"])
     bank_tgt = -clamp(2.0 * wrap(HDG - hdg), -15, 15)
     e_b = bank - bank_tgt
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
@@ -221,7 +226,8 @@ while time.time() - t0 < 300:
     rows.append([round(el, 2), phase, round(alt), round(ias, 1), round(vs), round(vs_tgt), round(bank, 1), round(theta, 1),
                  round(g("INCIDENCE_ALPHA") * DEG, 2), round(g("TURB_ENG_N1:1"), 1), round(g("TURB_ENG_JET_THRUST:1")),
                  round(g("ENG_FUEL_FLOW_PPH:1")), round(g("TOTAL_WEIGHT")), round(g("AIRSPEED_TRUE"), 1),
-                 round(g("GROUND_VELOCITY"), 1)])
+                 round(g("GROUND_VELOCITY"), 1), res["el_cmd"], round(g("ELEVATOR_POSITION"), 3),
+                 round(g("YOKE_Y_POSITION"), 3)])                    # H2: kicker/shaker = elevator differs from el_cmd
     time.sleep(0.05)
 
 for n in ("AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
@@ -241,7 +247,7 @@ log.terminate()
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
     wr.writerow(["t", "phase", "alt", "ias", "vs_fpm", "vs_tgt", "bank", "pitch", "alpha", "n1", "thrust_lbf", "ff_pph", "weight",
-                 "tas", "gs"])
+                 "tas", "gs", "el_cmd", "elev_pos", "yoke_y"])
     wr.writerows(rows)
 
 # evaluation: steady part of the test phase

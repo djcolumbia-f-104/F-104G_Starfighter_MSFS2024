@@ -145,5 +145,11 @@ and the jet sank into the ground after an otherwise perfect dry run.
 - **Never leave the jet at idle after a test** (2026-10-30: idle + AP ALT hold -> unattended belly landing); end every
   script at part power / Military with AP ALT hold.
 - Respawn on the runway only with the gear DOWN first (runway_start does it and waits until the jet sits still).
+- **After every flight reload run `runway_start` before a takeoff**, even if the jet already sits on 26L: the loaded flight
+  has trim 0° (2026-10-31: takeoff with trim 0 -> no climb-out, AP fallback dived to 8 ft AGL at 435 kt; takeoff_test now
+  refuses trim outside 4-6°).
+- SPS (APC shaker/kicker, since 2026-10-31) acts on every scripted elevator input: α > 11.3° shakes the stick, α > 14.5°
+  kicks it forward. Scripts that hold high α (B7, decel/T3-A lift runs, recovery pulls) see it; log el_cmd vs.
+  ELEVATOR_POSITION (`tools/fastlog.py`) to tell script and SPS apart.
 - A fresh flight load can carry fuel in the tip tanks: always run `tools/refuel.py` (tips empty) before a test.
 - Python-SimConnect returns VERTICAL_SPEED in ft/min (not ft/s); AMBIENT_DENSITY in slug/ft³ (use Rankine for p = ρRT).
