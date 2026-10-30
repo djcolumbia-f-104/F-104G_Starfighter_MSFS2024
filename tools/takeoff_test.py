@@ -315,6 +315,16 @@ if not aborted:
         ev["AP_MASTER"]()
     ev["AP_ALT_HOLD_ON"]()
     ev["AP_HDG_HOLD_ON"]()
+    # 2026-10-31: with srot the jet climbs steeper and reaches 1 500 ft AGL below 260 KIAS -> the script ended with the
+    # TAKEOFF flaps out (found at 342 KIAS, limit 370). FM: flaps UP at ≥ 260 KIAS -> accelerate under the AP, then retract
+    if not flaps_up:
+        ev["THROTTLE1_SET"](11141)
+        t_f = time.time()
+        while time.time() - t_f < 90 and (aq.get("AIRSPEED_INDICATED") or 0) < 260:
+            time.sleep(0.5)
+        ev["FLAPS_UP"]()
+        ev["THROTTLE1_SET"](7000)
+        print(f"Flaps up at {aq.get('AIRSPEED_INDICATED') or 0:.0f} KIAS after the climb-out (AP)")
 sm.exit()
 lo, fa = res["liftoff"], res["first_air"]
 print(aborted or "done", "->", out)

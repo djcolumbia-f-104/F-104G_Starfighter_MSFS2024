@@ -1119,3 +1119,27 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   +10 %) -> the rotation was only a small part; remaining: -2.5 % AB thrust at low speed + brake-release phase (◐ unchanged).
 - `takeoff_test.py`: srot default; old law = option `old`, `qrot` experimental; `taxi` works with the selected law; refuses
   trim outside 4-6°. MCP `takeoff` uses the default (srot).
+
+## 2026-10-31: landing "skip" analysed with gear compression data - it is a 1 ft float, not a gear rebound
+- Desk check (gate 2b, SDK "Notes On Spring/Damping Factors"): springs AND dampers are computed for the static
+  compression at the maximum gross weight (26 600 lb). Our values reproduce the measured static compression exactly
+  (main 0.3 ft x 19 000/26 600 = 0.214 ft = 0.48 of max 0.45 ft; measured 0.46-0.48). At 18 000 lb the effective damping
+  ratio is 0.7 x sqrt(26 600/18 000) ≈ **0.85** (nearly critical), natural frequency ≈ 2 Hz -> the gear cannot rebound.
+- Gear compression is readable in Python only with a custom request (`Request((b"CONTACT POINT COMPRESSION:0",
+  b"Percent over 100"), sm)`; the catalog name and the `:n` form return None/0) -> `tools/fastlog.py` accepts
+  `NAME:index|unit`. Standing (17 800 lb): nose 0.33, mains 0.46.
+- Landing script fixes: (1) the rollout nose-down ramp started at 0 although the flare loop was pushing (+1 719 at the
+  touchdown in F3_bumpless2) -> now ramps from the last flare command (bumpless); (2) a single failed
+  GEAR_TOTAL_PCT_EXTENDED read (returns 0) triggered a go-around with the gear down (F3_bumpless1) -> 3 reads in a row.
+- F3_bumpless3 (18 947 lb, ≈ 5 Hz fastlog with compression): main gear only touches at pitch 3.1°, 181 ft/min, compression
+  0.16 (nose wheel free) -> mains free again for ≈ 1.9 s at AGL 5 ft (4 ft = wheels on the ground, CG height) -> a ≈ 1 ft
+  float over ≈ 600 ft, IAS rising 169 -> 171 (engine still spooling down from the flare power), then the final touchdown
+  at 0.9° pitch, nose wheel 0.2 s later. No bottoming, no nose-wheel-first contact (hypothesis rejected by data).
+  The skip counter ("AGL > 2 ft") counts any wheel lift-off because AGL on the ground is ≈ 4 ft.
+- **Cause (FM 2-24/2-25)**: the BLC flap lift depends on engine airflow (> 80 % rpm); the FM flare holds 82-83 % and goes
+  to IDLE as the main gear touches - in the real jet the flap lift collapses with the power and the jet stays down
+  ("abrupt power cut = sink"). In the sim the LAND flap lift (incl. BLC, CR-2144) is constant -> the wing keeps flying
+  after the idle cut and floats. Gear cfg unchanged. **Next: rpm-dependent BLC lift (pete's 2026-10-27 idea)** - needs
+  research how MSFS can vary flap lift with N1 (no cfg parameter known).
+- Takeoff srot5 (MCP): 178 kt single liftoff again (3rd run); takeoff_test now retracts the TAKEOFF flaps at ≥ 260 KIAS
+  under the AP after the climb-out (srot climbs steeper and reached 1 500 ft AGL below 260 KIAS: flaps were left out).

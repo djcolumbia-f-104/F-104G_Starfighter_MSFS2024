@@ -76,6 +76,7 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
     err_fps = (res["vs_f"] - vs_tgt) / 60.0
     res["integ"] = clamp(res["integ"] + err_fps * dt, -200.0, 200.0)
     cmd_e = clamp(KP_VS * kp_scale * err_fps + KI_VS * res["integ"] + KQ * q, -12000, 6000)
+    res["cmd_e"] = cmd_e                                              # start value of the rollout ramp (bumpless)
     ev("AXIS_ELEVATOR_SET", int(cmd_e))
     hdg_tgt = HDG - clamp(0.05 * c, -15, 15)
     bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
@@ -235,7 +236,9 @@ while time.time() - t0 < 600:
             if phase == "flare" and ias > spd_tgt + 3:                # dry run 19: PI only went to ≈ 5 300 -> idle while fast
                 thr = 0.0
         ev("THROTTLE1_SET", int(thr))
-        if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 and not res.get("gear_go"):
+        # 2026-10-31: a single failed read (returns 0) triggered a go-around with the gear 100 % down -> 3 reads in a row
+        res["gear_bad"] = res.get("gear_bad", 0) + 1 if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 else 0
+        if res["gear_bad"] >= 3 and not res.get("gear_go"):
             res["gear_go"] = True                                    # gear not down 2 NM out -> go around
             print(f"GEAR NOT DOWN ({g('GEAR_TOTAL_PCT_EXTENDED'):.2f}) at {s:.0f} ft")
         # low speed: FM Fig. 6-4 minimum control speed LAND flaps ≈ 150-155 KIAS at 19 500 lb (not in the flare)
@@ -259,6 +262,8 @@ while time.time() - t0 < 600:
             ev("AXIS_AILERONS_SET", 0)
             ev("THROTTLE1_SET", 0)
             res["t_td"] = t
+            res["cmd_e_td"] = res.get("cmd_e", 0.0)
+            print(f"rollout elevator ramp starts at the flare command {res['cmd_e_td']:.0f}")
         res["last_vs"] = vs
     elif phase == "rollout":
         # 2026-10-30 (landing 18, high-rate rollout log): the jet skipped twice after the first touch (3.5 s airborne,
@@ -277,7 +282,12 @@ while time.time() - t0 < 600:
         # FM 2-25: lower the nose wheel at once (4 000 already gives -4.2° of the 5° nose-down stop; 10 000 tried
         # 2026-10-30: -5.0°, no benefit). 2026-10-30 (landing 19, high-rate log): the instant push at ≈ 175 kt slammed the
         # nose wheel down and the jet porpoised (pitch +4.8 <-> -2.4°, ≈ 1 s) with 2-3 skips -> ramp the push over 3 s
-        ev("AXIS_ELEVATOR_SET", int(4000 * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
+        # 2026-10-31 (F3 regression after H2): the ramp started at 0 although the flare loop was pushing at the touchdown
+        # (elevator ≈ -0.9°) -> with the 5.2° approach trim the nose rose 1.8 -> 4.4° within 0.6 s after the main-gear
+        # contact, α 3.2 -> 3.9°, 1.12 g at 168 KIAS -> 2 s hop. The gear springs are not the cause (computed at 26 600 lb
+        # the effective damping at 18 000 lb is ≈ 0.85, nearly critical). -> bumpless: ramp from the last flare command
+        c0 = res.get("cmd_e_td", 0.0)
+        ev("AXIS_ELEVATOR_SET", int(c0 + (4000 - c0) * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
         nose_down = theta < 1.0 and t - res["t_td"] > 1.0                # FM: brakes after the nose wheel is down
         if CHUTE and not res.get("chute") and t - res["t_td"] > 1.0:     # FM 2-28: chute blossoms as the nose wheel touches
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
