@@ -106,7 +106,10 @@ for _ in range(5):
         break
 if SB:
     ev("SPOILERS_ON")
-ev("THROTTLE1_SET", 0 if GLIDE else 7000 if SLOW else 11141)   # glide: idle; slow: start of the decel loop; else Military
+# 2026-10-30: set_pos does not reliably take the speed (after a fast flight B6 started at 223 instead of 185 KIAS -> +4 000
+# ft/min command, pitch 23° abort) -> climb/level: idle pre-phase holding alt0 until IAS ≤ target + 5, then Military
+PRE = mode in ("climb", "level") and (g("AIRSPEED_INDICATED") or 0) > ias_tgt + 10
+ev("THROTTLE1_SET", 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start; else Military
 w = g("TOTAL_WEIGHT")
 print(f"{mode} at {alt0:.0f} ft MSL, {'speed brakes OUT, ' if SB else ''}weight {w:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C, "
       f"trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°" + (f", IAS target {ias_tgt:.0f}" if mode == "climb" else ""))
@@ -114,7 +117,7 @@ log = subprocess.Popen([sys.executable, "-I", os.path.join(os.path.dirname(__fil
                         out.replace(".csv", "_simlog.csv"), "300", "3"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
 res = {"integ": 0.0, "integ_b": 0.0}
-rows, phase, reason = [], "test", ""
+rows, phase, reason = [], "pre" if PRE else "test", ""
 t0 = prev_t = time.time()
 while time.time() - t0 < 300:
     t = time.time()
@@ -139,7 +142,14 @@ while time.time() - t0 < 300:
     res["prev_theta"], res["prev_bank"] = theta, bank
     el = t - t0
 
-    if phase == "test":
+    if phase == "pre":
+        vs_tgt = clamp(4.0 * (alt0 - alt), -1000.0, 1000.0)
+        if ias <= ias_tgt + 5 or el > 120:
+            phase = "test"
+            ev("THROTTLE1_SET", 11141)
+            print(f"pre-phase done after {el:.0f} s at {ias:.0f} KIAS")
+            t0 = t                                                   # test time counts from here
+    elif phase == "test":
         if mode == "climb":
             vs_tgt = clamp(150.0 * (ias - ias_tgt), -1500.0, 4000.0)   # faster than the target -> climb steeper
         elif GLIDE:

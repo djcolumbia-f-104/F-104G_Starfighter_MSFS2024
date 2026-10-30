@@ -152,7 +152,9 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             # airborne: the ground-run gains oscillate at ~3 Hz in the air -> half gains, scaled with 1/q, no feed-forward
             # beyond the trim-equivalent share
             ks = max(0.25, min(1.0, (185.0 / max(s["ias"], 100.0)) ** 2))
-            cmd_elev = -(0.5 * FF_TH * ks + ks * (400.0 * (theta_cmd - s["theta"]) - 150.0 * q))
+            # 2026-10-30 (pete: "schwingt beim Starten"): 400/150 gave a pitch limit cycle 1° <-> 21° (≈ 1.5 s) - the airborne
+            # loop runs at only ≈ 1.3 Hz (more reads) -> lower gains
+            cmd_elev = -(0.5 * FF_TH * ks + ks * (200.0 * (theta_cmd - s["theta"]) - 60.0 * q))
             cmd_elev = max(-LIM_PULL, min(LIM_PUSH, cmd_elev))
             p_rate = (s["bank"] - prev["bank"]) / dt
             axis("AXIS_AILERONS_SET", max(-8000, min(8000, -(KP_B * s["bank"] + KD_B * p_rate))))

@@ -130,6 +130,13 @@ log here; this index says under which conditions each log was flown and whether 
 | `D7_climb_mil085` (+ `_simlog`) | D7 military, run 2 | started at M 0.93, then below schedule | energy-height ratio 1.11 | dev (off schedule) |
 | `D7_climb_m090_reg` (+ `_simlog`) | **D7 max thrust regression** | hardened climb_test.py | 1.09 min (identical) | **valid** |
 | `D7_climb_mil085b` (+ `_simlog`) | **D7 military climb M 0.85** | 19 002 lb, ISA+3, on schedule | 10 -> 35 000 ft 3.50 vs. FM 3.36 min | **valid** |
+| `T3D_takeoff_cg` | **T3-D after CG rework** | CG 9.2 % | 170 kt, no bounce; climb-out pitch limit cycle (old gains) | **valid** (liftoff) |
+| `T3AF_decel_cg` | **T3-A/F/G regression** | CG rework | 1.08 α, CD 1.03, CL band -0.031 | **valid** |
+| `B6_climb4500_cg` | **B6 regression** | idle pre-phase | +982 ft/min | **valid** |
+| `B7_clean_cg` | **B7 clean regression** | | α max 16.2°, min level ≈ 185-188 KIAS | **valid** |
+| `T3L_landing16_nochute_cg` | **F3 regression** | CG rework | TD 175 KIAS; roll +14 % | **valid** (open deviation) |
+| `T3D_takeoff_cg_gains` | **T3-D + climb-out gains 200/60** | | 170 kt; climb-out smooth | **valid** |
+| `T3L_landing17_nochute_cg` | F3 with nose-down 10 000 | script trial (reverted) | roll +24 % | dev |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

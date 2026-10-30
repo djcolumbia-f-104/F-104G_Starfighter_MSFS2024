@@ -254,7 +254,9 @@ while time.time() - t0 < 600:
         res["last_vs"] = vs
     elif phase == "rollout":
         roll += gs_kt * 1.68781 * dt
-        ev("AXIS_ELEVATOR_SET", 4000)                                # FM 2-25: lower the nose wheel at once
+        # FM 2-25: lower the nose wheel at once (4 000 already gives -4.2° of the 5° nose-down stop; 10 000 tried
+        # 2026-10-30: -5.0°, no benefit, ground roll even longer -> reverted)
+        ev("AXIS_ELEVATOR_SET", 4000)
         if CHUTE and not res.get("chute") and t - res["t_td"] > 1.0:     # FM 2-28: chute blossoms as the nose wheel touches
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias

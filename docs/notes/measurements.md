@@ -896,3 +896,27 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Regression plan: CG at the fuel states (CG_PERCENT), trim-hold check, T3-D takeoff (incl. new climb-out), T3-A/F/G
   deceleration, B6 climb, B7 clean (elevator-limited α), T3-L approach trim + F3 landing; low-fuel approach (20 %) as a
   new check (CG ≈ 17.5 %: trim and stability).
+
+## 2026-10-30: regression after the CG rework (Build All + FULL restart)
+- **CG in the sim** (CG_PERCENT): full internal 0.85 %, test standard 4 080 lb main cells 9.23 % (was 9.56 %), 50 % 12.35 %,
+  20 % 18.08 %, zero fuel 22.65 % MAC (desk 0.4 / 8.7 / 11.8 / 17.5 / 22) -> aft travel with fuel burn ✓. Pitfall: setting all
+  tanks to 0 for the zero-fuel point flamed the engine out (N1 9 %, first takeoff attempt "90 s without liftoff") ->
+  ENGINE_AUTO_START.
+- **T3-D** (..._T3D_takeoff_cg.csv): liftoff 170 kt after 2 664 ft, NO bounce this time (FM 177.6, -4.3 %) ✓. pete: "it
+  oscillates a lot on takeoff" -> climb-out pitch limit cycle 1° <-> 21° (≈ 1.5 s): the airborne loop of the new
+  hand-flown climb-out runs at only ≈ 1.3 Hz; gains 400/150 too high (already ±3° in the first climb-out run). Gains
+  -> 200/60: ..._T3D_takeoff_cg_gains.csv pitch 9 -> 15° smooth, no oscillation, liftoff 170 kt ✓ (a few seconds at
+  10-20 ft before the climb builds - sluggish but within the gear limit).
+- **T3-A/F/G** (..._T3AF_decel_cg.csv, 16 500 ft): T3-G -0.02° + 1.08 α (identical) ✓; T3-F mean 1.03 (0.97/1.05/1.08/1.03)
+  ✓; T3-A largest band -0.031 (tolerance 0.03; ISA run -0.028, S12 -0.032 - same scatter) ✓.
+- **B6** (..._B6_climb4500_cg.csv): first attempt aborted (pitch 23°): set_pos gave 223 instead of 185 KIAS -> config_test.py
+  climb/level now has an idle pre-phase until IAS ≤ target + 5. Retry: **+982 ft/min** at 181 KIAS (ISA run +905; FM
+  850-1 000) ✓.
+- **B7 clean** (..._B7_clean_cg.csv): α max 16.2°, mush below ≈ 185-188 KIAS - unchanged ✓.
+- **F3 landing** (no chute): landing 16 TD 174/175 KIAS ✓, approach α 3.6°, trim unchanged; **ground roll 3 955 ft ->
+  scaled 3 580 vs. 3 130 = +14 %**; landing 17 with a firmer nose-down push (10 000; the elevator only goes from -4.2° to
+  the -5° stop) 4 238 ft -> +24 % -> push reverted. Before the CG change: landings 12/15 +9.4/+9.1 %. Rollout bands
+  (simlog only 2 points per 20 kt) show the same 12-15 ft/s² mid-roll; the difference sits in the first seconds after
+  touchdown (160-180 kt band 8.6-9 ft/s², nose slightly up). **F3 ◐ open**: either the CG shift changed the gear load
+  split (static pitch on the runway 0.8° vs. 0.4° before) or it is run-to-run scatter -> investigate with a
+  high-rate rollout log (brake force, gear loads, pitch) before any change.
