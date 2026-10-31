@@ -42,6 +42,7 @@ FM_TECH = "fm" in sys.argv[4:]
 # (no gain switch -> no nose drop / touch-back) until 35 ft AGL, then a bumpless transfer to the climb-out law.
 # DEFAULT since 2026-10-31 (srot3: break-out 168 kt, ≈ 6°/s, single liftoff 178 kt = FM, no nose drop); old law: option `old`
 QROT = "qrot" in sys.argv[4:]
+AP_DIAG = "apdiag" in sys.argv[4:]                 # 2026-10-31: AP divergence diagnostic instead of the AP handover
 SROT = not QROT and "old" not in sys.argv[4:]
 S_HOLD = -6600.0                          # [M] -6 400 -> α 10.2° (stick_hold_test); target 10.5° -> + 0.3° x 965 counts/°
 # build-up for a new rotation law (testcard rule 2026-10-30): high-speed taxi - apply the rotation law from vr until pitch
@@ -361,6 +362,48 @@ else:
     axis("AXIS_ELEVATOR_SET", 0)
     axis("AXIS_AILERONS_SET", 0)
     time.sleep(2.0)
+    if AP_DIAG:
+        # 2026-10-31 AP divergence diagnostic: AP master + ALT hold for 1.5 s from stabilised level flight, fast log
+        # (trim, elevator, aileron, bank, pitch, AP master), AP off, trim restored, 20 s hand-flown, then the SIM IS PAUSED
+        # (no unattended flight without a working AP)
+        diag, t_d, ap_off_done = [], time.time(), False
+        ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or ALT_END))
+        ev["AP_MASTER"]()
+        ev["AP_ALT_HOLD_ON"]()
+        while time.time() - t_d < 1.5:
+            diag.append([round(time.time() - t_d, 2), round(rad(aq.get("ELEVATOR_TRIM_POSITION")) * DEG, 2),
+                         round(rad(aq.get("ELEVATOR_DEFLECTION")) * DEG, 2), round(rad(aq.get("AILERON_LEFT_DEFLECTION")) * DEG, 2),
+                         round(rad(aq.get("PLANE_BANK_DEGREES")) * DEG, 1), round(-rad(aq.get("PLANE_PITCH_DEGREES")) * DEG, 1),
+                         aq.get("AUTOPILOT_MASTER")])
+        for _ in range(3):
+            if aq.get("AUTOPILOT_MASTER") != 1:
+                break
+            ev["AP_MASTER"]()
+            time.sleep(0.2)
+        aq.set("ELEVATOR_TRIM_POSITION", trim_new / DEG)
+        print("AP diag (t s, trim °, elevator °, left aileron °, bank °, pitch °, AP):")
+        for r in diag:
+            print("  ", r)
+        t_r, integ_r = time.time(), 0.0
+        pv.update(alt=aq.get("PLANE_ALTITUDE") or ALT_END, t=time.time())
+        while time.time() - t_r < 20:                                      # hand-flown recovery / level hold
+            tt = time.time()
+            dt_e = max(tt - pv["t"], 0.05)
+            alt_e = aq.get("PLANE_ALTITUDE") or pv["alt"]
+            th_e, bank_e = -rad(aq.get("PLANE_PITCH_DEGREES")) * DEG, rad(aq.get("PLANE_BANK_DEGREES")) * DEG
+            vs_e = (alt_e - pv["alt"]) / dt_e * 60
+            pv.update(alt=alt_e, t=tt)
+            err_e = (vs_e - max(-1500.0, min(1500.0, 2.0 * (ALT_END - alt_e)))) / 60.0
+            integ_r = max(-200.0, min(200.0, integ_r + err_e * dt_e))
+            ks_e = max(0.25, min(1.0, (185.0 / max(aq.get("AIRSPEED_INDICATED") or 300, 100.0)) ** 2))
+            axis("AXIS_ELEVATOR_SET", max(-8000.0, min(6000.0, ks_e * (300.0 * err_e + 10.0 * integ_r))))
+            axis("AXIS_AILERONS_SET", max(-6000, min(6000, -(KP_B * bank_e))))
+            time.sleep(0.1)
+        Event(b"PAUSE_ON", sm)()
+        print(f"Recovered and PAUSED at {aq.get('PLANE_ALTITUDE') or 0:.0f} ft, bank "
+              f"{rad(aq.get('PLANE_BANK_DEGREES')) * DEG:.0f}°, AP {aq.get('AUTOPILOT_MASTER')}")
+        sm.exit()
+        sys.exit(0)
     ev["HEADING_BUG_SET"](int(round(hdg0)) % 360)
     ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or ALT_END))
     if aq.get("AUTOPILOT_MASTER") != 1:

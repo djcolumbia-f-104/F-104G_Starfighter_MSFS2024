@@ -1163,3 +1163,10 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - **No further flights until the AP divergence is understood** (ask pete about updates/settings; then a diagnostic:
   AP engaged for ≈ 1.5 s at altitude under script supervision with high-rate logging of trim, aileron, elevator and AP
   modes; A/B without the [CONTROL_SYSTEM] SPS block).
+- **AP diagnostic (T3D_takeoff_apdiag, option `apdiag`)**: from stabilised level flight at ≈ 9 900 ft, AP master + ALT hold for
+  1.5 s, then AP off, trim restored, hand-flown recovery, sim PAUSED (9 791 ft, bank 1°): trim 5.2 -> 1.3 -> -2.6 -> -5.0°
+  (stop) in 1.1 s (≈ 9°/s; the AP trim rate measured 2026-10-27 was 0.13°/s), left aileron -1.2 -> -4.7°, bank -1 -> +19°,
+  pitch 4.3 -> -10°. Reproducible AP divergence in pitch AND roll at once.
+- Only cfg element that had never been through a FULL sim restart before today: the SPS [CONTROL_SYSTEM] block (H2 was
+  activated by Build All + aircraft reload; the AP worked after that). **A/B: SPS block commented out (";AB-OFF"), build_cfg
+  done -> pete: Build All + FULL sim restart -> apdiag again.** If the AP is normal: re-enable SPS + full restart to confirm.
