@@ -6,8 +6,25 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-31 evening) <<<
-**RESUME HERE (Claude can continue directly):**
+## >>> CONTINUE HERE (state 2026-10-31 late evening) <<<
+**NEXT SESSION - START HERE:**
+   0. Session start: check_build, preflight, wind/QNH, **runway_start** (trim 5°), refuel.py, takeoff via
+      `takeoff_test.py <csv> 157 10.5` directly (the MCP `takeoff` timeout was raised to 420 s - needs an /mcp reconnect;
+      the new end phase flies the climb to 10 000 ft by hand and hands over to the AP only in level flight).
+      **The SPS [CONTROL_SYSTEM] block is commented out (";AB-OFF")** - it made the AP diverge after a full sim restart
+      (3 crashes, A/B proven). Leave it off until H2 is reworked.
+   1. **F2 chute re-tune with the BLC driver** (H3 card): F2 with driver = -7 % (-10 % weight-scaled) -> reduce
+      drag_coef_spoilers 0.12 (prediction ≈ 0.09-0.10, ground ΔCD ≈ 1.13 x coef at 65°), and fix landing_test: chute only
+      once the nose wheel is down (now 1 s after the first touch, even during a hop). Run every landing with
+      `tools/blc_driver.py <log> 330 &` + `landing_test.py <csv> 6 2.5 0 [nochute] fmflare`.
+   2. H3 regression with the driver: T3-L approach / B6 go-around (N1 ≥ 83 % -> f = 1, expected unchanged); F3 repeat.
+   3. Small fixes: takeoff climb with TAKEOFF flaps at VS 4 000 reaches 260 KIAS only at 9 700 ft -> lower VS until flaps up;
+      touchdown speed with fmflare +1-2 % above the FM band.
+   4. Later: H2 rework (SPS + AP conflict: confirm with SPS on + full restart; try the adaptive pusher or own logic);
+      BLC driver and APC as in-aircraft logic (gauge/WASM, AP-9) - without the driver the sim keeps the constant BLC lift.
+   DONE 2026-10-31 late: AP incidents analysed (SPS), H3 build-up (TE 48 % = full BLC loss), blc_driver.py, fmflare,
+   **F3 -0.1 % (was +9.6 %)** - details measurements.md 2026-10-31 and card H3-blc-rpm.md.
+**Earlier resume steps of 2026-10-31 (done):**
    A. pete: Build All was started before the break (drag chute emulation cfg, commit ec36069) -> reload the flight
       (EDDM 26L, clear skies); check_build must be green (no T1 warning), then the session-start checks of item 0.
    B. **H5 drag chute**: coast check `tools/coast_test.py <csv> sb` after runway_start (expect ≈ 4.5-5 ft/s² from 150 to

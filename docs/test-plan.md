@@ -99,8 +99,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Method | Ref. | Status |
 |---|---|---|---|---|
 | F1 | Approach + flare (dry run) | `landing_test.py ... 4000` (virtual runway) | card T3-L-landing: TD 165-180 KIAS, < 600 ft/min | ✓ dry runs 15-17 (go-around 24-30 ft, flaps retract) |
-| F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ✓ 2026-10-31 (chute emulation): +0.1 % from the final touchdown |
-| F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-30 after the CG rework, roll from the FINAL touchdown (skips excluded): -0.3 / -4.8 / -2.6 %; open: touchdown skip (flare/gear dynamics) |
+| F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ✓ 2026-10-31 (chute emulation): +0.1 % from the final touchdown; 2026-10-31 with BLC driver -7 % (chute coefficient to re-tune) |
+| F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-30 after the CG rework, roll from the FINAL touchdown (skips excluded): -0.3 / -4.8 / -2.6 %; open: touchdown skip (flare/gear dynamics); 2026-10-31 with BLC driver + fmflare -0.1 % (before +9.6 %) |
 | F4 | Minimum-run landing | TD 140 kt near the threshold | FM 2-28 | ○ |
 | F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ○ |
 | F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ○ |
@@ -121,8 +121,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | ID | Test | Ref. | Status |
 |---|---|---|---|
 | H1 | Own SAS logic (roll/pitch/yaw dampers) | FM 6-3 Fig. 6-1, CR-2144 SAS on | – |
-| H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | ◐ 2026-10-31 native SPS: shaker 0 / -1.5 / -2.8 %, kicker clean +1 %, TAKEOFF -6 %; leaky limiter (no hold), single α, no gear/LAND inhibit (card H2-apc.md) |
-| H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | ◔ 2026-10-31 analysis: ΔCL_BLC ≈ 0.135, f(N1) 0.3 at idle .. 1 at ≥ 83 %, via settable TE flap percent (ground test ✓); predicted F3 +9.6 -> +2 %, float after the idle cut gone (card H3-blc-rpm.md) |
+| H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | ◐ 2026-10-31 native SPS: shaker 0 / -1.5 / -2.8 %, kicker clean +1 %, TAKEOFF -6 %; leaky limiter (no hold), single α, no gear/LAND inhibit (card H2-apc.md); **2026-10-31 SPS DISABLED: makes the MSFS AP diverge after a full sim restart (A/B) - reopened** |
+| H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | ◔ 2026-10-31 analysis: ΔCL_BLC ≈ 0.135, f(N1) 0.3 at idle .. 1 at ≥ 83 %, via settable TE flap percent (ground test ✓); predicted F3 +9.6 -> +2 %, float after the idle cut gone (card H3-blc-rpm.md); **◐ 2026-10-31 driver tools/blc_driver.py built and flown: F3 -0.1 %, FM sink after power cut reproduced, fmflare technique** |
 | H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | ✓ 2026-10-31: spoiler_limit 65° + drag_coef_spoilers 0.12 -> F2 +0.1 % vs. A8-3, coast 5.23 ft/s² as predicted, B5 unchanged |
 | H4 | Rudder/aileron limiters with gear | FM 6-3 | ○ (A4) |
 

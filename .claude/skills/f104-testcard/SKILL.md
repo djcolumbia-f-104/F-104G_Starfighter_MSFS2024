@@ -148,8 +148,14 @@ and the jet sank into the ground after an otherwise perfect dry run.
 - **After every flight reload run `runway_start` before a takeoff**, even if the jet already sits on 26L: the loaded flight
   has trim 0° (2026-10-31: takeoff with trim 0 -> no climb-out, AP fallback dived to 8 ft AGL at 435 kt; takeoff_test now
   refuses trim outside 4-6°).
-- SPS (APC shaker/kicker, since 2026-10-31) acts on every scripted elevator input: α > 11.3° shakes the stick, α > 14.5°
-  kicks it forward. Scripts that hold high α (B7, decel/T3-A lift runs, recovery pulls) see it; log el_cmd vs.
-  ELEVATOR_POSITION (`tools/fastlog.py`) to tell script and SPS apart.
+- **The native SPS (APC shaker/kicker) is DISABLED since 2026-10-31**: after a FULL sim restart it made the MSFS AP diverge
+  on engagement (trim ≈ 9°/s to the -5° stop + roll to 180°; three crashes). A cfg block that was only activated by Build
+  All + aircraft reload may not be initialised at all -> **re-test anything new after a full restart** before relying on it.
+- **Engage the MSFS AP only in stabilised level flight** (trim transferred, elevator ≈ 0), never in a steep climb or near
+  the ground; takeoff_test now flies the climb to 10 000 ft itself. Diagnose AP behaviour with `takeoff_test.py ... apdiag`
+  (1.5 s AP, recovery, sim PAUSED). When no working AP is available, PAUSE the sim instead of leaving the jet alone.
+- Check the fuel before EVERY landing/dry run (a dry-run go-around left the jet at 558 KIAS at 7 600 ft; 617 lb left).
+- BLC driver (H3): write flap percents only after all flap systems reached their stage (one travel fraction for all
+  systems: an early TE write froze the LE flaps at 3°); the LE flaps stop at 29.4° in LAND.
 - A fresh flight load can carry fuel in the tip tanks: always run `tools/refuel.py` (tips empty) before a test.
 - Python-SimConnect returns VERTICAL_SPEED in ft/min (not ft/s); AMBIENT_DENSITY in slug/ft³ (use Rankine for p = ρRT).

@@ -181,6 +181,13 @@ log here; this index says under which conditions each log was flown and whether 
 | `F3_bumpless2` (+ `_fast`) | F3 | 17 848 lb | TD 168, flare command at TD +1 719, 1 "skip" | valid (diagnosis) |
 | `F3_bumpless3` (+ `_fast` with gear compression) | F3 | 18 947 lb | mains touch at 3.1° / 181 ft/min, 1 ft float ≈ 1.9 s, roll 3 512 ft from final TD | valid (float analysis -> H3) |
 | `T3D_takeoff_srot5` (dated 10-30, run 10-31) | T3-D srot (MCP) | 19 180 lb | 178 kt single, flaps up 262 KIAS after the climb-out | **valid** |
+| `T3D_takeoff_h3` / `h3b` / `h3c` (+ simlog) | takeoffs, new session | SPS active after a FULL restart | AP diverged on engagement (3 crashes) | valid (AP incident evidence), takeoffs 181/181/179 kt |
+| `T3D_takeoff_apdiag` / `apdiag2` (+ simlog) | AP diagnostic (option apdiag) | with SPS / SPS off, both after a full restart | trim 9°/s to the stop + roll / AP normal | **valid** (A/B) |
+| `T3D_takeoff_h3d` (+ simlog) | takeoff + hand-flown climb + AP handover | SPS off | 176 kt single, AP ✓ at 10 000 ft | valid |
+| `H3_bu1` (+ local `_step*.png` debug screenshots, not in git) | H3 build-up 1 | 12 000 ft LAND+gear | TE 54/42 % -> ΔCL -0.116/-0.152; step 0 invalid (LE 3°) | **valid** |
+| `H3_dry1`..`dry4` (+ `_blc`, simlog) | H3 dry runs (virtual runway 4 000 ft) | driver; dry2 driver inactive | dry1 1 125 ft/min (idle flare), dry2/3 balloon, dry4 346 ft/min ✓ | valid (design iterations) |
+| `H3_F3a` (+ `_blc`, `_fast` with compression, simlog) | **F3 with BLC driver + fmflare** | 18 491 lb | roll 3 378 ft from 173 KIAS = -0.1 % | **valid** |
+| `H3_F2a` (+ `_blc`, simlog) | **F2 chute with BLC driver** | 18 439 lb | 2 706 ft from 171 KIAS = -7 % | **valid** (chute re-tune needed) |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,

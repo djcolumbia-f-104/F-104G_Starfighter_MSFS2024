@@ -65,3 +65,15 @@ Preconditions: as usual (check_build, refuel, runway_start before takeoffs). No 
 | Date | Step | Result | Notes |
 |---|---|---|---|
 | 2026-10-31 | ground override test | TE percent settable, 0.38 -> 17.1° held, LE unchanged, lever move restores | basis of the design |
+| 2026-10-31 | build-up 1 (blc_step_test) | TE 54 % -> ΔCL -0.116, 42 % -> -0.152 at α 3.98° -> law p = 1 - 0.52 (1 - f) | LE froze at 3° while TE written during travel (step 0 invalid) |
+| 2026-10-31 | dry1 (old flare + driver) | TD 1 125 ft/min at 10.6° = FM "abrupt power cut -> sink" | -> option fmflare |
+| 2026-10-31 | dry2 / dry3 (fmflare, gain 2.2) | balloon, TD 519 / 1 017 ft/min (dry2: driver inactive, LE 29.4 < 29.5) | gain 1.6, LE threshold 29° |
+| 2026-10-31 | **dry4** (fmflare, gain 1.6) | TD 346 ft/min, 4.5°, no balloon ✓ | 176 KIAS |
+| 2026-10-31 | **F3 real** | roll 3 378 ft = -0.1 % (-3 % weight-scaled), before +9.6 % ✓; hop 1.6 s (spool-down) | prediction +2 % |
+| 2026-10-31 | F2 real (chute) | 2 706 ft = -7 % (-10 % weight-scaled) | chute coefficient to re-tune |
+
+## Result (2026-10-31, preliminary)
+**H3 ◐**: the rpm-dependent BLC (driver) reproduces the FM behaviour (sink after an abrupt power cut, FM flare technique works)
+and removes the F3 ground-roll deviation (+9.6 % -> ≈ 0 %). Open: F2 chute re-tune, touchdown speed with the FM flare
++1-2 % above the FM band, the hop during the spool-down, regression T3-L/B6 with the driver (f = 1 at ≥ 83 %, expected
+unchanged), and the driver as an in-aircraft gauge (AP-9) - without the driver the sim keeps the constant BLC lift.

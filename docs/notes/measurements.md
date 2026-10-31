@@ -1170,3 +1170,35 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
 - Only cfg element that had never been through a FULL sim restart before today: the SPS [CONTROL_SYSTEM] block (H2 was
   activated by Build All + aircraft reload; the AP worked after that). **A/B: SPS block commented out (";AB-OFF"), build_cfg
   done -> pete: Build All + FULL sim restart -> apdiag again.** If the AP is normal: re-enable SPS + full restart to confirm.
+- **A/B result (after Build All + FULL restart, SPS block commented out)**: apdiag2 - trim 5.1 -> ≈ 2° within 0.4 s, then steady
+  1.7-2.2°, aileron 0, bank -1.1° constant, pitch 4.2 -> ≈ 0° -> **AP normal without the SPS block**. -> The native Stall
+  Protection System makes the MSFS AP diverge after a full sim restart (it was apparently not re-initialised by the
+  Build All + aircraft reload of 2026-10-30, which also relativises the H2 measurements). SPS stays OFF (";AB-OFF"), H2
+  reopened. Confirmation (SPS on + full restart -> divergence again) still to do.
+- Takeoff h3d (no SPS): srot 176 kt single, hand-flown climb to 10 000 ft, trim transfer, AP ALT hold ✓ (max |VS| 308 ft/min
+  in the first 30 s). Note: at VS 4 000 ft/min the jet reached 260 KIAS (flaps up) only at 9 700 ft - reduce the climb VS
+  with TAKEOFF flaps (open).
+
+## 2026-10-31: H3 BLC rpm dependence - build-up, driver, landings (card H3-blc-rpm.md)
+- **Build-up 1** (`tools/blc_step_test.py`, 12 000 ft, LAND + gear, ≈ 180 KIAS, N1 80-96 %): ΔCL at constant α 3.98° (CL slope
+  0.054/° from the segments; reference TE 45°/LE 30° CL 0.829 ≈ T3-L 0.855 at 4.1°): **TE 54 % (24.3°) -0.116, TE 42 % (18.9°)
+  -0.152** -> between the two scalar hypotheses; full BLC loss 0.135 -> **TE 48 %** -> law p = 1 - 0.52 (1 - f).
+  Finding: writing the TE percent while the flaps are still travelling froze the LE flaps (3° in step 0; coupling: one travel
+  fraction, stop when the first system reaches its stage); the LE flaps stop at 29.4° in LAND.
+- **`tools/blc_driver.py`** (background, ≈ 10 Hz): lever LAND and LE ≥ 29° -> TE percent = p(f(N1)), f = 0.3 idle, 0.6 at
+  75 %, 0.9 at 80 %, 1.0 ≥ 83 %. (Dry 2: threshold 29.5° -> never active.)
+- Dry runs on the virtual runway (4 000 ft): dry1 (old flare = idle while fast) with BLC: TD **1 125 ft/min at 10.6°** =
+  FM 2-25 "abrupt thrust reduction -> rapid increase in rate of sink" reproduced. -> `landing_test.py` option **`fmflare`**:
+  FM flare power (N1 floor 82 % via an integrating throttle floor, idle at touchdown). dry2/dry3 ballooned (flare gain
+  x2.2: pitch -0.4 -> 8.3 -> -3°, back up to 29 ft, TD 519 / 1 017 ft/min, with and without BLC) -> x1.6 for the FM flare:
+  **dry4 TD 346 ft/min at 4.5°, no balloon** ✓ (176 KIAS; FM 169-174).
+- **F3 real (H3_F3a, 18 491 lb, driver + fmflare + fastlog)**: TD 174 KIAS / 88 ft/min / 2.0°, a 1.6 s hop (before 1.9 s;
+  the J79 spool-down takes 3-4 s, the TE follows the N1: 45 -> 30° in ≈ 4 s, 28.6° on the roll = f 0.3), roll from the final
+  TD (173 KIAS) **3 378 ft = -0.1 %** vs FM A8-4 scaled (166.5/173)² (-3 % with the weight factor 18 491/17 900); before +9.6 /
+  +9.8 / +12 % -> **the F3 deviation was the constant BLC lift on the roll** (prediction +2 %). F3 ✓ with the BLC model.
+- **F2 real (H3_F2a, chute)**: TD 173 / 131 ft/min, roll 2 706 ft from the final TD at 171 KIAS = **-7 %** vs FM A8-3 scaled
+  (-10 % with the weight factor) -> the chute emulation (drag_coef_spoilers 0.12, fitted with the full BLC lift on the roll)
+  is now too strong -> re-tune (prediction: ≈ 0.09-0.10). Also: the script deploys the chute 1 s after the FIRST touch even
+  if the jet hops (FM: as soon as the nose wheel is down) - fix.
+- Side fixes: landing_test ends clean at throttle 5 000 (9 000 left the jet at 558 KIAS at 7 600 ft, fuel 4 000 -> 617 lb);
+  refuel before every landing test.

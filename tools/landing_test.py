@@ -38,7 +38,8 @@ glide = math.radians(float(sys.argv[3]) if len(sys.argv) > 3 else 2.5)   # FM: 7
 # build-up / dry run: virtual runway raised by HIGH ft (e.g. 4000) -> the whole approach and flare are flown in the
 # air, "touchdown" = reaching the virtual runway height, then climb away. Validates the approach without crash risk.
 HIGH = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
-CHUTE = not (len(sys.argv) > 5 and sys.argv[5] == "nochute")       # F3: landing without drag chute (FM Fig. A8-4)
+CHUTE = "nochute" not in sys.argv[5:]                               # F3: landing without drag chute (FM Fig. A8-4)
+FM_FLARE = "fmflare" in sys.argv[5:]       # FM 2-25 flare power (82-83 % rpm, idle at TD) - for the rpm-dependent BLC (H3)
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
@@ -218,7 +219,9 @@ while time.time() - t0 < 600:
             vs_tgt = -250 + (res["vs0"] + 250) * clamp((agl - 20) / 100, 0.0, 1.0)
         # dry run 10: flare gains too soft (pitch 1.9 -> 5.1° in 9 s, sink 864 ft/min at TD) -> x1.6 in the flare
         # 2026-10-31 (dry 20): with idle in the flare the sink grew to ≈ 700 ft/min at TD (target 250) -> x2.2
-        fly(vs_tgt, 2.2 if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
+        # FM flare (82 % N1 floor, H3): x2.2 ballooned (pitch -0.4 -> 8.3 -> -3°, back up to 29 ft, TD 519-1 017 ft/min in
+        # dry H3_dry2/3, with and without BLC loss) -> x1.6 for the FM flare
+        fly(vs_tgt, (1.6 if FM_FLARE else 2.2) if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
         # thrust/BLC loss, sink rose again) -> gain 40 towards 83 %
@@ -233,8 +236,15 @@ while time.time() - t0 < 600:
             # AB allowed in the level segment (FM 2-24 heavy weight: Military may not be enough); approach ≤ Military
             thr = clamp(9000.0 + 250.0 * err + 25.0 * res["i_spd"], 0.0 if phase == "flare" else 2000.0,
                         16383.0 if phase == "level" else 11141.0)
-            if phase == "flare" and ias > spd_tgt + 3:                # dry run 19: PI only went to ≈ 5 300 -> idle while fast
+            if phase == "flare" and ias > spd_tgt + 3 and not FM_FLARE:  # dry run 19: PI only went to ≈ 5 300 -> idle while fast
                 thr = 0.0
+            if phase == "flare" and FM_FLARE:
+                # 2026-10-31 (H3, rpm-dependent BLC via tools/blc_driver.py): the idle cut in the flare dropped the BLC lift
+                # -> TD sink 1 125 ft/min at 10.6° pitch (dry H3_dry1) = FM 2-25 "abrupt thrust reduction -> rapid increase
+                # in rate of sink". FM technique: smooth reduction to 82-83 % rpm, IDLE as the main gear touches ->
+                # N1 floor 82 % in the flare (integrating throttle floor)
+                res["thr_floor"] = clamp(res.get("thr_floor", thr) + 400.0 * (82.0 - g("TURB_ENG_N1:1")) * dt, 0.0, 11141.0)
+                thr = max(thr, res["thr_floor"])
         ev("THROTTLE1_SET", int(thr))
         # 2026-10-31: a single failed read (returns 0) triggered a go-around with the gear 100 % down -> 3 reads in a row
         res["gear_bad"] = res.get("gear_bad", 0) + 1 if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 else 0
@@ -337,7 +347,9 @@ if g("SIM_ON_GROUND") != 1:
     if clean:
         ev("GEAR_UP")
         ev("FLAPS_UP")
-    ev("THROTTLE1_SET", 9000 if clean else 11141)
+    # 2026-10-31: 9 000 left the jet at 558 KIAS at 7 600 ft after a dry run (fuel 4 000 -> 600 lb in a few minutes,
+    # high-q AP regime) -> 5 000 once clean (≈ 300-350 KIAS at low altitude)
+    ev("THROTTLE1_SET", 5000 if clean else 11141)
     ev("AP_ALT_VAR_SET_ENGLISH", int(g("PLANE_ALTITUDE") + 500))
     ev("AP_ALT_HOLD_ON")
 if phase == "rollout" or "roll" in res:
