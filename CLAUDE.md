@@ -7,6 +7,22 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
 ## >>> CONTINUE HERE (state 2026-10-31 late evening) <<<
+**AUTONOMOUS SESSION (pete away for a few hours, planned 2026-11-01)** - pete before leaving: Build All (contains
+drag_coef_spoilers 0.12 -> 0.07), FULL sim restart, flight EDDM 26L loaded, PC sleep off, tool permissions allowed.
+Rules while alone: one task at a time, test-card method, never leave the jet unattended without a working AP - at the end
+of the work (or on any doubt) **PAUSE the sim** (`PAUSE_ON`) with the jet at ≥ 10 000 ft or standing on the runway; refuel
+before every test; no cfg change that needs a Build All (prepare it, write the prediction, leave it for pete); stop the
+flight tests after 2 unexplained anomalies and switch to desk work. Order:
+   a. Session start checks + takeoff (direct script). Verify the AP handover (end phase) once.
+   b. F2 with chute 0.07 + BLC driver (prediction -1 ± 3 %) - 2 runs; F3 repeat (driver) - 1 run. Fix first in
+      landing_test: chute only once the nose wheel is down (FM 2-25).
+   c. H3 regression with the driver: T3-L approach config / B6 go-around climb (config_test climb with the driver
+      running; expected unchanged, f = 1 at N1 ≥ 83 %); B7 LAND minimum speed with the driver (level flight N1 > 83 %).
+   d. Script fixes with build-up: takeoff climb VS ≤ 2 000 ft/min until flaps up (260 KIAS); fmflare touchdown speed
+      (+1-2 % over the FM band) on the virtual runway only.
+   e. Desk: H2 rework study (SDK adaptive pusher vs. AP; own APC logic), design of the in-aircraft BLC/APC logic
+      (MSFS 2024 gauge options: JS instrument / WASM / model behaviours) -> docs/notes/research.md + a plan; update
+      docs/test-plan.md and the data index; commit + push after every block.
 **NEXT SESSION - START HERE:**
    0. Session start: check_build, preflight, wind/QNH, **runway_start** (trim 5°), refuel.py, takeoff via
       `takeoff_test.py <csv> 157 10.5` directly (the MCP `takeoff` timeout was raised to 420 s - needs an /mcp reconnect;
