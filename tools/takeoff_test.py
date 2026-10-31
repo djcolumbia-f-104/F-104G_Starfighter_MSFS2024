@@ -304,27 +304,77 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             break
         time.sleep(0.05)
 
-for n in ("AXIS_RUDDER_SET", "AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
-    axis(n, 0)
-if not aborted:
-    # reduced power: with military + ALT hold the jet reached 600 KIAS at 3 000 ft (run 6)
-    ev["THROTTLE1_SET"](7000)
+axis("AXIS_RUDDER_SET", 0)
+if aborted:
+    for n in ("AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
+        axis(n, 0)
+else:
+    # 2026-10-31, two incidents: (1) T3D_takeoff_h3 - AP ALT hold engaged at the end of the climb-out, jet found on its
+    # belly 8 km west; (2) T3D_takeoff_h3b (simlog): elevator set to 0 and the AP (VS mode) engaged at 17.8° pitch /
+    # +5 400 ft/min -> the AP drove the trim +5 -> -5° within 2 s (-0.2 g), then swung it to the +11° stop, pitch -34°,
+    # impact 13 s after engagement. The trim-only MSFS AP must only be engaged in stabilised level flight.
+    # -> hand-flown climb (elevator PI on VS, gains of landing_test/config_test scaled 1/q) to 10 000 ft MSL, flaps UP
+    # at ≥ 260 KIAS (FM), throttle loop to 330 KIAS, level-off; then the elevator is moved into the trim (trim +=
+    # elevator deflection, elevator -> 0) and only then the AP takes over in ALT hold, monitored for 30 s.
+    ALT_END, IAS_END = 10000.0, 330.0
+    # bumpless start: the VS reference begins at the current climb rate and moves to the schedule at ≤ 600 ft/min per s;
+    # the integrator starts at the last command of the climb-out law
+    vs_f = aq.get("VERTICAL_SPEED") or 0.0                            # ft/min in Python-SimConnect
+    vs_ref = vs_f
+    ks0 = max(0.25, min(1.0, (185.0 / max(aq.get("AIRSPEED_INDICATED") or 185.0, 100.0)) ** 2))
+    integ = max(-200.0, min(200.0, cmd_elev / ks0 / 10.0))
+    thr, t_f, steady_since = 11141.0, time.time(), None
+    pv = {"alt": aq.get("PLANE_ALTITUDE") or 0, "th": -rad(aq.get("PLANE_PITCH_DEGREES")) * DEG, "t": time.time()}
+    while time.time() - t_f < 300:
+        tt = time.time()
+        dt_e = max(tt - pv["t"], 0.05)
+        ias_e, alt_e = aq.get("AIRSPEED_INDICATED") or 0, aq.get("PLANE_ALTITUDE") or pv["alt"]
+        th_e, bank_e = -rad(aq.get("PLANE_PITCH_DEGREES")) * DEG, rad(aq.get("PLANE_BANK_DEGREES")) * DEG
+        vs_f = 0.6 * vs_f + 0.4 * (alt_e - pv["alt"]) / dt_e * 60
+        q_e = (th_e - pv["th"]) / dt_e
+        pv.update(alt=alt_e, th=th_e, t=tt)
+        if not flaps_up and ias_e >= 260:
+            ev["FLAPS_UP"]()
+            flaps_up = True
+            print(f"Flaps up at {ias_e:.0f} KIAS, {alt_e:.0f} ft (hand-flown climb)")
+        thr = max(3000.0, min(11141.0, thr + 30.0 * (IAS_END - ias_e) * dt_e * 2)) if flaps_up else 11141.0
+        ev["THROTTLE1_SET"](int(thr))
+        vs_tgt = max(-1500.0, min(4000.0, 2.0 * (ALT_END - alt_e)))
+        vs_ref += max(-600.0 * dt_e, min(600.0 * dt_e, vs_tgt - vs_ref))
+        err_e = (vs_f - vs_ref) / 60.0
+        integ = max(-200.0, min(200.0, integ + err_e * dt_e))
+        ks_e = max(0.25, min(1.0, (185.0 / max(ias_e, 100.0)) ** 2))
+        cmd_e = max(-8000.0, min(6000.0, ks_e * (300.0 * err_e + 10.0 * integ + 150.0 * q_e)))
+        axis("AXIS_ELEVATOR_SET", cmd_e)
+        axis("AXIS_AILERONS_SET", max(-6000, min(6000, -(KP_B * bank_e))))
+        if abs(alt_e - ALT_END) < 200 and abs(vs_f) < 300 and abs(IAS_END - ias_e) < 25:
+            steady_since = steady_since or tt
+            if tt - steady_since > 10:
+                break
+        else:
+            steady_since = None
+        time.sleep(0.1)
+    # trim transfer (AP off: the trim SimVar is accepted), elevator -> 0, then AP ALT hold
+    de = rad(aq.get("ELEVATOR_DEFLECTION")) * DEG                      # + = nose up (simlog 2026-10-31)
+    trim_new = max(-5.0, min(11.0, rad(aq.get("ELEVATOR_TRIM_POSITION")) * DEG + de))
+    aq.set("ELEVATOR_TRIM_POSITION", trim_new / DEG)
+    axis("AXIS_ELEVATOR_SET", 0)
+    axis("AXIS_AILERONS_SET", 0)
+    time.sleep(2.0)
     ev["HEADING_BUG_SET"](int(round(hdg0)) % 360)
-    ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or 0) + 3000)
+    ev["AP_ALT_VAR_SET_ENGLISH"](int(aq.get("PLANE_ALTITUDE") or ALT_END))
     if aq.get("AUTOPILOT_MASTER") != 1:
         ev["AP_MASTER"]()
     ev["AP_ALT_HOLD_ON"]()
     ev["AP_HDG_HOLD_ON"]()
-    # 2026-10-31: with srot the jet climbs steeper and reaches 1 500 ft AGL below 260 KIAS -> the script ended with the
-    # TAKEOFF flaps out (found at 342 KIAS, limit 370). FM: flaps UP at ≥ 260 KIAS -> accelerate under the AP, then retract
-    if not flaps_up:
-        ev["THROTTLE1_SET"](11141)
-        t_f = time.time()
-        while time.time() - t_f < 90 and (aq.get("AIRSPEED_INDICATED") or 0) < 260:
-            time.sleep(0.5)
-        ev["FLAPS_UP"]()
-        ev["THROTTLE1_SET"](7000)
-        print(f"Flaps up at {aq.get('AIRSPEED_INDICATED') or 0:.0f} KIAS after the climb-out (AP)")
+    worst = 0.0
+    t_m = time.time()
+    while time.time() - t_m < 30:
+        worst = max(worst, abs(aq.get("VERTICAL_SPEED") or 0), )
+        time.sleep(0.5)
+    print(f"End state: {aq.get('PLANE_ALTITUDE') or 0:.0f} ft, {aq.get('AIRSPEED_INDICATED') or 0:.0f} KIAS, throttle "
+          f"{thr:.0f}, trim {trim_new:.1f}° (elevator {de:+.1f}° moved into the trim), AP {aq.get('AUTOPILOT_MASTER')}, "
+          f"max |VS| in the first 30 s on the AP {worst:.0f} ft/min")
 sm.exit()
 lo, fa = res["liftoff"], res["first_air"]
 print(aborted or "done", "->", out)

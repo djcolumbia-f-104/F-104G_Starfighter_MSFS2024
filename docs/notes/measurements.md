@@ -1143,3 +1143,23 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   research how MSFS can vary flap lift with N1 (no cfg parameter known).
 - Takeoff srot5 (MCP): 178 kt single liftoff again (3rd run); takeoff_test now retracts the TAKEOFF flaps at ≥ 260 KIAS
   under the AP after the climb-out (srot climbs steeper and reached 1 500 ft AGL below 260 KIAS: flaps were left out).
+
+## 2026-10-31 (new sim session): three autopilot incidents - the MSFS AP diverges on engagement (testing stopped)
+- Session start ✓ (check_build, preflight, runway_start, refuel, wind 1 kt / 1013.25). Takeoff (MCP, srot) 181 kt single ✓.
+- Incident 1 (T3D_takeoff_h3, old script end: AP ALT hold at ≈ 3 000 ft MSL): jet found on its belly in a field 8 km west
+  of EDDM (gear up, AP on, trim -4.4°), no log of that phase.
+- Incident 2 (T3D_takeoff_h3b + simlog, new end: AP VS climb): AP engaged at 17.8° pitch / +5 400 ft/min -> trim +5 ->
+  -5° (stop) within 2 s, -0.2 g, then trim to the +11° stop, pitch -34°, impact 13 s after engagement.
+- Incident 3 (T3D_takeoff_h3c + simlog, end hand-flown to 10 000 ft, level-off, elevator moved into the trim):
+  **perfectly stabilised** at 9 906 ft, 324 KIAS, VS -38, pitch 4.8°, bank -1°, elevator 0, trim 5.2° -> AP master +
+  ALT hold + HDG hold -> within 2 s trim -5° (stop) AND bank 18 -> 40 -> 60 -> 180°, pitch -54°, impact. -> not a handover
+  problem: the AP itself diverges in pitch AND roll in this session.
+- Same cfg as 2026-10-30 evening (last build: SPS push_rate 20), when the AP engaged many times without problems
+  (takeoff ends, config_test, stick_hold_test, MCP position). Differences: full sim restart / new flight load today.
+  Candidates: MSFS update or settings (assistance / AI piloting / auto-trim), a hardware controller axis, an SPS-AP
+  interaction after a full restart (FM: APC disengages the AP - the native SPS may interact differently), debug windows.
+- The hand-flown climb to 10 000 ft (new takeoff_test end) itself worked: bumpless from the climb-out law, flaps up at
+  260 KIAS, level-off at 9 906 ft, throttle loop 320-350 KIAS.
+- **No further flights until the AP divergence is understood** (ask pete about updates/settings; then a diagnostic:
+  AP engaged for ≈ 1.5 s at altitude under script supervision with high-rate logging of trim, aileron, elevator and AP
+  modes; A/B without the [CONTROL_SYSTEM] SPS block).

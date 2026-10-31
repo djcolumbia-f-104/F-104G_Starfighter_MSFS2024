@@ -92,7 +92,7 @@ def takeoff(name: str = "T3D_takeoff", vr_kt: float = 157, theta_deg: float = 10
     1 500 ft. Returns first and sustained liftoff speed, pitch, ground roll, gear/flaps-up speeds.
     Compare with FM Fig. A2-3: liftoff ≈ 155 + 4.43 kt per 1 000 lb above 14 000 lb (D1b ground run: Fig. A2-5).
     Options fm / qrot / taxi only via the script directly (taxi = rotation build-up without liftoff)."""
-    rc, out = run(SIMPY, "tools/takeoff_test.py", csv_path(name), vr_kt, theta_deg, timeout=240)
+    rc, out = run(SIMPY, "tools/takeoff_test.py", csv_path(name), vr_kt, theta_deg, timeout=420)
     return pick(out, r"Flaps|liftoff|Liftoff|Gear up|Abort|Result|Vr|STDERR|FALLBACK|not aligned|not settled")
 
 
