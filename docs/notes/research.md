@@ -201,3 +201,16 @@ Fetched from docs.flightsimulator.com/msfs2024/retail/...: `additional-flight-mo
 - Standalone modules (`modules/*.wasm`, package AssetGroup type Copy) run at sim start and use the SimConnect API ->
   prototype `source/wasm/f104_systems/F104Systems.cpp` (BLC law of blc_driver.py), not yet in the package.
 - Native SPS vs. own APC: see systems-module.md (SPS disabled: AP divergence after a full restart).
+
+## 2026-11-01: faster build/restart cycle
+- fspackagetool can be called outside the game (SDK docs: -nopause, -outputtoseparateconsole, -forcesteam), but it drives
+  the game exe: here it attached to the running sim and waited; no headless build. Sources:
+  https://docs.flightsimulator.com/msfs2024/html/8_SDK_Tools/Package_Tool/Package_Tool.htm ,
+  https://docs.rs/crate/infinity-build-package/latest/source/src/lib.rs
+- WASM module hot reload: forum reports conflicting (2024 bug fixed in 1.5.15.0 per Asobo):
+  https://devsupport.flightsimulator.com/t/recompiling-a-wasm-system-doesnt-reload-unless-i-reload-the-plane-from-main-menu/14534 ,
+  https://forums.flightsimulator.com/t/developing-own-wasm-module-simconnect-client-all-kinds-of-questions/480629/14 ,
+  https://forums.flightsimulator.com/t/restarting-standalonemodule-wasm/359687 -> **tested here: Build All alone reloads
+  our standalone module** (L:F104_SYS_VERSION).
+- flight_model.cfg: 2024 has no quick reload (full restart, ≈ 3 min/cycle per developers):
+  https://www.avsim.com/forums/topic/665354-how-to-view-the-config-files-of-default-planes-in-msfs-2024/page/3/

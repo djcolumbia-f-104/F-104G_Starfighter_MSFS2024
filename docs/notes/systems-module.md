@@ -56,3 +56,11 @@ rpm-dependent BLC flap lift (H3), the APC stick shaker/kicker (H2), later drag c
 ## Rules
 - Never run the Python driver and the module at the same time (both write the TE percent).
 - Every module change: build, Build All + FULL restart (modules load at sim start), regression of the area (H3/H2 card).
+
+## Workflow findings (2026-11-01)
+- **Hot reload works**: after a module change, `sh tools/build_wasm.sh`, copy to PackageSources/modules, **Build All in
+  Dev Mode WITHOUT restart** -> the sim runs the new module (verified with L:F104_SYS_VERSION 3 right after the build).
+  A full restart is only needed for flight_model.cfg changes (normalization at sim start).
+- `fspackagetool.exe` (with -forcesteam -nopause, PowerShell) does not build headless: it attaches to the running sim
+  ("Attached to EXE - waiting for completion") and waits; with the sim closed it exits at once -> builds stay a Dev Mode
+  click (sources: SDK Package Tool page; forum reports on WASM reload, see research.md).

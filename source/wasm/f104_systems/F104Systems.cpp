@@ -33,6 +33,9 @@
 #include <stdio.h>
 
 static HANDLE g_sc = 0;
+// build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
+// a Build All without restart - hot reload test 2026-11-01)
+static const double SYS_VERSION = 3.0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -48,7 +51,7 @@ static bool g_shaker = false, g_kick = false;
 static double g_kick_t0 = 0.0, g_prev_t = -1.0, g_prev_theta = 0.0, g_q_f = 0.0;
 static double g_trim0 = 0.0, g_prev_alt = -1e9, g_inhibit_until = 0.0;
 
-enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5 };
+enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5, DEF_VERSION = 6 };
 enum Requests { REQ_STATE = 1, REQ_TITLE = 2 };
 enum Events { EVT_AP_OFF = 1 };
 
@@ -162,6 +165,8 @@ static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
     if (d->dwRequestID == REQ_TITLE) {
         const Title* t = (const Title*)&d->dwData;
         g_is_f104 = strstr(t->title, "F-104G") != nullptr;
+        double v = SYS_VERSION;                  // refreshed once a second
+        SimConnect_SetDataOnSimObject(g_sc, DEF_VERSION, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(v), &v);
         return;
     }
     if (d->dwRequestID != REQ_STATE || !g_is_f104)
@@ -195,6 +200,7 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_TRIM, "ELEVATOR TRIM POSITION", "degrees");
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_SHAKER", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_KICK", "number");
+    SimConnect_AddToDataDefinition(g_sc, DEF_VERSION, "L:F104_SYS_VERSION", "number");
     SimConnect_MapClientEventToSimEvent(g_sc, EVT_AP_OFF, "AUTOPILOT_OFF");
     SimConnect_RequestDataOnSimObject(g_sc, REQ_TITLE, DEF_TITLE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SECOND);
     SimConnect_RequestDataOnSimObject(g_sc, REQ_STATE, DEF_STATE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SIM_FRAME);
