@@ -1248,3 +1248,10 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   first frame after the lever leaves LAND (rebuilt, needs Build All + full restart); runway_start forces TE/LE to 1/3
   after FLAPS_1; takeoff_test aborts if LE ≠ 10 ± 1°. **Possible influence on earlier takeoffs** after landings with the
   BLC driver (liftoff 175-176 kt instead of 178-181 kt: LE 21° gives more lift) - re-check T3-D with the sync.
+- **T3-D with synced flaps** (T3D_takeoff_e): **179 kt** single liftoff (FM 178, +0.6 %) - after BLC landings without the
+  sync it was 175-176 kt -> the desync explanation holds.
+- **F3 with the WASM module only (no Python driver)** (M_F3 + fastlog): TE 45.0° on the approach (N1 89.6 %), 44.7° in the
+  flare (N1 82.7 %), after the idle cut at touchdown TE follows the spool-down 44.4 -> 38.9 -> 34.7 -> 31.3 -> 29.1° (N1 81 ->
+  67.5 %); roll from 165 KIAS 3 040 ft = **-1.1 %** (driver runs -0.6 / -0.9 %) ✓. **The module replaces blc_driver.py.**
+  (Loaded module = first version without the LAND-exit restore; runway_start sync covers the ground cases until pete's
+  next Build All + full restart.)
