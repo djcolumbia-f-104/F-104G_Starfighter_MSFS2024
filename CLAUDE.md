@@ -6,8 +6,21 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-10-31 late evening) <<<
-**AUTONOMOUS SESSION (pete away for a few hours, planned 2026-11-01)** - pete before leaving: Build All (contains
+## >>> CONTINUE HERE (state 2026-11-01 afternoon, after the autonomous session) <<<
+**Results of the autonomous session 2026-11-01** (details measurements.md 2026-11-01, systems-module.md):
+- **F2 ✓ chute 0.07 + BLC driver: -0.9 / -0.4 %, F3 -0.6 %** (new metric: roll from 165 KIAS, `tools/roll_from_speed.py`;
+  the roll from the touchdown depends on the TD transient). H3 regression with the driver: B6 +967 ft/min, B7 LAND and
+  T3-L unchanged ✓. fmflare TD speed +1-2 % over the FM band: accepted (within ±5 %).
+- takeoff_test end: hand-flown climb (≤ 2 000 ft/min until flaps up) -> above 6 000 ft the MCP `position` routine
+  (16 500 ft, AP verified). Finding: the MSFS AP sets the trim to ≈ 2.5° on engagement -> never hand over at low speed.
+  landing_test/config_test end at throttle 5 000. Chute only once the nose wheel is down.
+- **WASM systems module**: SDK clang-cl + wasm-ld build works without Visual Studio (tools/build_wasm.sh); prototype
+  `source/wasm/f104_systems/F104Systems.cpp` = BLC law in the sim, NOT yet in the package.
+- Sim left PAUSED at 12 687 ft on the AP (no further flights).
+**NEXT (needs pete):** integrate the module (systems-module.md: copy wasm to PackageSources/modules + AssetGroup), Build
+All + full restart, verify without blc_driver.py (fastlog TE angle vs N1, F3 from 165 KIAS ≈ -0.6 %). Then H2 as own
+APC logic in the module (design in systems-module.md).
+**AUTONOMOUS SESSION (pete away for a few hours, planned 2026-11-01) - DONE a-e** - pete before leaving: Build All (contains
 drag_coef_spoilers 0.12 -> 0.07), FULL sim restart, flight EDDM 26L loaded, PC sleep off, tool permissions allowed.
 Rules while alone: one task at a time, test-card method, never leave the jet unattended without a working AP - at the end
 of the work (or on any doubt) **PAUSE the sim** (`PAUSE_ON`) with the jet at ≥ 10 000 ft or standing on the runway; refuel

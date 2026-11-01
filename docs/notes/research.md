@@ -193,3 +193,11 @@ Fetched from docs.flightsimulator.com/msfs2024/retail/...: `additional-flight-mo
 - Sources: https://ntrs.nasa.gov/api/citations/19720022354/downloads/19720022354.pdf (TN D-6943),
   https://www.abbottaerospace.com/downloads/naca-report-1369-blowing-type-boundary-layer-control-as-applied-to-the-trailing-edge-flaps-of-a-35deg-swept-wing-airplane/,
   https://916-starfighter.de/Hamilton_story.htm, https://en.wikipedia.org/wiki/Blown_flap
+
+## 2026-11-01: in-aircraft systems logic - WASM toolchain without Visual Studio (docs/notes/systems-module.md)
+- The SDK (1.8.1) ships clang-cl 15 (Asobo innative-llvm build), wasm-ld and a wasi-sysroot under `WASM/`; the
+  MSBuild platform "MSFS2024" (Visual Studio) is not installed here. `clang-cl --driver-mode=g++ --target=wasm32-unknown-wasi`
+  + wasm-ld with the flags in `tools/build_wasm.sh` rebuilds the SDK StandaloneModule with the identical export list.
+- Standalone modules (`modules/*.wasm`, package AssetGroup type Copy) run at sim start and use the SimConnect API ->
+  prototype `source/wasm/f104_systems/F104Systems.cpp` (BLC law of blc_driver.py), not yet in the package.
+- Native SPS vs. own APC: see systems-module.md (SPS disabled: AP divergence after a full restart).

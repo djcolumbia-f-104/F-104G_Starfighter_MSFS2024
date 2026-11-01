@@ -188,6 +188,13 @@ log here; this index says under which conditions each log was flown and whether 
 | `H3_dry1`..`dry4` (+ `_blc`, simlog) | H3 dry runs (virtual runway 4 000 ft) | driver; dry2 driver inactive | dry1 1 125 ft/min (idle flare), dry2/3 balloon, dry4 346 ft/min ✓ | valid (design iterations) |
 | `H3_F3a` (+ `_blc`, `_fast` with compression, simlog) | **F3 with BLC driver + fmflare** | 18 491 lb | roll 3 378 ft from 173 KIAS = -0.1 % | **valid** |
 | `H3_F2a` (+ `_blc`, simlog) | **F2 chute with BLC driver** | 18 439 lb | 2 706 ft from 171 KIAS = -7 % | **valid** (chute re-tune needed) |
+| `T3D_takeoff_a` (+ simlog), 2026-11-01 | takeoff, AP handover at 323 KIAS | | AP set trim 5.1 -> 2.5°, -7 900 ft/min, phugoid | valid (finding) |
+| `T3D_takeoff_b` / `c` (+ simlog) | end phase at 460 KIAS / with trim tracking | | did not settle (13 300 ft) / throttle cycling | valid (iterations) |
+| `T3D_takeoff_d` (+ simlog) | **end phase -> position routine** | | 175 kt; 16 509 ft, AP ✓ | **valid** |
+| `H3_F2b` / `H3_F2c` (+ `_blc`) | **F2 chute 0.07 + driver** | 19 005 lb | from 165 KIAS -0.9 % / -0.4 % | **valid** |
+| `H3_F3b` (+ `_blc`) | **F3 + driver** | | from 165 KIAS -0.6 % | **valid** |
+| `H3_B6` (+ `_blc`) | B6 regression with driver | 4 500 ft | +967 ft/min | **valid** |
+| `H3_B7land` / `H3_B7land2` (+ `_blc`) | B7 LAND regression with driver | 12 000 ft | invalid (start 140 KIAS) / unchanged α-CL | land2 **valid** |
 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
