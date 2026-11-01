@@ -67,7 +67,10 @@ Used so far: Cnδr/Cnβ = 0.32 as target for the rudder test T3-E; Cnβ for the 
 | 7 | 35 000 ft | 1.20 | -115 | 11.9 | 19.4 | 1.49 | 13.1 | -2.09 | -2.27 | -0.292 |
 Flight conditions (PDF 55, Table III-2): F/C 4 = 465 KCAS, α 4.8°; F/C 6 = 311 KCAS, α 2.5°; W 16 300 lb.
 Steady sideslip (p = r = 0) per unit rudder: β/δr = 0.32-0.42, δa/δr = 0.27-0.47 (used for T3-E2, round E).
-Open: whether δa is one aileron or the sum (Fig. III-3: 2.14°/in lateral stick).
+**Resolved 2026-11-01: δa is the SUM of both right and left aileron deflections** (note under the F-104A Cnδa/Clδa plot,
+PDF 53). -> full gear-up aileron (±9.75° each) = δa 19.5° = 0.34 rad; steady roll rate p = -L'δa δa / L'p:
+F/C 2 (SL, M 0.80) ≈ 208°/s, F/C 4 (15 000 ft, M 0.90, 465 KCAS) ≈ 186°/s, F/C 6 (35 000 ft, M 0.90) ≈ 162°/s
+(single-degree-of-freedom, no β coupling; test plan C4). Re-check T3-E2 δa/δr with this definition (sum of both).
 
 ## Not yet used
 - Remaining tables III-3 to III-12 (PDF 56-65, sideways, `tools/pdf_clip.py --rot 90`): longitudinal dimensional
