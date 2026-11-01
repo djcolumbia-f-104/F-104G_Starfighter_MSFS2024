@@ -6,7 +6,40 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-01 evening) <<<
+## >>> CONTINUE HERE (state 2026-11-01 late evening - pause for a few days) <<<
+**Where we stand (read first in a new session):**
+- Flight model validated against FM/NASA in all longitudinal areas (lift, drag, thrust, takeoff 178-181 kt = FM, climb,
+  fuel, landings F2/F3 ≈ -1 % from 165 KIAS, min. speeds, APC thresholds). Status table: `docs/test-plan.md`; evidence:
+  `docs/notes/measurements.md` (newest at the end); logs: `docs/data/README.md`; cards: `docs/notes/test-cards/`.
+- **WASM systems module v6** (`source/wasm/f104_systems/F104Systems.cpp`, `sh tools/build_wasm.sh`, copy the wasm to
+  `PackageSources/modules/`; design + workflow `docs/notes/systems-module.md`): rpm-dependent BLC (H3 ✓) + own APC
+  shaker/kicker (H2 ◐: kick = stabilizer offset via the trim; the native SPS stays commented out - AP conflict).
+  **Module change = Build All only (hot reload, check L:F104_SYS_VERSION); flight_model.cfg change = Build All + FULL
+  sim restart.** Never run tools/blc_driver.py together with the module.
+- **C4 roll rate (card C4-roll-rate.md)**: roll_stability 1 -> 0.1 (SDK: target damping, only adds) and
+  aileron_effectiveness 1.17 -> δa 5/10° gives 45/95°/s vs CR-2144 48/96 ✓ (δa = SUM of both ailerons, CR-2144 PDF 53).
+  Full deflection (δa 20°): 248°/s (+30 %) and an **inertial-coupling departure** (α -34°, β 28°) - the real jet rolls
+  with pitch/roll/yaw SAS. **No full-deflection rolls until H1 exists.** Regression of roll_stability/aileron change
+  still OPEN: T3-J Dutch roll (MCP `doublet`), T3-E2 steady sideslip (MCP `sideslip`), T3-D takeoff (done ✓ 180 kt).
+**NEXT STEP: H1 own stability augmentation (SAS) in the module - desk analysis first (analysis gate, skill 2b):**
+  1. Sources: FM 1-68 (three-axis SAS: rate gyros -> hydraulic actuators move the surfaces WITHOUT moving the stick,
+     washout circuit for roll/yaw, NO washout in pitch; switches ROLL/PITCH/YAW; AP needs them), FM Section VI flight
+     characteristics with/without SAS (manual-index: 6-1..6-4, Fig. 6-1 stability augmenters), CR-2144 Table III-9
+     (L'p, N'r, Dutch roll data) and Fig. III-3 control system (PDF 42: SAS inputs δ_SAS in pitch/roll/yaw).
+  2. Design per axis: damper = surface offset proportional to the body rate (yaw: rudder via ... ; roll: aileron;
+     pitch: stabilizer via the TRIM offset like the kicker). Problem known from H2: a module cannot override pilot axis
+     input (MSFS 2024 does not mask events) -> use additive channels that inputs do not overwrite (pitch: trim; yaw:
+     RUDDER TRIM? roll: AILERON TRIM? - check settability/limits; rudder_trim_limit exists) and check the authority.
+  3. Predictions before flying: Dutch roll period/damping with the yaw damper (CR-2144 handling parameters), roll
+     time constant; then build-up at altitude (small doublets), regression T3-J/T3-E2, then the full-deflection roll.
+**Safety rules learned (also in skill f104-testcard):** runway_start after every flight load (trim 0°); AP only engaged
+in stabilised level flight at ≈ 450 KIAS (it sets the trim to ≈ 2.5°) - test scripts end via the `position` routine;
+never call `position`/set_pos while the jet still rotates (unload/level or PAUSE first); refuel before every test.
+**Session start:** check_build, preflight, wind/QNH, runway_start, `tools/refuel.py`, takeoff with
+`tools/takeoff_test.py <csv> 157 10.5` (MCP `takeoff` needs an /mcp reconnect for its 420 s timeout).
+Other open items (lower priority): kicker α Mach table (Fig. 6-3), config_test clean-up re-trim, shaker output, D1b +9 %,
+remaining test plan items (A3/A4, B9, C5/C6, D6, E2, F4-F9, G1/G2), then 3D model (AP-9).
+## Previous block (2026-11-01 evening)
 **WASM systems module live** (`source/wasm/f104_systems/F104Systems.cpp`, built with `sh tools/build_wasm.sh`, copied to
 `PackageSources/modules/`, docs/notes/systems-module.md): v6 = BLC (H3, replaces blc_driver.py - never run both) + own APC
 shaker/kicker (H2 ◐, replaces the disabled native SPS). **Module changes: Build All WITHOUT restart reloads the module**
