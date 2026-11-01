@@ -1202,3 +1202,26 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   if the jet hops (FM: as soon as the nose wheel is down) - fix.
 - Side fixes: landing_test ends clean at throttle 5 000 (9 000 left the jet at 558 KIAS at 7 600 ft, fuel 4 000 -> 617 lb);
   refuel before every landing test.
+
+## 2026-11-01 (autonomous session): chute re-tune with the BLC driver ✓, takeoff end phase / AP handover
+- Session start ✓ (check_build green incl. drag_coef_spoilers 0.07, full restart by pete, wind 1 kt / 1013.25).
+- landing_test: chute only on the ground with the nose down (FM 2-25; it was "1 s after the first touch", even in a hop).
+- **AP handover finding** (T3D_takeoff_a + simlog): from stabilised level flight at 323 KIAS (trim 5.1°, elevator 0) the
+  MSFS AP sets the trim to ≈ 2.5° within 2 s (as set_pos does) and then trims at ≈ 0.13°/s -> 0.5 g, -7 900 ft/min,
+  phugoid (trim to 9.9°, 236 KIAS at 9° pitch) -> recovered with MCP `position` (16 100 ft, 461 KIAS, trim 2.58°). Level
+  trim ≈ 0.16° + 18.5° x CL (323 KIAS 5.1°, 461 KIAS 2.58°) -> handover at 460 KIAS. Run b: the 1/q-scaled elevator loop
+  could not hold 10 000 ft with the takeoff trim 5° at 460 KIAS (elevator -3.9°, +1 000 ft/min, ended at 13 300 ft; AP
+  handover itself calm, max |VS| 936) -> the script now trims like a pilot above 320 KIAS (trim = that line, ≤ 5°).
+  Climb VS ≤ 2 000 ft/min until flaps up: flaps up at 4 300 ft (was 9 700) ✓.
+- **F2 with chute 0.07 + BLC driver + fmflare** (F2b 19 005 lb, F2c): roll from the touchdown is dominated by the touchdown
+  transient (TD 176-177 KIAS above the FM band, 2-3 s without deceleration while the J79 spools down from 82 %, nose
+  lowering, chute only once the nose is down): F2b +21 % from the TD (no hop), F2c -1.4 % from the final TD (after a hop).
+  -> **new primary metric: roll from a fixed 165 KIAS to the stop** (`tools/roll_from_speed.py`, FM scaled (165/166.5)²):
+  | run | chute coef | roll from 165 KIAS | vs FM |
+  |---|---|---|---|
+  | F2a (2026-10-31) | 0.12 | 2 513 ft | -7.3 % |
+  | **F2b** | **0.07** | 2 685 ft | **-0.9 %** |
+  | **F2c** | **0.07** | 2 701 ft | **-0.4 %** |
+  | F3a (no chute) | - | 3 047 ft | -0.9 % |
+  Chute/no-chute ratio 0.881 vs FM 2 760/3 130 = 0.882 ✓. Prediction (-1 ± 3 %) met. **F2 ✓ / F3 ✓ with the BLC driver.**
+  Open: touchdown speed with fmflare 176-177 KIAS (FM band 170-175 at 19 000 lb).

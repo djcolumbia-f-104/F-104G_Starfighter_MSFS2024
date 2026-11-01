@@ -317,7 +317,10 @@ else:
     # -> hand-flown climb (elevator PI on VS, gains of landing_test/config_test scaled 1/q) to 10 000 ft MSL, flaps UP
     # at ≥ 260 KIAS (FM), throttle loop to 330 KIAS, level-off; then the elevator is moved into the trim (trim +=
     # elevator deflection, elevator -> 0) and only then the AP takes over in ALT hold, monitored for 30 s.
-    ALT_END, IAS_END = 10000.0, 330.0
+    # 2026-11-01 (T3D_takeoff_a): on engagement the MSFS AP sets the trim to ≈ 2.5° within 2 s (as set_pos does) and then
+    # trims only at ≈ 0.13°/s -> at 323 KIAS (trim 5.1° needed) 0.5 g, -7 900 ft/min, long phugoid. Trim ≈ 0.16° + 18.5° x CL
+    # (323 KIAS -> 5.1°, 461 KIAS -> 2.58°) -> hand over where ≈ 2.5° is needed: ≈ 460 KIAS (like the MCP position tool)
+    ALT_END, IAS_END = 10000.0, 460.0
     # bumpless start: the VS reference begins at the current climb rate and moves to the schedule at ≤ 600 ft/min per s;
     # the integrator starts at the last command of the climb-out law
     vs_f = aq.get("VERTICAL_SPEED") or 0.0                            # ft/min in Python-SimConnect
@@ -339,8 +342,18 @@ else:
             flaps_up = True
             print(f"Flaps up at {ias_e:.0f} KIAS, {alt_e:.0f} ft (hand-flown climb)")
         thr = max(3000.0, min(11141.0, thr + 30.0 * (IAS_END - ias_e) * dt_e * 2)) if flaps_up else 11141.0
+        # 2026-11-01 (T3D_takeoff_b): with the takeoff trim 5° left in, the 1/q-scaled elevator loop could not push enough at
+        # 460 KIAS (elevator -3.9°, still +1 000 ft/min, never settled, ended at 13 300 ft) -> trim like a pilot while
+        # accelerating (AP off: the trim SimVar is accepted): level-flight trim ≈ 0.16° + 18.5° x CL above 320 KIAS, ≤ 5°
+        if flaps_up and ias_e > 320:
+            cl_e = (aq.get("TOTAL_WEIGHT") or 18500.0) / (ias_e * ias_e / 295.4 * 196.1)
+            trim_ff = min(5.0, 0.16 + 18.5 * cl_e)
+            if abs(trim_ff - pv.get("trim", 5.0)) > 0.05:
+                aq.set("ELEVATOR_TRIM_POSITION", trim_ff / DEG)
+                pv["trim"] = trim_ff
         ev["THROTTLE1_SET"](int(thr))
-        vs_tgt = max(-1500.0, min(4000.0, 2.0 * (ALT_END - alt_e)))
+        # ≤ 2 000 ft/min until the TAKEOFF flaps are up (at 4 000 the jet reached 260 KIAS only at 9 700 ft, 2026-10-31)
+        vs_tgt = max(-1500.0, min(4000.0 if flaps_up else 2000.0, 2.0 * (ALT_END - alt_e)))
         vs_ref += max(-600.0 * dt_e, min(600.0 * dt_e, vs_tgt - vs_ref))
         err_e = (vs_f - vs_ref) / 60.0
         integ = max(-200.0, min(200.0, integ + err_e * dt_e))

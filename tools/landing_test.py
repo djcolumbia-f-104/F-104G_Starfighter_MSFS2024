@@ -299,7 +299,9 @@ while time.time() - t0 < 600:
         c0 = res.get("cmd_e_td", 0.0)
         ev("AXIS_ELEVATOR_SET", int(c0 + (4000 - c0) * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
         nose_down = theta < 1.0 and t - res["t_td"] > 1.0                # FM: brakes after the nose wheel is down
-        if CHUTE and not res.get("chute") and t - res["t_td"] > 1.0:     # FM 2-28: chute blossoms as the nose wheel touches
+        # FM 2-25: deploy the chute as soon as the nose wheel is on the ground (all three gear down). 2026-10-31 (H3_F2a): the
+        # old "1 s after the first touch" deployed it during a hop -> only on the ground with the nose down (pitch < 1°)
+        if CHUTE and not res.get("chute") and gnd and nose_down:
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
