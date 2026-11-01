@@ -115,3 +115,16 @@ https://916-starfighter.de/Large/dc119.htm (CF-104 handling: ease off near the k
 | 2026-11-01 | v5 clean (H2t5_clean) | no false kick after set_pos ✓; kick α 14.27° / 204 KIAS (FM ≈ 197, +3 %); α max 14.27° ✓; trim retract ramp 5.4 -> 8° in 1 s ✓; 3 kicks (2nd/3rd at α 12.3/11.6 via the anticipation after the test pilot re-pulled to +0.70) | FM: kicker repeats while beyond the boundary |
 | 2026-11-01 | v5 TAKEOFF (H2t5_to) | shaker 184.8 KIAS (FM ≈ 188, -1.7 %) ✓; first kick α 14.24° / 169.6 KIAS (pred. 165-172 ✓, FM ≈ 179 -5 %); α max 15.5° (stick full aft, trim at the -5° stop = known limit); **8 kicks: self-excited (kick -> α 0-2° -> nose back at ≈ 15°/s -> anticipation kick at α ≈ 9°, up to 290 KIAS in the clean-up)** | -> v6: anticipation only above the shaker α |
 | 2026-11-01 | v5 LAND (H2t5_land) | **0 kicks** (inhibit) ✓; shaker 154.1 KIAS (FM ≈ 149-155) ✓; α max 17.7° (no kicker in LAND per FM) | |
+| 2026-11-01 | v6 TAKEOFF (H2t6_to) | shaker 185.8 KIAS ✓, first kick α 14.21° / 169.8 KIAS ✓ (same as v5); 7 kicks, now all real α > 14.5° excursions (α max 15.8°; fastlog ≈ 3 Hz misses the peaks): driven by the TEST PROCEDURE - after the slow test the 7° test trim stays in and the config_test clean-up pulls at 200-270 KIAS -> α overshoots within tenths of a second (several g; Fig. 6-3: the kicker is active at high g too) | kicker behaviour correct; test pilot unrealistic |
+
+## Result (2026-11-01, module v6) - H2 ◐ accepted
+Own APC logic in the WASM systems module (native SPS stays disabled - AP conflict):
+- shaker α 11.3°: clean ≈ 220 (earlier SPS runs), TAKEOFF 184.8-185.8 KIAS (FM ≈ 188, -1.5 %), LAND 154 KIAS (FM ≈ 149-155) ✓
+- kicker α 14.2-14.3° (rate anticipation above the shaker α): clean 200-204 KIAS (FM ≈ 197, +2-3 %), TAKEOFF ≈ 170 KIAS
+  (FM ≈ 179, -5 %); inhibited in LAND / gear down ✓ (0 kicks); no kick on takeoff ✓; 10 s inhibit after set_pos ✓
+- kick = stabilizer offset via the trim, held ≥ 0.8 s and until α < 12°, 1 s retract: α 14.2 -> 3° within 0.75 s ✓;
+  with a moderate pull α never exceeds the kicker α; limit: full aft stick with the trim at the -5° stop -> α up to ≈ 15.5-16°
+- AP disengaged on a kick (FM 1-69); MSFS AP no longer disturbed (the native SPS was the cause)
+Known limits: single α (no Mach table yet, Fig. 6-3 kicker α ≈ 11° at M 0.8), no stick-shaker feel (L:var only),
+test scripts must trim/follow through like a pilot after a kick (config_test clean-up keeps the 7-8° slow-test trim).
+Next options: Mach table for the kicker α; config_test clean-up re-trim; a cockpit/sound output for the shaker.
