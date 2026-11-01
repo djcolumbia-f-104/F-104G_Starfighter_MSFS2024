@@ -23,3 +23,5 @@ roll_stability 1 -> 0.1 (native geometry damping only). Prediction: τ longer, p
 this step measures it). Step 2: roll_stability to τ = 0.28 s, aileron_effectiveness to p_ss 96°/s at δa 10°.
 Regression: T3-J Dutch roll, T3-E2 steady sideslip (lateral modes), T3-D takeoff (aileron use near the ground).
 Needs Build All + FULL restart (flight_model).
+| 2026-11-01 | **step 1: roll_stability 0.1** (C4s1) | δa 5 / 10° -> **38 / 82°/s** (CR-2144 48 / 96: ≈ 0.80-0.85x, before 0.31x); τ ≈ 0.2 s (CR 0.28 s; native geometry damping = minimum) | takeoff after the change clean (bank ≤ 1.6°) |
+Step 2: aileron_effectiveness 1 -> 1.17 (prediction 96 ± 5°/s at δa 10°, 48 at 5°), then regression T3-J / T3-E2.
