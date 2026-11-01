@@ -95,3 +95,9 @@ every frame and HELD until α < 12° and ≥ 0.8 s, AUTOPILOT_OFF on the kick (F
 first kick at α ≈ 14.5° (the 1 kt/s deceleration gives almost no pitch rate) ≈ 197 KIAS; elevator -0.1 for ≥ 0.8 s until
 α < 12°; α peaks ≤ 15° (the SPS leaked to 16°); kick cycles slower and deeper than the SPS (13-15.5° / 1.3 s).
 Then TAKEOFF (15 000 ft) and LAND (12 000 ft, expect NO kick: inhibited) runs, and a takeoff (gear down -> no kick).
+| 2026-11-01 | module takeoff (H2m_takeoff) | 178 kt, α max 10.8°: no shaker, no kick ✓ | gear down inhibit |
+| 2026-11-01 | **module clean build-up** (H2m_clean + fastlog) | **first real kick at α 14.32° / 199.4 KIAS** (pred. 14.5 / 197) ✓, elevator -0.1, α 14.3 -> 10.2° in 0.5 s ✓. BUT: (1) while the kick flag was 1 the elevator read +0.36/+0.67 several times - **the per-frame ELEVATOR POSITION write does not dominate a script/joystick that keeps sending AXIS_ELEVATOR_SET**; (2) after each release the test pilot (wound-up integrator) pulled +0.67 -> α 18-24° (beyond CLmax 18°); (3) a kick at α 9.5° right after set_pos (positioning transient, pitch-rate anticipation). The config_test end then engaged the AP at 225 KIAS / trim 8° / Military -> 3 465 ft at 610 KIAS, recovered with MCP position. | kick override method must change; config_test end -> position routine |
+Decision needed: (A) intercept the elevator inputs in the module (maskable AXIS_ELEVATOR_SET at the highest maskable
+priority, forward min(pilot, kick)) - the proper way, but a module bug would cost pitch control; (B) kick via a trim offset
+(ELEVATOR_TRIM_POSITION is not overwritten by stick inputs; trim range -5..+11° limits the kick); (C) warning only.
+Also the test pilot must "follow through" after a kick (FM 6-6): reset the integrator / relax the pull when L:F104_APC_KICK = 1.

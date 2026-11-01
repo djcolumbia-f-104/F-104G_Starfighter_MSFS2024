@@ -238,19 +238,16 @@ while time.time() - t0 < 300:
 
 for n in ("AXIS_ELEVATOR_SET", "AXIS_AILERONS_SET"):
     ev(n, 0)
-ap_master(True)
-ev("HEADING_BUG_SET", int(round(g("PLANE_HEADING_DEGREES_MAGNETIC") * DEG)) % 360)
-ev("AP_HDG_HOLD_ON")
-clean = g("AIRSPEED_INDICATED") >= 260
-if clean:
-    ev("GEAR_UP")
-    ev("FLAPS_UP")
-# 2026-11-01: 9 000 left the jet at 515 KIAS at 12 700 ft (H3_B7land2) -> 5 000 once clean (as landing_test)
-ev("THROTTLE1_SET", 5000 if clean else 11141)
-ev("AP_ALT_VAR_SET_ENGLISH", int(g("PLANE_ALTITUDE") + 500))
-ev("AP_ALT_HOLD_ON")
+# 2026-11-01 (H2m_clean): engaging the AP at the end (here 225 KIAS, slow-mode trim 8°, Military) dived the jet to 3 465 ft
+# at 610 KIAS - the MSFS AP sets the trim to ≈ 2.5° on engagement. -> end via the proven MCP `position` routine (set_pos
+# 16 500 ft / 500 kt TAS, gear/flaps up, AP ALT hold verified); the FM clean-up above has already retracted the flaps
+ev("GEAR_UP")
 sm.exit()
 log.terminate()
+pos = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "mcp_f104", "sim_actions.py"),
+                      "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
+                     capture_output=True, text=True, timeout=120)
+print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1])
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
     wr.writerow(["t", "phase", "alt", "ias", "vs_fpm", "vs_tgt", "bank", "pitch", "alpha", "n1", "thrust_lbf", "ff_pph", "weight",
