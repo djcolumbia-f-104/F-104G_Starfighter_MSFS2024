@@ -6,7 +6,15 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-01 afternoon, after the autonomous session) <<<
+## >>> CONTINUE HERE (state 2026-11-01 evening) <<<
+**WASM systems module live** (`source/wasm/f104_systems/F104Systems.cpp`, built with `sh tools/build_wasm.sh`, copied to
+`PackageSources/modules/`, docs/notes/systems-module.md): v6 = BLC (H3, replaces blc_driver.py - never run both) + own APC
+shaker/kicker (H2 ◐, replaces the disabled native SPS). **Module changes: Build All WITHOUT restart reloads the module**
+(check `L:F104_SYS_VERSION`); only flight_model.cfg changes need the full restart. runway_start syncs the TE/LE flaps;
+takeoff_test and config_test end via the MCP `position` routine (the MSFS AP sets the trim to ≈ 2.5° on engagement).
+Next options: Mach table for the kicker α (Fig. 6-3), config_test clean-up re-trim (kicks driven by the 7-8° slow-test
+trim), shaker output (sound/gauge), D1b +9 %, 3D model planning (AP-9).
+## Previous block (2026-11-01 afternoon, after the autonomous session)
 **Results of the autonomous session 2026-11-01** (details measurements.md 2026-11-01, systems-module.md):
 - **F2 ✓ chute 0.07 + BLC driver: -0.9 / -0.4 %, F3 -0.6 %** (new metric: roll from 165 KIAS, `tools/roll_from_speed.py`;
   the roll from the touchdown depends on the TD transient). H3 regression with the driver: B6 +967 ft/min, B7 LAND and
