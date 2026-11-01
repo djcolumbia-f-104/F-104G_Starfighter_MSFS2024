@@ -1,12 +1,22 @@
-// F-104G systems module (MSFS 2024 WASM, standalone module) - PROTOTYPE, not yet part of the package.
+// F-104G systems module (MSFS 2024 WASM, standalone module in the aircraft package, docs/notes/systems-module.md).
 //
-// H3 BLC (card docs/notes/test-cards/H3-blc-rpm.md): the rpm-dependent boundary-layer-control lift of the LAND flaps,
-// realised as an EFFECTIVE trailing-edge flap deflection - the same law as tools/blc_driver.py, which was flown and
-// validated on 2026-10-31/11-01 (F3 -0.6/-0.9 %, F2 -0.4/-0.9 % from 165 KIAS, B6/B7/T3-L unchanged):
-//   BLC fraction f(N1) = 0.3 at 67 % (idle), 0.6 at 75 %, 0.9 at 80 %, 1.0 at >= 83 %   (FM 2-24, [S])
-//   TE percent p = 1 - 0.52 (1 - f)                                                     (build-up 1, H3_bu1)
-// Written only with the flap lever in LAND (index 2) and once the LE flaps reached their stage (>= 29 deg; the coupled
-// flap travel stops them at 29.4 deg - an early TE write freezes the LE flaps). Active only for the F-104G (title).
+// 1. H3 BLC (card docs/notes/test-cards/H3-blc-rpm.md): the rpm-dependent boundary-layer-control lift of the LAND flaps,
+//    realised as an EFFECTIVE trailing-edge flap deflection - the law of tools/blc_driver.py, flown and validated
+//    2026-10-31/11-01 (F3 -0.6/-0.9 %, F2 -0.4/-0.9 % from 165 KIAS, B6/B7/T3-L unchanged; module F3 -1.1 %):
+//      BLC fraction f(N1) = 0.3 at 67 % (idle), 0.6 at 75 %, 0.9 at 80 %, 1.0 at >= 83 %   (FM 2-24, [S])
+//      TE percent p = 1 - 0.52 (1 - f)                                                     (build-up 1, H3_bu1)
+//    Written only with the flap lever in LAND (index 2) and once the LE flaps reached their stage (>= 29 deg; the coupled
+//    flap travel stops them at 29.4 deg - an early TE write freezes the LE flaps). On leaving LAND the TE is restored to
+//    100 % once so both flap systems leave LAND from the same travel fraction (desync found 2026-11-01).
+// 2. H2 APC (card docs/notes/test-cards/H2-apc.md) - replaces the native SPS, which made the MSFS AP diverge after a full
+//    restart (A/B 2026-10-31). FM 1-69, 6-5..6-7:
+//      shaker: alpha > 11.3 deg (off 10.8) -> L:F104_APC_SHAKER (no stick-vibration output; for a later gauge/sound)
+//      kicker: alpha + T_ANT x pitch rate > 14.5 deg (FM 6-6: pitch-rate input for anticipation), inhibited with the gear
+//              down, the flap lever in LAND or below 120 KIAS (FM 6-6); pushes the stick to slightly ahead of neutral
+//              (ELEVATOR POSITION -0.1, written every frame) and HOLDS it while beyond the boundary (alpha > 12 deg) and
+//              for at least 0.8 s; disengages the autopilot (FM 1-69); state in L:F104_APC_KICK.
+//    Alpha thresholds from H2 (FM Fig. 6-3/6-4 CL -> sim alpha via the B7 logs). [S]: T_ANT, release alpha, hold time.
+// Active only for the F-104G (TITLE contains "F-104G").
 //
 // Build: tools/build_wasm.sh (SDK clang-cl in g++ mode + wasm-ld, flags matched to the SDK StandaloneModule sample).
 
@@ -20,17 +30,39 @@ static HANDLE g_sc = 0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
-enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3 };
+// APC parameters
+static const double SHAKER_ON = 11.3, SHAKER_OFF = 10.8;      // deg alpha (H2)
+static const double KICK_ALPHA = 14.5, KICK_RELEASE = 12.0;   // deg alpha (H2 / [S])
+static const double T_ANT = 0.3;                              // s, pitch-rate anticipation [S]
+static const double KICK_HOLD = 0.8;                          // s, minimum kick duration [S]
+static const double KICK_STICK = -0.1;                        // ELEVATOR POSITION, slightly ahead of neutral (FM 6-6)
+static const double KICK_MIN_IAS = 120.0;                     // KIAS, no kicks on the ground roll [S]
+
+static bool g_shaker = false, g_kick = false;
+static double g_kick_t0 = 0.0, g_prev_t = -1.0, g_prev_theta = 0.0, g_q_f = 0.0;
+
+enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_ELEV = 4, DEF_LVARS = 5 };
 enum Requests { REQ_STATE = 1, REQ_TITLE = 2 };
+enum Events { EVT_AP_OFF = 1 };
 
 struct State {
     double handle;      // FLAPS HANDLE INDEX
     double le_deg;      // LEADING EDGE FLAPS LEFT ANGLE, degrees
     double n1;          // TURB ENG N1:1, percent
+    double alpha;       // INCIDENCE ALPHA, degrees
+    double pitch;       // PLANE PITCH DEGREES, degrees (positive = nose DOWN)
+    double gear;        // GEAR HANDLE POSITION, bool
+    double ias;         // AIRSPEED INDICATED, knots
+    double ap;          // AUTOPILOT MASTER, bool
+    double t;           // SIMULATION TIME, seconds
 };
 struct TeSet {
     double left;        // TRAILING EDGE FLAPS LEFT PERCENT, percent over 100
     double right;       // TRAILING EDGE FLAPS RIGHT PERCENT
+};
+struct LVars {
+    double shaker;      // L:F104_APC_SHAKER
+    double kick;        // L:F104_APC_KICK
 };
 struct Title {
     char title[256];
@@ -46,6 +78,58 @@ static double blc_fraction(double n1)
     return 1.0;
 }
 
+static void set_te(double p)
+{
+    TeSet te = {p, p};
+    SimConnect_SetDataOnSimObject(g_sc, DEF_TE, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(te), &te);
+}
+
+static void blc(const State* s)
+{
+    if ((int)(s->handle + 0.5) != 2) {
+        if (g_active)
+            set_te(1.0);                         // restore the LAND stage once (flap travel sync)
+        g_active = false;                        // outside LAND the flap system takes over
+        return;
+    }
+    if (!g_active && s->le_deg < 29.0)
+        return;                                  // wait until the LE flaps reached their LAND stage
+    g_active = true;
+    set_te(1.0 - 0.52 * (1.0 - blc_fraction(s->n1)));
+}
+
+static void apc(const State* s)
+{
+    double theta = -s->pitch;                    // nose up positive
+    double dt = (g_prev_t < 0.0) ? 0.0 : s->t - g_prev_t;
+    if (dt > 0.0 && dt < 0.5)
+        g_q_f += (((theta - g_prev_theta) / dt) - g_q_f) * 0.3;   // filtered pitch rate, deg/s
+    g_prev_t = s->t;
+    g_prev_theta = theta;
+
+    bool shaker = g_shaker ? (s->alpha > SHAKER_OFF) : (s->alpha > SHAKER_ON);
+    bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS;
+    double alpha_pred = s->alpha + T_ANT * (g_q_f > 0.0 ? g_q_f : 0.0);
+    if (!g_kick && !inhibit && alpha_pred > KICK_ALPHA) {
+        g_kick = true;
+        g_kick_t0 = s->t;
+        if (s->ap > 0.5)
+            SimConnect_TransmitClientEvent(g_sc, SIMCONNECT_OBJECT_ID_USER, EVT_AP_OFF, 0,
+                                           SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+    }
+    if (g_kick && (inhibit || (s->alpha < KICK_RELEASE && s->t - g_kick_t0 >= KICK_HOLD)))
+        g_kick = false;
+    if (g_kick) {
+        double stick = KICK_STICK;
+        SimConnect_SetDataOnSimObject(g_sc, DEF_ELEV, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(stick), &stick);
+    }
+    if (shaker != g_shaker || g_kick || s->t - g_kick_t0 < 2.0) {
+        LVars lv = {shaker ? 1.0 : 0.0, g_kick ? 1.0 : 0.0};
+        SimConnect_SetDataOnSimObject(g_sc, DEF_LVARS, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(lv), &lv);
+    }
+    g_shaker = shaker;
+}
+
 static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
 {
     if (pData->dwID != SIMCONNECT_RECV_ID_SIMOBJECT_DATA)
@@ -59,24 +143,8 @@ static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
     if (d->dwRequestID != REQ_STATE || !g_is_f104)
         return;
     const State* s = (const State*)&d->dwData;
-    if ((int)(s->handle + 0.5) != 2) {
-        if (g_active) {
-            // 2026-11-01 ground test: leaving LAND with the TE held below its stage (e.g. 28.6° at idle) desynchronised
-            // the coupled flap travel (one travel fraction for all systems, stop when the first reaches its stage):
-            // TAKEOFF then gave LE 21°, UP LE 11°, TAKEOFF from UP TE 1.6° -> restore the LAND stage once, so both
-            // systems leave LAND from the same fraction
-            TeSet te = {1.0, 1.0};
-            SimConnect_SetDataOnSimObject(g_sc, DEF_TE, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(te), &te);
-        }
-        g_active = false;                        // outside LAND the flap system takes over
-        return;
-    }
-    if (!g_active && s->le_deg < 29.0)
-        return;                                  // wait until the LE flaps reached their LAND stage
-    g_active = true;
-    double p = 1.0 - 0.52 * (1.0 - blc_fraction(s->n1));
-    TeSet te = {p, p};
-    SimConnect_SetDataOnSimObject(g_sc, DEF_TE, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(te), &te);
+    blc(s);
+    apc(s);
 }
 
 extern "C" MSFS_CALLBACK void module_init(void)
@@ -88,9 +156,19 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "FLAPS HANDLE INDEX", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "LEADING EDGE FLAPS LEFT ANGLE", "degrees");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "TURB ENG N1:1", "percent");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "INCIDENCE ALPHA", "degrees");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "PLANE PITCH DEGREES", "degrees");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "GEAR HANDLE POSITION", "bool");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "AIRSPEED INDICATED", "knots");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "AUTOPILOT MASTER", "bool");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "SIMULATION TIME", "seconds");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS LEFT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS RIGHT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TITLE, "TITLE", nullptr, SIMCONNECT_DATATYPE_STRING256);
+    SimConnect_AddToDataDefinition(g_sc, DEF_ELEV, "ELEVATOR POSITION", "position");
+    SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_SHAKER", "number");
+    SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_KICK", "number");
+    SimConnect_MapClientEventToSimEvent(g_sc, EVT_AP_OFF, "AUTOPILOT_OFF");
     SimConnect_RequestDataOnSimObject(g_sc, REQ_TITLE, DEF_TITLE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SECOND);
     SimConnect_RequestDataOnSimObject(g_sc, REQ_STATE, DEF_STATE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SIM_FRAME);
     SimConnect_CallDispatch(g_sc, dispatch, nullptr);

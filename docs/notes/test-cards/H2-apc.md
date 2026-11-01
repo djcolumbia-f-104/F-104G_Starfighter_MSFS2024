@@ -85,3 +85,13 @@ follow-through is needed anyway when trimmed close to high α (the test ran with
 (kicker late at M 0.8), no gear/LAND inhibit, no pitch-rate anticipation. Option if needed later: adaptive pusher
 (`stall_protection_flight_control_limiter_PID`, D term = α anticipation) - holds α at the limit instead of kicking.
 Regression: T3-D takeoff ✓ (α ≤ 9°, no SPS), F3 rollout physics unchanged ✓.
+
+## 2026-11-01: rework as own APC logic in the WASM systems module (SPS disabled)
+Reason: the native SPS made the MSFS AP diverge after a full sim restart (A/B 2026-10-31) and is only a leaky limiter.
+Module logic (source/wasm/f104_systems/F104Systems.cpp): shaker α > 11.3° (off 10.8°) -> L:F104_APC_SHAKER; kicker when
+α + 0.3 s x pitch rate > 14.5°, inhibited with gear down / flap lever LAND / < 120 KIAS (FM 6-6), ELEVATOR POSITION -0.1 written
+every frame and HELD until α < 12° and ≥ 0.8 s, AUTOPILOT_OFF on the kick (FM 1-69); L:F104_APC_KICK.
+**Prediction (build-up, config_test slow clean 15 000 ft 260 -> 185 KIAS, fastlog α / ELEVATOR_POSITION / L:F104_APC_KICK):**
+first kick at α ≈ 14.5° (the 1 kt/s deceleration gives almost no pitch rate) ≈ 197 KIAS; elevator -0.1 for ≥ 0.8 s until
+α < 12°; α peaks ≤ 15° (the SPS leaked to 16°); kick cycles slower and deeper than the SPS (13-15.5° / 1.3 s).
+Then TAKEOFF (15 000 ft) and LAND (12 000 ft, expect NO kick: inhibited) runs, and a takeoff (gear down -> no kick).
