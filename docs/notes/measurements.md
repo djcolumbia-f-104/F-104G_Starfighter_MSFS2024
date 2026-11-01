@@ -1225,3 +1225,15 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   | F3a (no chute) | - | 3 047 ft | -0.9 % |
   Chute/no-chute ratio 0.881 vs FM 2 760/3 130 = 0.882 ✓. Prediction (-1 ± 3 %) met. **F2 ✓ / F3 ✓ with the BLC driver.**
   Open: touchdown speed with fmflare 176-177 KIAS (FM band 170-175 at 19 000 lb).
+- **F3b** (driver + fmflare, no chute): roll from 165 KIAS 3 055 ft = **-0.6 %** (F3a -0.9 %) ✓ reproducible.
+- Takeoff end phase (run c, trim tracking): throttle loop cycled 438-479 KIAS (gain too high for the engine lag), ended by
+  the timeout at Military (523 KIAS, overspeed avoided by pulling the throttle); trim line off by ≈ 1.4° at 450 KIAS ->
+  **normal end now: hand-flown climb until flaps up and > 6 000 ft, then the proven MCP `position` routine** (16 500 ft,
+  500 kt TAS, AP ALT hold verified); the level-off/AP handover remains for `apdiag`. Run d: ✓ (16 509 ft, 432 KIAS, AP
+  holding). Liftoffs today 175-179 kt (FM 178 kt).
+- **H3 regression with the driver**: **B6** go-around climb (4 500 ft, 170 KIAS, Military, f = 1) **+967 ft/min** (before
+  +905 / +1 061) ✓; **T3-L** approach α at the glide path intercept 3.3-3.7° in every landing (before 3.3°) ✓ implicitly;
+  **B7 LAND** (12 000 ft) α/CL per band unchanged (150-155 KIAS 11.4°/1.233 vs. 11°/1.225; 140-145 14.4°/1.414 vs.
+  14°/1.384), minimum level speed ≈ 140-144 KIAS unchanged, N1 < 83 % in only 4 samples ✓. (First B7 run invalid:
+  set_pos 140 KIAS, Military could not accelerate in LAND config -> acceleration pre-phase now with AB.)
+- Script ends: landing_test and config_test leave throttle 5 000 when clean (9 000 gave 515-558 KIAS at low altitude).

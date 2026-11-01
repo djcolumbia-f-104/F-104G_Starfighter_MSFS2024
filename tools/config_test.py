@@ -113,7 +113,9 @@ PRE = mode in ("climb", "level") and (g("AIRSPEED_INDICATED") or 0) > ias_tgt + 
 # started at the kicker, sink abort after 5 s)
 PRE_ACC = SLOW and (g("AIRSPEED_INDICATED") or 0) < ias_tgt - 10
 PRE = PRE or PRE_ACC
-ev("THROTTLE1_SET", 11141 if PRE_ACC else 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start
+# 2026-11-01 (H3_B7land): Military could not accelerate 140 -> 180 KIAS with LAND flaps + gear at 12 000 ft in 120 s ->
+# the acceleration pre-phase uses Maximum (AB, as in the FM go-around)
+ev("THROTTLE1_SET", 16383 if PRE_ACC else 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start
 w = g("TOTAL_WEIGHT")
 print(f"{mode} at {alt0:.0f} ft MSL, {'speed brakes OUT, ' if SB else ''}weight {w:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C, "
       f"trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°" + (f", IAS target {ias_tgt:.0f}" if mode == "climb" else ""))
@@ -243,7 +245,8 @@ clean = g("AIRSPEED_INDICATED") >= 260
 if clean:
     ev("GEAR_UP")
     ev("FLAPS_UP")
-ev("THROTTLE1_SET", 9000 if clean else 11141)
+# 2026-11-01: 9 000 left the jet at 515 KIAS at 12 700 ft (H3_B7land2) -> 5 000 once clean (as landing_test)
+ev("THROTTLE1_SET", 5000 if clean else 11141)
 ev("AP_ALT_VAR_SET_ENGLISH", int(g("PLANE_ALTITUDE") + 500))
 ev("AP_ALT_HOLD_ON")
 sm.exit()

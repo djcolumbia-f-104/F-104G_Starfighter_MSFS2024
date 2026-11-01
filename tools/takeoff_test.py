@@ -367,7 +367,31 @@ else:
                 break
         else:
             steady_since = None
+        # 2026-11-01 (T3D_takeoff_c): the level-off + AP handover at 460 KIAS still oscillated (throttle loop 438-479 KIAS,
+        # ended by the timeout at Military, 523 KIAS; handover +2 400 ft/min) -> normal end: once the flaps are up and above
+        # 6 000 ft hand over to the proven MCP `position` routine (set_pos 16 500 ft / 500 kt TAS, AP ALT hold verified);
+        # the level-off and the AP handover below stay for the `apdiag` diagnostic only
+        if not AP_DIAG and flaps_up and alt_e > 6000:
+            break
         time.sleep(0.1)
+    if not AP_DIAG:
+        axis("AXIS_ELEVATOR_SET", 0)
+        axis("AXIS_AILERONS_SET", 0)
+        sm.exit()
+        import subprocess
+        import os
+        pos = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "mcp_f104", "sim_actions.py"),
+                              "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
+                             capture_output=True, text=True, timeout=120)
+        print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1])
+        lo, fa = res["liftoff"], res["first_air"]
+        print(aborted or "done", "->", out)
+        print(f"Vr reached after {res['vr_t']} s; max. pitch on the ground {res['theta_max_gnd']:.1f}° (tail at 12.3°)")
+        if fa:
+            print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
+        if lo:
+            print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
+        sys.exit(0)
     # trim transfer (AP off: the trim SimVar is accepted), elevator -> 0, then AP ALT hold
     de = rad(aq.get("ELEVATOR_DEFLECTION")) * DEG                      # + = nose up (simlog 2026-10-31)
     trim_new = max(-5.0, min(11.0, rad(aq.get("ELEVATOR_TRIM_POSITION")) * DEG + de))
