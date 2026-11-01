@@ -26,6 +26,7 @@ import time
 
 from SimConnect import AircraftEvents, AircraftRequests, SimConnect
 from SimConnect.EventList import Event
+from SimConnect.RequestList import Request
 
 sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 out, alt0, mode = sys.argv[1], float(sys.argv[2]), sys.argv[3]
@@ -40,6 +41,8 @@ KP_B, KD_B, KI_B = 250.0, 150.0, 60.0
 
 sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
+# APC kicker state from the WASM systems module (H2): the test pilot follows through (FM 6-6) instead of pulling on
+apc_kick = Request((b"L:F104_APC_KICK", b"number"), sm, _time=0)
 ae = AircraftEvents(sm)
 
 
@@ -223,6 +226,13 @@ while time.time() - t0 < 300:
     ks = clamp((185.0 / max(ias, 100.0)) ** 2, 0.25, 1.5)
     # B7 run 2 (2026-10-30): -12 000 = 12.45° elevator limited α to 16.3° -> full nose-up authority (17°) in the slow test
     pull_lim = -16383 if SLOW and phase == "test" else -6000 if phase == "recovery" else -12000
+    # 2026-11-01 (H2m_clean): after each kick release the wound-up integrator pulled +0.67 -> alpha 18-24 deg. FM 6-6:
+    # pilot follow-through -> on a kick reset the integrator to <= 0 and limit the pull for 2 s after the kick
+    if (apc_kick.value or 0) > 0.5:
+        res["integ"] = min(res["integ"], 0.0)
+        res["kick_t"] = t
+    if t - res.get("kick_t", -99.0) < 2.0:
+        pull_lim = max(pull_lim, -2000)
     res["el_cmd"] = int(clamp(ks * (KP_VS * err_fps + KI_VS * res["integ"] + KQ * q), pull_lim, 6000))
     ev("AXIS_ELEVATOR_SET", res["el_cmd"])
     bank_tgt = -clamp(2.0 * wrap(HDG - hdg), -15, 15)

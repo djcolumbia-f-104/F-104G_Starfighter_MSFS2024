@@ -101,3 +101,13 @@ Decision needed: (A) intercept the elevator inputs in the module (maskable AXIS_
 priority, forward min(pilot, kick)) - the proper way, but a module bug would cost pitch control; (B) kick via a trim offset
 (ELEVATOR_TRIM_POSITION is not overwritten by stick inputs; trim range -5..+11° limits the kick); (C) warning only.
 Also the test pilot must "follow through" after a kick (FM 6-6): reset the integrator / relax the pull when L:F104_APC_KICK = 1.
+**Decision 2026-11-01 (FM 1-68 + research):** the real kicker is a hydraulic cylinder that drives the STABILIZER nose-down
+and the stick to ½ inch ahead of neutral; only +40-50 lb override it; "more than ½ inch forward: kicker not felt".
+MSFS 2024 does not mask input events (SimConnect API reference) -> input interception is not possible from a module.
+-> kick = stabilizer offset through the TRIM (trim0 + stab(-0.1) - stab(pilot stick), clamp -5..+11°, nothing if the
+stick is further forward), held as before, trim0 restored on release; 3 s kick inhibit after a position jump; the test
+pilot (config_test) follows through on L:F104_APC_KICK (integrator reset, pull ≤ -2 000 for 2 s).
+**Prediction (rerun clean 15 000 ft):** kick at α ≈ 14.5° / ≈ 199 KIAS, trim drops by ≈ (stick x 17° + 0.5°) (down to -5°),
+α < 12° within ≈ 1 s, α peaks ≤ 15°, no excursion after the release, no kick after set_pos. Sources: FM 1-68 (PDF 84);
+https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/simconnect-api-reference/ ;
+https://916-starfighter.de/Large/dc119.htm (CF-104 handling: ease off near the kicker).

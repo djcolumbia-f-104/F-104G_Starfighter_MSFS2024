@@ -12,9 +12,15 @@
 //    restart (A/B 2026-10-31). FM 1-69, 6-5..6-7:
 //      shaker: alpha > 11.3 deg (off 10.8) -> L:F104_APC_SHAKER (no stick-vibration output; for a later gauge/sound)
 //      kicker: alpha + T_ANT x pitch rate > 14.5 deg (FM 6-6: pitch-rate input for anticipation), inhibited with the gear
-//              down, the flap lever in LAND or below 120 KIAS (FM 6-6); pushes the stick to slightly ahead of neutral
-//              (ELEVATOR POSITION -0.1, written every frame) and HOLDS it while beyond the boundary (alpha > 12 deg) and
-//              for at least 0.8 s; disengages the autopilot (FM 1-69); state in L:F104_APC_KICK.
+//              down, the flap lever in LAND or below 120 KIAS (FM 6-6), and for 3 s after a position jump (set_pos);
+//              FM 1-68: a hydraulic cylinder drives the STABILIZER nose-down and the stick to 1/2 inch ahead of neutral
+//              (normal control forces cannot override it, only +40-50 lb). MSFS 2024 does not mask input events, and a
+//              per-frame ELEVATOR POSITION write lost against continuous axis input (2026-11-01, alpha 24 deg) -> the
+//              actuator is modelled as a stabilizer offset through the TRIM (not overwritten by stick inputs):
+//              trim = trim0 + (stab(-0.1 stick) - stab(pilot stick)), stab = 17 deg x s (s > 0) / 5 deg x s (s < 0),
+//              clamped to the trim range -5..+11 deg; nothing if the stick is already further forward ("not felt").
+//              HOLDS while beyond the boundary (alpha > 12 deg) and for at least 0.8 s, then trim0 is restored;
+//              disengages the autopilot (FM 1-69); state in L:F104_APC_KICK.
 //    Alpha thresholds from H2 (FM Fig. 6-3/6-4 CL -> sim alpha via the B7 logs). [S]: T_ANT, release alpha, hold time.
 // Active only for the F-104G (TITLE contains "F-104G").
 //
@@ -40,8 +46,9 @@ static const double KICK_MIN_IAS = 120.0;                     // KIAS, no kicks 
 
 static bool g_shaker = false, g_kick = false;
 static double g_kick_t0 = 0.0, g_prev_t = -1.0, g_prev_theta = 0.0, g_q_f = 0.0;
+static double g_trim0 = 0.0, g_prev_alt = -1e9, g_inhibit_until = 0.0;
 
-enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_ELEV = 4, DEF_LVARS = 5 };
+enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5 };
 enum Requests { REQ_STATE = 1, REQ_TITLE = 2 };
 enum Events { EVT_AP_OFF = 1 };
 
@@ -55,6 +62,9 @@ struct State {
     double ias;         // AIRSPEED INDICATED, knots
     double ap;          // AUTOPILOT MASTER, bool
     double t;           // SIMULATION TIME, seconds
+    double stick;       // ELEVATOR POSITION, position (-1..1, + = pull) - the pilot's input
+    double trim;        // ELEVATOR TRIM POSITION, degrees (+ = nose up)
+    double alt;         // PLANE ALTITUDE, feet
 };
 struct TeSet {
     double left;        // TRAILING EDGE FLAPS LEFT PERCENT, percent over 100
@@ -107,21 +117,35 @@ static void apc(const State* s)
     g_prev_t = s->t;
     g_prev_theta = theta;
 
+    if (g_prev_alt > -1e8 && (s->alt - g_prev_alt > 300.0 || g_prev_alt - s->alt > 300.0))
+        g_inhibit_until = s->t + 3.0;            // position jump (set_pos): transients are no pilot input
+    g_prev_alt = s->alt;
     bool shaker = g_shaker ? (s->alpha > SHAKER_OFF) : (s->alpha > SHAKER_ON);
-    bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS;
+    bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS || s->t < g_inhibit_until;
     double alpha_pred = s->alpha + T_ANT * (g_q_f > 0.0 ? g_q_f : 0.0);
     if (!g_kick && !inhibit && alpha_pred > KICK_ALPHA) {
         g_kick = true;
         g_kick_t0 = s->t;
+        g_trim0 = s->trim;
         if (s->ap > 0.5)
             SimConnect_TransmitClientEvent(g_sc, SIMCONNECT_OBJECT_ID_USER, EVT_AP_OFF, 0,
                                            SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
     }
-    if (g_kick && (inhibit || (s->alpha < KICK_RELEASE && s->t - g_kick_t0 >= KICK_HOLD)))
+    if (g_kick && (inhibit || (s->alpha < KICK_RELEASE && s->t - g_kick_t0 >= KICK_HOLD))) {
         g_kick = false;
+        double trim = g_trim0;                   // actuator retracts: back to the pilot's trim
+        SimConnect_SetDataOnSimObject(g_sc, DEF_TRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(trim), &trim);
+    }
     if (g_kick) {
-        double stick = KICK_STICK;
-        SimConnect_SetDataOnSimObject(g_sc, DEF_ELEV, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(stick), &stick);
+        double pilot = s->stick > 0.0 ? 17.0 * s->stick : 5.0 * s->stick;
+        double target = 5.0 * KICK_STICK;        // stick 1/2 inch ahead of neutral -> -0.5 deg
+        double offset = target - pilot;
+        if (offset > 0.0)
+            offset = 0.0;                        // stick already further forward: kicker not felt
+        double trim = g_trim0 + offset;
+        if (trim < -5.0) trim = -5.0;
+        if (trim > 11.0) trim = 11.0;
+        SimConnect_SetDataOnSimObject(g_sc, DEF_TRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(trim), &trim);
     }
     if (shaker != g_shaker || g_kick || s->t - g_kick_t0 < 2.0) {
         LVars lv = {shaker ? 1.0 : 0.0, g_kick ? 1.0 : 0.0};
@@ -162,10 +186,13 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "AIRSPEED INDICATED", "knots");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "AUTOPILOT MASTER", "bool");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "SIMULATION TIME", "seconds");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ELEVATOR POSITION", "position");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ELEVATOR TRIM POSITION", "degrees");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "PLANE ALTITUDE", "feet");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS LEFT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS RIGHT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TITLE, "TITLE", nullptr, SIMCONNECT_DATATYPE_STRING256);
-    SimConnect_AddToDataDefinition(g_sc, DEF_ELEV, "ELEVATOR POSITION", "position");
+    SimConnect_AddToDataDefinition(g_sc, DEF_TRIM, "ELEVATOR TRIM POSITION", "degrees");
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_SHAKER", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_KICK", "number");
     SimConnect_MapClientEventToSimEvent(g_sc, EVT_AP_OFF, "AUTOPILOT_OFF");
