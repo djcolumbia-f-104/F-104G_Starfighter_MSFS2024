@@ -12,7 +12,7 @@
 //    restart (A/B 2026-10-31). FM 1-69, 6-5..6-7:
 //      shaker: alpha > 11.3 deg (off 10.8) -> L:F104_APC_SHAKER (no stick-vibration output; for a later gauge/sound)
 //      kicker: alpha + T_ANT x pitch rate > 14.5 deg (FM 6-6: pitch-rate input for anticipation), inhibited with the gear
-//              down, the flap lever in LAND or below 120 KIAS (FM 6-6), and for 3 s after a position jump (set_pos);
+//              down, the flap lever in LAND or below 120 KIAS (FM 6-6), and for 10 s after a position jump (set_pos);
 //              FM 1-68: a hydraulic cylinder drives the STABILIZER nose-down and the stick to 1/2 inch ahead of neutral
 //              (normal control forces cannot override it, only +40-50 lb). MSFS 2024 does not mask input events, and a
 //              per-frame ELEVATOR POSITION write lost against continuous axis input (2026-11-01, alpha 24 deg) -> the
@@ -35,7 +35,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 4.0;
+static const double SYS_VERSION = 5.0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -123,7 +123,7 @@ static void apc(const State* s)
     g_prev_theta = theta;
 
     if (g_prev_alt > -1e8 && (s->alt - g_prev_alt > 300.0 || g_prev_alt - s->alt > 300.0))
-        g_inhibit_until = s->t + 3.0;            // position jump (set_pos): transients are no pilot input
+        g_inhibit_until = s->t + 10.0;           // position jump (set_pos): the alpha 0 -> trim transient lasts ≈ 8-10 s (H2t4: kick at t 8 s)
     g_prev_alt = s->alt;
     bool shaker = g_shaker ? (s->alpha > SHAKER_OFF) : (s->alpha > SHAKER_ON);
     bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS || s->t < g_inhibit_until;
