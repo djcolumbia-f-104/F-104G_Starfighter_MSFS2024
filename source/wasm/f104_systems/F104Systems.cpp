@@ -35,7 +35,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 5.0;
+static const double SYS_VERSION = 6.0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -127,7 +127,10 @@ static void apc(const State* s)
     g_prev_alt = s->alt;
     bool shaker = g_shaker ? (s->alpha > SHAKER_OFF) : (s->alpha > SHAKER_ON);
     bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS || s->t < g_inhibit_until;
-    double alpha_pred = s->alpha + T_ANT * (g_q_f > 0.0 ? g_q_f : 0.0);
+    // 2026-11-01 (H2t5_to): with the anticipation active at any alpha the kicks excited themselves - each kick pushed
+    // alpha to 0-2°, the nose came back at ≈ 15°/s and the next kick fired at alpha ≈ 9° (8 kicks, up to 290 KIAS) ->
+    // the pitch-rate anticipation only acts near the boundary (alpha above the shaker threshold) [S]
+    double alpha_pred = s->alpha + ((s->alpha > SHAKER_ON && g_q_f > 0.0) ? T_ANT * g_q_f : 0.0);
     if (!g_kick && !inhibit && alpha_pred > KICK_ALPHA) {
         if (g_release_t < 0.0)
             g_trim0 = s->trim;                   // during a retract ramp keep the pilot's original trim
