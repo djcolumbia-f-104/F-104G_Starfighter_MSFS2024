@@ -69,7 +69,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | C1 | Rudder effectiveness (T3-E) | full rudder, gear down | β/δr 0.32 (CR-2144) | ✓ |
 | C2 | Steady heading sideslip (T3-E2) | closed loop | δa/δr 0.27-0.47 | ✓ |
 | C3 | Dutch roll (T3-J) | rudder doublet | period 1.41 s, damping (CR-2144) | ✓ 1.48 s |
-| C4 | Roll rate (T3-K) | full aileron, gear up (±9.75°) | CR-2144 Clδa; roll limits FM 5-14 | ○ |
+| C4 | Roll rate (T3-K) | full aileron, gear up (±9.75°) | CR-2144 Clδa; roll limits FM 5-14 | ○; ◐ 2026-11-01 roll_stability 0.1 + aileron_effectiveness 1.17: δa 5/10° -> 45/95°/s vs CR-2144 48/96 ✓; full δa 20° 248°/s (+30 %) + inertial-coupling departure (no SAS) -> H1 first (card C4-roll-rate.md) |
 | C5 | Transonic lateral oscillation | M 0.94-0.98 above 25 000 ft | ≈ 0.5 Hz, lightly damped without SAS (FM 6-17) | ○ |
 | C6 | Spiral stability | release 30° bank | > 20 s doubling time | ○ |
 

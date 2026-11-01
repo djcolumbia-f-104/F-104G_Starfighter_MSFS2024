@@ -159,3 +159,6 @@ and the jet sank into the ground after an otherwise perfect dry run.
   systems: an early TE write froze the LE flaps at 3°); the LE flaps stop at 29.4° in LAND.
 - A fresh flight load can carry fuel in the tip tanks: always run `tools/refuel.py` (tips empty) before a test.
 - Python-SimConnect returns VERTICAL_SPEED in ft/min (not ft/s); AMBIENT_DENSITY in slug/ft³ (use Rankine for p = ρRT).
+- **set_pos / MCP `position` does not stop body rotation**: applied during a departure (2026-11-01 full roll, α -34°,
+  β 28°) the dive went on to 5 400 ft / 590 KIAS. First unload/level (or PAUSE the sim), then reposition.
+- Full-deflection rolls (FM 5-14 inertial coupling) only with pitch/yaw dampers (H1) - the sim departed without them.

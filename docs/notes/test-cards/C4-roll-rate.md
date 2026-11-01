@@ -25,3 +25,14 @@ Regression: T3-J Dutch roll, T3-E2 steady sideslip (lateral modes), T3-D takeoff
 Needs Build All + FULL restart (flight_model).
 | 2026-11-01 | **step 1: roll_stability 0.1** (C4s1) | δa 5 / 10° -> **38 / 82°/s** (CR-2144 48 / 96: ≈ 0.80-0.85x, before 0.31x); τ ≈ 0.2 s (CR 0.28 s; native geometry damping = minimum) | takeoff after the change clean (bank ≤ 1.6°) |
 Step 2: aileron_effectiveness 1 -> 1.17 (prediction 96 ± 5°/s at δa 10°, 48 at 5°), then regression T3-J / T3-E2.
+
+## Runs after step 2 (aileron_effectiveness 1.17, 2026-11-01)
+| Run | Result | Notes |
+|---|---|---|
+| C4s2 25 % / 50 % | δa 5 / 10° -> **45 / 95°/s** vs CR-2144 48 / 96 (**-6 / -1 %**) ✓ (prediction 96 ± 5) | takeoff 180 kt, clean |
+| C4s2 full (100 %, δa 20°) | **248°/s** vs CR-2144 191 (+30 %, non-linear); during the roll α -10°, β +18°; then **inertial-coupling departure**: α -34°, β 16-28°, IAS 453 -> 351 in 1 s, pitch -31° -> abort; the `position` routine applied while the jet still rotated did not stop the dive (8 776 -> 5 399 ft, 590 KIAS); a second `position` recovered (18 000 ft) | **near-loss** |
+Assessment: linear range ✓ (C4 ◐). Full deflection: the real F-104 rolls with pitch/roll/yaw SAS (FM 1-68; FM 5-14
+restricts full-deflection rolls when the pitch or yaw augmenters are inoperative) - our sim has no dampers (yaw damper
+disabled in systems.cfg, it destabilised the Dutch roll) -> **full-deflection rolls are not flown until own SAS logic
+(H1, module) exists.** Safety lesson: never call `position`/set_pos while the jet is departing (body rates persist):
+first unload and level the wings (or pause the sim).
