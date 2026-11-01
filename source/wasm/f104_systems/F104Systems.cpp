@@ -19,7 +19,7 @@
 //              actuator is modelled as a stabilizer offset through the TRIM (not overwritten by stick inputs):
 //              trim = trim0 + (stab(-0.1 stick) - stab(pilot stick)), stab = 17 deg x s (s > 0) / 5 deg x s (s < 0),
 //              clamped to the trim range -5..+11 deg; nothing if the stick is already further forward ("not felt").
-//              HOLDS while beyond the boundary (alpha > 12 deg) and for at least 0.8 s, then trim0 is restored;
+//              HOLDS while beyond the boundary (alpha > 12 deg) and for at least 0.8 s, then trim0 is restored over 1 s;
 //              disengages the autopilot (FM 1-69); state in L:F104_APC_KICK.
 //    Alpha thresholds from H2 (FM Fig. 6-3/6-4 CL -> sim alpha via the B7 logs). [S]: T_ANT, release alpha, hold time.
 // Active only for the F-104G (TITLE contains "F-104G").
@@ -35,7 +35,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 3.0;
+static const double SYS_VERSION = 4.0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -50,6 +50,8 @@ static const double KICK_MIN_IAS = 120.0;                     // KIAS, no kicks 
 static bool g_shaker = false, g_kick = false;
 static double g_kick_t0 = 0.0, g_prev_t = -1.0, g_prev_theta = 0.0, g_q_f = 0.0;
 static double g_trim0 = 0.0, g_prev_alt = -1e9, g_inhibit_until = 0.0;
+static double g_trim_cmd = 0.0, g_release_t = -1.0, g_release_from = 0.0;
+static const double KICK_RETRACT = 1.0;                       // s, actuator retract ramp back to trim0 [S]
 
 enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5, DEF_VERSION = 6 };
 enum Requests { REQ_STATE = 1, REQ_TITLE = 2 };
@@ -127,17 +129,29 @@ static void apc(const State* s)
     bool inhibit = s->gear > 0.5 || (int)(s->handle + 0.5) == 2 || s->ias < KICK_MIN_IAS || s->t < g_inhibit_until;
     double alpha_pred = s->alpha + T_ANT * (g_q_f > 0.0 ? g_q_f : 0.0);
     if (!g_kick && !inhibit && alpha_pred > KICK_ALPHA) {
+        if (g_release_t < 0.0)
+            g_trim0 = s->trim;                   // during a retract ramp keep the pilot's original trim
         g_kick = true;
         g_kick_t0 = s->t;
-        g_trim0 = s->trim;
+        g_release_t = -1.0;
         if (s->ap > 0.5)
             SimConnect_TransmitClientEvent(g_sc, SIMCONNECT_OBJECT_ID_USER, EVT_AP_OFF, 0,
                                            SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
     }
     if (g_kick && (inhibit || (s->alpha < KICK_RELEASE && s->t - g_kick_t0 >= KICK_HOLD))) {
         g_kick = false;
-        double trim = g_trim0;                   // actuator retracts: back to the pilot's trim
+        // 2026-11-01 (H2t_clean): the step back to trim0 (8° in the slow test) pitched the nose up so fast that the
+        // pitch-rate anticipation kicked again at alpha 10-12° (4 kicks, alpha 3 <-> 12°) -> the actuator retracts over
+        // KICK_RETRACT seconds (the real cylinder retracts with a finite rate and the pilot follows through)
+        g_release_t = s->t;
+        g_release_from = g_trim_cmd;
+    }
+    if (!g_kick && g_release_t >= 0.0) {
+        double f = (s->t - g_release_t) / KICK_RETRACT;
+        double trim = f >= 1.0 ? g_trim0 : g_release_from + (g_trim0 - g_release_from) * f;
         SimConnect_SetDataOnSimObject(g_sc, DEF_TRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(trim), &trim);
+        if (f >= 1.0)
+            g_release_t = -1.0;
     }
     if (g_kick) {
         double pilot = s->stick > 0.0 ? 17.0 * s->stick : 5.0 * s->stick;
@@ -148,6 +162,7 @@ static void apc(const State* s)
         double trim = g_trim0 + offset;
         if (trim < -5.0) trim = -5.0;
         if (trim > 11.0) trim = 11.0;
+        g_trim_cmd = trim;
         SimConnect_SetDataOnSimObject(g_sc, DEF_TRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(trim), &trim);
     }
     if (shaker != g_shaker || g_kick || s->t - g_kick_t0 < 2.0) {

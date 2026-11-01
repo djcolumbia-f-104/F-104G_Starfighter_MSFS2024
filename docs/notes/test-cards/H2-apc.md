@@ -111,3 +111,4 @@ pilot (config_test) follows through on L:F104_APC_KICK (integrator reset, pull �
 α < 12° within ≈ 1 s, α peaks ≤ 15°, no excursion after the release, no kick after set_pos. Sources: FM 1-68 (PDF 84);
 https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/simconnect-api-reference/ ;
 https://916-starfighter.de/Large/dc119.htm (CF-104 handling: ease off near the kicker).
+| 2026-11-01 | **trim kicker clean** (H2t_clean + fastlog) | **first kick α 14.24° / 200.4 KIAS** (pred. 14.5 / 199) ✓; trim 8 -> 1.9° (stick 0.43), α 14.2 -> 3.0° in 0.75 s ✓; **α max 14.24°** ✓ (SPS 16°, elevator-write module 24°); BUT the step back to trim0 = 8° pitched the nose up so fast that the anticipation kicked again at α 10-12° (4 kicks, α 3 <-> 12°, ≈ 2 s) | -> trim retract ramp 1 s (module v4); config_test end via position ✓ |
