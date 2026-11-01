@@ -104,6 +104,10 @@ flap = rad(aq.get("TRAILING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
 print(f"Flaps trailing edge {flap:.1f}°, trim {rad(aq.get('ELEVATOR_TRIM_POSITION')) * DEG:.2f}°")
 if not 10 <= flap <= 20:
     sys.exit("Flaps not in TAKEOFF (15°) - aborted")
+# 2026-11-01: the BLC TE override can leave the coupled flap travel out of step (LE 21° in TAKEOFF) -> LE must be ≈ 10°
+le_flap = rad(aq.get("LEADING_EDGE_FLAPS_LEFT_ANGLE")) * DEG
+if not 9.0 <= le_flap <= 11.0:
+    sys.exit(f"Leading-edge flaps {le_flap:.1f}° instead of 10° (flap travel out of step) - aborted, run runway_start")
 # 2026-10-31 (H2_reg_takeoff): a fresh flight load has trim 0°; without runway_start the climb-out loop could not raise the
 # nose (pitch ≈ 1° up to 330 KIAS, skipping at 4-10 ft) and the AP fallback later dived to 8 ft AGL at 435 kt -> FM takeoff trim 5°
 trim = rad(aq.get("ELEVATOR_TRIM_POSITION")) * DEG

@@ -60,6 +60,14 @@ static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
         return;
     const State* s = (const State*)&d->dwData;
     if ((int)(s->handle + 0.5) != 2) {
+        if (g_active) {
+            // 2026-11-01 ground test: leaving LAND with the TE held below its stage (e.g. 28.6° at idle) desynchronised
+            // the coupled flap travel (one travel fraction for all systems, stop when the first reaches its stage):
+            // TAKEOFF then gave LE 21°, UP LE 11°, TAKEOFF from UP TE 1.6° -> restore the LAND stage once, so both
+            // systems leave LAND from the same fraction
+            TeSet te = {1.0, 1.0};
+            SimConnect_SetDataOnSimObject(g_sc, DEF_TE, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(te), &te);
+        }
         g_active = false;                        // outside LAND the flap system takes over
         return;
     }

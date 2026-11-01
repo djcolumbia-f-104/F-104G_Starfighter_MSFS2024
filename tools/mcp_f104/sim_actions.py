@@ -122,6 +122,12 @@ elif cmd == "runway":
     ev("FLAPS_1")
     ev("ELEVATOR_TRIM_SET", 7447)                         # 5° nose up (16383 = 11°)
     time.sleep(6)                                         # flaps extending (5 s)
+    # 2026-11-01: after a landing with the BLC TE override (module / blc_driver) the coupled flap travel can be out of
+    # step (TAKEOFF gave LE 21°, or TE 1.6° from UP) -> force both systems to the TAKEOFF fraction 1/3 (TE 15/45, LE 10/30)
+    for n in ("TRAILING_EDGE_FLAPS_LEFT_PERCENT", "TRAILING_EDGE_FLAPS_RIGHT_PERCENT",
+              "LEADING_EDGE_FLAPS_LEFT_PERCENT", "LEADING_EDGE_FLAPS_RIGHT_PERCENT"):
+        aq.set(n, 1.0 / 3.0)
+    time.sleep(1)
     print(f"on runway EDDM 26L{'' if still >= 4 else ' - NOT SETTLED, do not take off'}, heading "
           f"{(g('PLANE_HEADING_DEGREES_TRUE') or 0) * DEG:.1f}° true; {state()}")
 

@@ -1237,3 +1237,14 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   14°/1.384), minimum level speed ≈ 140-144 KIAS unchanged, N1 < 83 % in only 4 samples ✓. (First B7 run invalid:
   set_pos 140 KIAS, Military could not accelerate in LAND config -> acceleration pre-phase now with AB.)
 - Script ends: landing_test and config_test leave throttle 5 000 when clean (9 000 gave 515-558 KIAS at low altitude).
+
+## 2026-11-01 (after the autonomous session): WASM systems module live
+- Build All with the module (AssetGroup F104G_Systems_Module, `modules/F104Systems.wasm` in the package) + full restart.
+- **Ground check (no Python driver): the module works** - lever LAND at idle (N1 67 %): TE 25 -> 36 -> **28.6°** as soon as
+  the LE flaps reached 30° (prediction 0.636 x 45° = 28.6°), held.
+- **Finding: flap travel desynchronised by the TE override.** Back to TAKEOFF: TE 15° but LE stopped at 21°; UP: TE 0°,
+  LE 11°; TAKEOFF from UP: TE 1.6° / LE 10° (one travel fraction for all systems, stop when the first reaches its stage).
+  Re-synced by writing both percents (1/3 = TAKEOFF) -> UP 0/0, TAKEOFF 15/10 ✓. Fixes: module restores TE 100 % in the
+  first frame after the lever leaves LAND (rebuilt, needs Build All + full restart); runway_start forces TE/LE to 1/3
+  after FLAPS_1; takeoff_test aborts if LE ≠ 10 ± 1°. **Possible influence on earlier takeoffs** after landings with the
+  BLC driver (liftoff 175-176 kt instead of 178-181 kt: LE 21° gives more lift) - re-check T3-D with the sync.
