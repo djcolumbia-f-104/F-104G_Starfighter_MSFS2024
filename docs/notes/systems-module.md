@@ -25,7 +25,8 @@ rpm-dependent BLC flap lift (H3), the APC stick shaker/kicker (H2), later drag c
 1. **BLC (H3)** - prototype `source/wasm/f104_systems/F104Systems.cpp`, builds (`sh tools/build_wasm.sh` ->
    `build/wasm/F104Systems.wasm`). Same law as `tools/blc_driver.py` (validated: F3 -0.6/-0.9 %, F2 -0.4/-0.9 %, B6/B7/
    T3-L unchanged). Reads lever/LE angle/N1 every sim frame, writes TE percent only in LAND after the LE flaps reached
-   29°, gated on TITLE containing "F-104G". **Not yet in the package.**
+   29°, gated on TITLE containing "F-104G". **Packaged 2026-11-01 (PackageSources/modules/F104Systems.wasm + AssetGroup
+   F104G_Systems_Module) - active after Build All + full restart; from then on do NOT run blc_driver.py.**
    Integration (needs pete: Build All + full restart): copy the wasm to `PackageSources/modules/F104Systems.wasm`, add to
    `PackageDefinitions/pete-aircraft-f104g.xml`:
    ```xml

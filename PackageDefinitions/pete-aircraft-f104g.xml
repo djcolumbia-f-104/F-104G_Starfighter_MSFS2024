@@ -28,5 +28,13 @@
 			<AssetDir>PackageSources\SimObjects\Airplanes\pete-f104g\</AssetDir>
 			<OutputDir>SimObjects\Airplanes\pete-f104g\</OutputDir>
 		</AssetGroup>
+		<AssetGroup Name="F104G_Systems_Module">
+			<Type>Copy</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageSources\modules\</AssetDir>
+			<OutputDir>modules\</OutputDir>
+		</AssetGroup>
 	</AssetGroups>
 </AssetPackage>
