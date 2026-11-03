@@ -15,7 +15,8 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
   `PackageSources/modules/`; design + workflow `docs/notes/systems-module.md`): rpm-dependent BLC (H3 ✓) + own APC
   shaker/kicker (H2 ◐: kick = stabilizer offset via the trim; the native SPS stays commented out - AP conflict).
   **Module change = Build All only (hot reload, check L:F104_SYS_VERSION); flight_model.cfg change = Build All + FULL
-  sim restart.** Never run tools/blc_driver.py together with the module.
+  sim restart. Build All RELOADS THE AIRCRAFT (AP off, flaps 15, trim 0) - only with the jet on the runway (lost a jet
+  in the air 2026-11-03).** Never run tools/blc_driver.py together with the module.
 - **C4 roll rate (card C4-roll-rate.md)**: roll_stability 1 -> 0.1 (SDK: target damping, only adds) and
   aileron_effectiveness 1.17 -> δa 5/10° gives 45/95°/s vs CR-2144 48/96 ✓ (δa = SUM of both ailerons, CR-2144 PDF 53).
   Full deflection (δa 20°): 248°/s (+30 %) and an **inertial-coupling departure** (α -34°, β 28°) - the real jet rolls

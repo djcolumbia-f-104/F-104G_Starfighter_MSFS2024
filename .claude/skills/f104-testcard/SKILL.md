@@ -162,3 +162,5 @@ and the jet sank into the ground after an otherwise perfect dry run.
 - **set_pos / MCP `position` does not stop body rotation**: applied during a departure (2026-11-01 full roll, α -34°,
   β 28°) the dive went on to 5 400 ft / 590 KIAS. First unload/level (or PAUSE the sim), then reposition.
 - Full-deflection rolls (FM 5-14 inertial coupling) only with pitch/yaw dampers (H1) - the sim departed without them.
+- **Build All reloads the aircraft** (2026-11-03: module hot reload with the jet paused at 16 400 ft -> AP off, flaps 15°,
+  trim 0 -> dived into the ground). Build All only with the jet standing on the runway; afterwards runway_start again.

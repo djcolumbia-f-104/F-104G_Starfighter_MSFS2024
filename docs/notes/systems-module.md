@@ -61,6 +61,10 @@ rpm-dependent BLC flap lift (H3), the APC stick shaker/kicker (H2), later drag c
 - **Hot reload works**: after a module change, `sh tools/build_wasm.sh`, copy to PackageSources/modules, **Build All in
   Dev Mode WITHOUT restart** -> the sim runs the new module (verified with L:F104_SYS_VERSION 3 right after the build).
   A full restart is only needed for flight_model.cfg changes (normalization at sim start).
+- **2026-11-03: Build All RELOADS THE AIRCRAFT** (module v7 hot reload while the jet was paused at 16 400 ft on the AP):
+  afterwards AP off, flaps 15°, trim 0, fuel refilled -> the jet dived from 16 400 ft into the ground before the next
+  check (lost). **Build All only with the jet standing on the runway** (runway_start), then sim_state + L:F104_SYS_VERSION,
+  then runway_start again (trim 5°) before the takeoff.
 - `fspackagetool.exe` (with -forcesteam -nopause, PowerShell) does not build headless: it attaches to the running sim
   ("Attached to EXE - waiting for completion") and waits; with the sim closed it exits at once -> builds stay a Dev Mode
   click (sources: SDK Package Tool page; forum reports on WASM reload, see research.md).

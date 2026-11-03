@@ -22,6 +22,13 @@
 //              HOLDS while beyond the boundary (alpha > 12 deg) and for at least 0.8 s, then trim0 is restored over 1 s;
 //              disengages the autopilot (FM 1-69); state in L:F104_APC_KICK.
 //    Alpha thresholds from H2 (FM Fig. 6-3/6-4 CL -> sim alpha via the B7 logs). [S]: T_ANT, release alpha, hold time.
+// 3. H1 SAS yaw damper (card docs/notes/test-cards/H1-sas.md) - FM 1-68: rate gyro -> rudder, does not move the pedals,
+//    washout for pilot inputs. Actuator = the RUDDER TRIM channel (adds to the pedal rudder; bu0 2026-11-03: settable,
+//    acts within one frame, +percent -> +body yaw rate, one trim degree acts like one rudder degree: beta/trim 0.33):
+//      rudder trim = trim0 - K x HP(r) / 4 deg, HP = washout tau 1 s, K = K_REF x q_ref / q (q >= 200 psf), clamped +-4 deg
+//    K_REF 0.7 deg per deg/s from CR-2144 F/C 4 (N'dr -4.49, Dutch roll zeta 0.09 -> 0.45). Switched and scaled by
+//    L:F104_SAS_YAW (gain factor, 0 = off - build-up; on leaving: trim0 restored); off on the ground. Output in
+//    L:F104_SAS_YAW_DEG (commanded SAS rudder, deg).
 // Active only for the F-104G (TITLE contains "F-104G").
 //
 // Build: tools/build_wasm.sh (SDK clang-cl in g++ mode + wasm-ld, flags matched to the SDK StandaloneModule sample).
@@ -35,7 +42,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 6.0;
+static const double SYS_VERSION = 7.0;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -53,7 +60,17 @@ static double g_trim0 = 0.0, g_prev_alt = -1e9, g_inhibit_until = 0.0;
 static double g_trim_cmd = 0.0, g_release_t = -1.0, g_release_from = 0.0;
 static const double KICK_RETRACT = 1.0;                       // s, actuator retract ramp back to trim0 [S]
 
-enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5, DEF_VERSION = 6 };
+// SAS yaw damper parameters (H1)
+static const double K_R_REF = 0.7;                            // deg rudder per deg/s yaw rate at Q_REF [S] (CR-2144 F/C 4)
+static const double Q_REF = 732.0, Q_MIN = 200.0;             // psf, gain schedule K ~ 1/q
+static const double TAU_WO = 1.0;                             // s, yaw washout [S]
+static const double RUD_TRIM_DEG = 4.0;                       // deg at 100 % rudder trim (rudder_trim_limit, FM 6-3)
+
+static bool g_yaw_on = false;
+static double g_rtrim0 = 0.0, g_r_prev = 0.0, g_r_hp = 0.0, g_yaw_prev_t = -1.0;
+
+enum DataDefs { DEF_STATE = 1, DEF_TE = 2, DEF_TITLE = 3, DEF_TRIM = 4, DEF_LVARS = 5, DEF_VERSION = 6, DEF_RTRIM = 7,
+                DEF_SAS_OUT = 8 };
 enum Requests { REQ_STATE = 1, REQ_TITLE = 2 };
 enum Events { EVT_AP_OFF = 1 };
 
@@ -70,6 +87,11 @@ struct State {
     double stick;       // ELEVATOR POSITION, position (-1..1, + = pull) - the pilot's input
     double trim;        // ELEVATOR TRIM POSITION, degrees (+ = nose up)
     double alt;         // PLANE ALTITUDE, feet
+    double r;           // ROTATION VELOCITY BODY Y, degrees per second (+ = the yaw a + rudder trim gives)
+    double qbar;        // DYNAMIC PRESSURE, psf
+    double ground;      // SIM ON GROUND, bool
+    double rtrim;       // RUDDER TRIM PCT, percent over 100
+    double sas_yaw;     // L:F104_SAS_YAW, gain factor (0 = off)
 };
 struct TeSet {
     double left;        // TRAILING EDGE FLAPS LEFT PERCENT, percent over 100
@@ -175,6 +197,37 @@ static void apc(const State* s)
     g_shaker = shaker;
 }
 
+static void sas_yaw(const State* s)
+{
+    bool on = s->sas_yaw > 0.0 && s->ground < 0.5;
+    if (on && !g_yaw_on) {
+        g_rtrim0 = s->rtrim;                     // the pilot's rudder trim, restored when the damper goes off
+        g_r_prev = s->r;
+        g_r_hp = 0.0;
+        g_yaw_prev_t = s->t;
+    }
+    if (!on && g_yaw_on) {
+        double v = g_rtrim0, out = 0.0;
+        SimConnect_SetDataOnSimObject(g_sc, DEF_RTRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(v), &v);
+        SimConnect_SetDataOnSimObject(g_sc, DEF_SAS_OUT, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(out), &out);
+    }
+    g_yaw_on = on;
+    if (!on)
+        return;
+    double dt = s->t - g_yaw_prev_t;
+    g_yaw_prev_t = s->t;
+    if (dt > 0.0 && dt < 0.5)
+        g_r_hp = TAU_WO / (TAU_WO + dt) * (g_r_hp + s->r - g_r_prev);   // washout (first-order high pass)
+    g_r_prev = s->r;
+    double q = s->qbar > Q_MIN ? s->qbar : Q_MIN;
+    double pct = g_rtrim0 - s->sas_yaw * K_R_REF * Q_REF / q * g_r_hp / RUD_TRIM_DEG;
+    if (pct > 1.0) pct = 1.0;
+    if (pct < -1.0) pct = -1.0;
+    SimConnect_SetDataOnSimObject(g_sc, DEF_RTRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(pct), &pct);
+    double out = (pct - g_rtrim0) * RUD_TRIM_DEG;
+    SimConnect_SetDataOnSimObject(g_sc, DEF_SAS_OUT, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(out), &out);
+}
+
 static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
 {
     if (pData->dwID != SIMCONNECT_RECV_ID_SIMOBJECT_DATA)
@@ -192,6 +245,7 @@ static void CALLBACK dispatch(SIMCONNECT_RECV* pData, DWORD cbData, void* pConte
     const State* s = (const State*)&d->dwData;
     blc(s);
     apc(s);
+    sas_yaw(s);
 }
 
 extern "C" MSFS_CALLBACK void module_init(void)
@@ -212,6 +266,11 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ELEVATOR POSITION", "position");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ELEVATOR TRIM POSITION", "degrees");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "PLANE ALTITUDE", "feet");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ROTATION VELOCITY BODY Y", "degrees per second");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "DYNAMIC PRESSURE", "pounds per square foot");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "SIM ON GROUND", "bool");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "RUDDER TRIM PCT", "percent over 100");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "L:F104_SAS_YAW", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS LEFT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS RIGHT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TITLE, "TITLE", nullptr, SIMCONNECT_DATATYPE_STRING256);
@@ -219,6 +278,8 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_SHAKER", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_LVARS, "L:F104_APC_KICK", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_VERSION, "L:F104_SYS_VERSION", "number");
+    SimConnect_AddToDataDefinition(g_sc, DEF_RTRIM, "RUDDER TRIM PCT", "percent over 100");
+    SimConnect_AddToDataDefinition(g_sc, DEF_SAS_OUT, "L:F104_SAS_YAW_DEG", "number");
     SimConnect_MapClientEventToSimEvent(g_sc, EVT_AP_OFF, "AUTOPILOT_OFF");
     SimConnect_RequestDataOnSimObject(g_sc, REQ_TITLE, DEF_TITLE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SECOND);
     SimConnect_RequestDataOnSimObject(g_sc, REQ_STATE, DEF_STATE, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SIM_FRAME);
