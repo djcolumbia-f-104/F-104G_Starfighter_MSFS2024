@@ -26,9 +26,12 @@
 //    washout for pilot inputs. Actuator = the RUDDER TRIM channel (adds to the pedal rudder; bu0 2026-11-03: settable,
 //    acts within one frame, +percent -> +body yaw rate, one trim degree acts like one rudder degree: beta/trim 0.33):
 //      rudder trim = trim0 - K x HP(r) / 4 deg, HP = washout tau 1 s, K = K_REF x q_ref / q (q >= 200 psf), clamped +-4 deg
-//    K_REF 0.7 deg per deg/s from CR-2144 F/C 4 (N'dr -4.49, Dutch roll zeta 0.09 -> 0.45). Switched and scaled by
-//    L:F104_SAS_YAW (gain factor, 0 = off - build-up; on leaving: trim0 restored); off on the ground. Output in
-//    L:F104_SAS_YAW_DEG (commanded SAS rudder, deg).
+//    K_REF 0.7 deg per deg/s from CR-2144 F/C 4 (N'dr -4.49, Dutch roll zeta 0.09 -> 0.45). Flight-tested 2026-11-03
+//    (v7.1: doublet deadbeat, steady sideslip unchanged). Default ON like the guarded damper switch (FM 2-15 after-start
+//    check: dampers OFF and ON again; FM 6-4: yaw and pitch augmenters in use at all times):
+//      L:F104_SAS_YAW_OFF  1 = damper switch OFF (tests against the SAS-off CR-2144 data, SAS failure), 0 = ON
+//      L:F104_SAS_YAW_GAIN gain factor for build-ups (0 = default 1.0)
+//    Off on the ground; on switching off trim0 is restored. Output in L:F104_SAS_YAW_DEG (commanded SAS rudder, deg).
 // Active only for the F-104G (TITLE contains "F-104G").
 //
 // Build: tools/build_wasm.sh (SDK clang-cl in g++ mode + wasm-ld, flags matched to the SDK StandaloneModule sample).
@@ -42,7 +45,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 7.1;
+static const double SYS_VERSION = 7.2;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -91,7 +94,8 @@ struct State {
     double qbar;        // DYNAMIC PRESSURE, psf
     double ground;      // SIM ON GROUND, bool
     double rtrim;       // RUDDER TRIM PCT, percent over 100
-    double sas_yaw;     // L:F104_SAS_YAW, gain factor (0 = off)
+    double yaw_off;     // L:F104_SAS_YAW_OFF, 1 = damper switch OFF
+    double yaw_gain;    // L:F104_SAS_YAW_GAIN, gain factor (0 = default 1.0)
 };
 struct TeSet {
     double left;        // TRAILING EDGE FLAPS LEFT PERCENT, percent over 100
@@ -199,7 +203,8 @@ static void apc(const State* s)
 
 static void sas_yaw(const State* s)
 {
-    bool on = s->sas_yaw > 0.0 && s->ground < 0.5;
+    bool on = s->yaw_off < 0.5 && s->ground < 0.5;
+    double gain = s->yaw_gain > 0.0 ? s->yaw_gain : 1.0;
     if (on && !g_yaw_on) {
         g_rtrim0 = s->rtrim;                     // the pilot's rudder trim, restored when the damper goes off
         g_r_prev = s->r;
@@ -220,7 +225,7 @@ static void sas_yaw(const State* s)
         g_r_hp = TAU_WO / (TAU_WO + dt) * (g_r_hp + s->r - g_r_prev);   // washout (first-order high pass)
     g_r_prev = s->r;
     double q = s->qbar > Q_MIN ? s->qbar : Q_MIN;
-    double pct = g_rtrim0 - s->sas_yaw * K_R_REF * Q_REF / q * g_r_hp / RUD_TRIM_DEG;
+    double pct = g_rtrim0 - gain * K_R_REF * Q_REF / q * g_r_hp / RUD_TRIM_DEG;
     if (pct > 1.0) pct = 1.0;
     if (pct < -1.0) pct = -1.0;
     SimConnect_SetDataOnSimObject(g_sc, DEF_RTRIM, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(pct), &pct);
@@ -270,7 +275,8 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "DYNAMIC PRESSURE", "psf");   // "pounds per square foot" is NOT a unit name (v7: whole definition dead)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "SIM ON GROUND", "bool");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "RUDDER TRIM PCT", "percent over 100");
-    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "L:F104_SAS_YAW", "number");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "L:F104_SAS_YAW_OFF", "number");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "L:F104_SAS_YAW_GAIN", "number");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS LEFT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TE, "TRAILING EDGE FLAPS RIGHT PERCENT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_TITLE, "TITLE", nullptr, SIMCONNECT_DATATYPE_STRING256);

@@ -1,8 +1,10 @@
 """Test T3-J: rudder doublet (Dutch roll) with fast logging of sideslip, bank and yaw rate.
 
 Usage (with the Python of the simconnect-mcp venv):
-  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\doublet_test.py <output.csv> [seconds=30]
-Precondition: steady flight, AP altitude hold + wing leveler (no heading hold), yaw damper as wanted.
+  C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\doublet_test.py <output.csv> [seconds=30] [sas=off|on]
+Precondition: steady flight, AP altitude hold + wing leveler (no heading hold).
+SAS (module yaw damper, H1): default off - T3-J compares with CR-2144 Table III-12, which is SAS OFF; the damper is
+switched off (L:F104_SAS_YAW_OFF 1) for the run and back ON (FM default) at the end. "on": damper on (H1 check).
 Sequence: 3 s quiet -> full right rudder 1 s -> full left rudder 1 s -> rudder free, log until the end.
 Only 4 SimVars per sample (simlog.py with 26 SimVars reaches only ~0.7 Hz, too slow for a ~2-3 s period).
 Prints the sideslip peaks after the doublet: period and ratio of successive peaks (damping).
@@ -12,14 +14,19 @@ import sys
 import time
 
 from SimConnect import AircraftEvents, AircraftRequests, SimConnect
+from SimConnect.RequestList import Request
 
 sys.stdout.reconfigure(encoding="utf-8")
 out = sys.argv[1]
 seconds = float(sys.argv[2]) if len(sys.argv) > 2 else 30.0
+sas_on = len(sys.argv) > 3 and sys.argv[3] == "on"
 DEG = 57.29578
 sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
 rud = AircraftEvents(sm).find("AXIS_RUDDER_SET")
+sas_off = Request((b"L:F104_SAS_YAW_OFF", b"number"), sm, _time=0, _settable=True)
+sas_off.value = 0.0 if sas_on else 1.0
+time.sleep(1.0)                                              # damper off: SAS rudder back to trim0
 rows = []
 t0 = time.time()
 schedule = [(3.0, 0), (4.0, 16383), (5.0, -16383)]          # (until t, rudder axis)
@@ -32,6 +39,7 @@ while (t := time.time() - t0) < seconds:
     rows.append((round(t, 3), (aq.get("INCIDENCE_BETA") or 0) * DEG, (aq.get("PLANE_BANK_DEGREES") or 0) * DEG,
                  (aq.get("ROTATION_VELOCITY_BODY_Y") or 0) * DEG, cmd, (aq.get("RUDDER_DEFLECTION") or 0) * DEG))
 rud(0)
+sas_off.value = 0.0                                          # FM default: damper ON
 sm.exit()
 with open(out, "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)

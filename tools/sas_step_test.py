@@ -2,10 +2,11 @@
 
 Usage (with the Python of the simconnect-mcp venv; jet positioned at 15 000-16 500 ft, M 0.9, AP ALT + wing leveler):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\sas_step_test.py <output.csv> <sas_gain> [rudder_axis=5461] [hold_s=10]
-Sequence: L:F104_SAS_YAW = sas_gain, 3 s quiet -> AXIS_RUDDER_SET rudder_axis (5461 = 1/3 = 2° gear up) for hold_s -> 0, 6 s.
+Sequence: yaw damper OFF (sas_gain 0: L:F104_SAS_YAW_OFF 1) or ON with L:F104_SAS_YAW_GAIN = sas_gain, 3 s quiet -> AXIS_RUDDER_SET rudder_axis (5461 = 1/3 = 2° gear up) for hold_s -> 0, 6 s.
 Card H1-sas.md: with the washout (tau 1 s) the SAS rudder (L:F104_SAS_YAW_DEG) must decay to ≈ 0 and the steady beta of the
-last 3 s of the hold must equal the SAS-off run (bu0: 0.33° beta per rudder degree). Gain stays as set at the end.
-Abort: |beta| > 5°, |bank| > 30°, |yaw rate| > 15°/s -> rudder 0, SAS off.
+last 3 s of the hold must equal the SAS-off run (bu0: 0.33° beta per rudder degree). End: damper back to the default
+(ON, gain 1.0 - FM 2-15/6-4).
+Abort: |beta| > 5°, |bank| > 30°, |yaw rate| > 15°/s -> rudder 0, damper OFF (left off).
 """
 import csv
 import sys
@@ -23,9 +24,11 @@ DEG = 57.29578
 sm = SimConnect()
 aq = AircraftRequests(sm, _time=0)
 rud = AircraftEvents(sm).find("AXIS_RUDDER_SET")
-sas = Request((b"L:F104_SAS_YAW", b"number"), sm, _time=0, _settable=True)
+sas_off = Request((b"L:F104_SAS_YAW_OFF", b"number"), sm, _time=0, _settable=True)
+sas_gain = Request((b"L:F104_SAS_YAW_GAIN", b"number"), sm, _time=0, _settable=True)
 sas_deg = Request((b"L:F104_SAS_YAW_DEG", b"number"), sm, _time=0)
-sas.value = gain
+sas_off.value = 0.0 if gain > 0 else 1.0
+sas_gain.value = gain if gain > 0 else 0.0
 schedule = [(3.0, 0), (3.0 + HOLD, RUD), (9.0 + HOLD, 0)]
 rows, aborted, cmd = [], "", None
 t0 = time.time()
@@ -40,9 +43,12 @@ while (t := time.time() - t0) < schedule[-1][0]:
     rows.append((round(t, 3), cmd, round(b, 3), round(bank, 2), round(r, 2), round(sas_deg.value or 0, 3)))
     if abs(b) > 5 or abs(bank) > 30 or abs(r) > 15:
         aborted = f"ABORT t {t:.1f}: beta {b:.1f}, bank {bank:.1f}, r {r:.1f}"
-        sas.value = 0.0
+        sas_off.value = 1.0
         break
 rud(0)
+if not aborted:
+    sas_off.value = 0.0                                       # default: damper ON, gain 1.0
+    sas_gain.value = 0.0
 sm.exit()
 with open(out, "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)

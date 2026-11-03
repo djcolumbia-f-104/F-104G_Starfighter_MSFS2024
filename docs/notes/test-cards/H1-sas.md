@@ -104,9 +104,12 @@ Python before building.**
 | 2026-11-03 | T3-E2 `sideslip` (SAS 1.0, then SAS 0) | both **aborted** (bank 53°/57°) - **script problem, not SAS**: probe (4000) and bank loop were tuned before C4 (roll power now ≈ 3x); with /3 gains the loop (9 reads ≈ 0.6 s) still oscillates ± 8-20° | sideslip_test.py needs a rework (fewer reads, faster loop) -> T3-E2 regression after C4 still OPEN |
 | 2026-11-03 | **washout A/B** `tools/sas_step_test.py` (AP WL, pedal rudder 2° for 10 s) | steady β **0.672° (off) / 0.679° (gain 1.0)** (+1 %), SAS rudder decays to 0.004°, max β 1.11 -> 0.83° ✓ | steady sideslip unchanged by the yaw damper ✓ |
 
-**Yaw damper PASSED** (gain 1.0 = K_REF 0.7 at 732 psf). Default still OFF (L:F104_SAS_YAW 0) so the validated SAS-off tests
-(T3-J vs. CR-2144 SAS-off data) stay reproducible; decide with pete whether the module switches it on by default (FM:
-always on) and how scripts then select SAS off (set L:F104_SAS_YAW 0 explicitly).
+**Yaw damper PASSED** (gain 1.0 = K_REF 0.7 at 732 psf).
+**Default ON since v7.2** (2026-11-03, pete: per the checklist): FM 2-15 after-start check item 4 "Dampers - OFF and ON again
+... ROLL, PITCH, YAW" (guarded switches ON, FM 1-68; FM 6-4: yaw and pitch augmenters in use at all times). Switch
+L:F104_SAS_YAW_OFF (1 = OFF), build-up gain L:F104_SAS_YAW_GAIN (0 = 1.0). doublet_test.py switches the damper OFF for T3-J
+(CR-2144 data are SAS off) and back ON; sas_step_test.py ends with the default. **From v7.2 on every flight runs with the
+yaw damper** (in the air; off on the ground) -> approach/landing regression (T3-L, F3) with the damper due once.
 Open: (1) pitch damper - first a pitch-doublet tool + SAS-off short period vs. CR-2144 III-5 (ζ 0.289, ωn 4.54 at F/C 4);
 (2) roll channel: aileron trim range far too large (bu0) -> check `aileron_trim_limit` default / set a limit (cfg change,
 regression C4) or leave the roll damper out (FM: yaw damper alone damps the Dutch roll); (3) sideslip_test.py rework;

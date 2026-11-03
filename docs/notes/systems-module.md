@@ -50,8 +50,10 @@ rpm-dependent BLC flap lift (H3), the APC stick shaker/kicker (H2), later drag c
    - how to command the stick from a module: AXIS_ELEVATOR_SET (transmit event) overrides the pilot axis for that
      frame - must be re-sent every frame while kicking; to be tested at altitude like H2 (build-up first).
    - the Mach dependence of Fig. 6-3 (kicker α ≈ 11° at M 0.8) can be a table α_kick(M) in the module.
-3. Later candidates: drag chute as its own handle (deploy limit 180 KIAS MB-7G, jettison) instead of the speed-brake
-   emulation; yaw damper / SAS logic.
+3. **SAS yaw damper (H1)** - v7.1 flight-tested 2026-11-03 (card H1-sas.md): rudder-trim channel, washout 1 s, K ~ 1/q̄.
+   v7.2: default ON (FM 2-15/6-4), L:F104_SAS_YAW_OFF / L:F104_SAS_YAW_GAIN. Pitch and roll dampers open.
+4. Later candidates: drag chute as its own handle (deploy limit 180 KIAS MB-7G, jettison) instead of the speed-brake
+   emulation.
 
 ## Rules
 - Never run the Python driver and the module at the same time (both write the TE percent).
