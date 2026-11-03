@@ -9,15 +9,14 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 ## >>> CONTINUE HERE (state 2026-11-03 evening) <<<
 **H1 yaw damper PASSED** (card `docs/notes/test-cards/H1-sas.md`, measurements 2026-11-03): module **v7.1**, actuator =
 RUDDER TRIM channel (adds to the pedal rudder, immediate, 1 trim° = 1 rudder°), law trim = trim0 - K HP(r), washout 1 s,
-K 0.7°/(°/s) x 732/q̄ psf. **v7.2 (built, NOT yet loaded - Build All with the jet on the runway): damper default ON**
+K 0.7°/(°/s) x 732/q̄ psf. **v7.2 LIVE: damper default ON** (takeoff 180 kt, F3 -0.6 % with the damper ✓)
 like the FM (2-15 after-start check "Dampers OFF and ON again", 6-4 "at all times"); switch L:F104_SAS_YAW_OFF (1 = off),
 build-up gain L:F104_SAS_YAW_GAIN (0 = 1.0); doublet_test.py turns it off for T3-J (SAS-off data) and on again; output
-L:F104_SAS_YAW_DEG. (v7.1 in the sim still uses L:F104_SAS_YAW = gain, default off.) Doublet: SAS off
+L:F104_SAS_YAW_DEG. Doublet: SAS off
 0.5/cycle, gain 0.5 0.09/cycle, gain 1.0 deadbeat; steady sideslip unchanged (`tools/sas_step_test.py`). T3-J after C4 ✓.
 **Lessons:** Build All reloads the aircraft (only on the runway!); probe every new SimVar/unit pair from Python before a
 module build ("pounds per square foot" is invalid -> v7 state request dead; "psf" works).
-**NEXT:** (1) Build All (jet on the runway) -> check L:F104_SYS_VERSION 7.2, quick doublet sas=on in the air (deadbeat), then
-approach/landing regression with the damper (T3-L, F3); (2) pitch damper: write a pitch-doublet tool,
+**NEXT:** (1) done 2026-11-03: v7.2 verified (doublet on deadbeat, F3 -0.6 %); (2) pitch damper: write a pitch-doublet tool,
 measure the SAS-off short period vs. CR-2144 III-5 (F/C 4 ζ 0.289, ωn 4.54), then K_q 0.084 x 732/q̄ via the trim channel
 (inhibited with the AP on and during kicks); (3) rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still
 open); (4) roll channel: aileron trim range far too large (10 % -> 171°/s); (5) yaw gain at F/C 6 and on the approach;

@@ -114,3 +114,11 @@ Open: (1) pitch damper - first a pitch-doublet tool + SAS-off short period vs. C
 (2) roll channel: aileron trim range far too large (bu0) -> check `aileron_trim_limit` default / set a limit (cfg change,
 regression C4) or leave the roll damper out (FM: yaw damper alone damps the Dutch roll); (3) sideslip_test.py rework;
 (4) gain at other flight conditions (F/C 6 35 000 ft M 0.9 - nearly undamped without SAS) and low speed / approach.
+
+## Runs with module v7.2 (damper default ON), 2026-11-03
+| Run | Result | Notes |
+|---|---|---|
+| takeoff (`..._H1_takeoff4_sas.csv`) | liftoff 180 kt, flaps up 261 KIAS, AP handover ✓ | T3-D with the damper ✓ |
+| doublet `sas=on` / default T3-J mode (`..._doublet_v72_on/off.csv`) | on: β -1.25 -> +0.09° -> quiet; off: 1.46 s, 0.54/cycle; switch back ON afterwards ✓ | |
+| F3 dry run (virtual runway +4 000 ft, `..._H1_F3dry_sas.csv`) | TD 177 KIAS, -335 ft/min, centreline -2 ft ✓ | |
+| **F3 real** (`..._H1_F3_sas.csv`, nochute fmflare, 19 339 lb) | TD 177 KIAS, -258 ft/min, centreline -1 ft; **roll from 165 KIAS 3 056 ft = -0.6 %** (before -0.6/-0.9/-1.1 %) ✓ | approach/landing unchanged with the damper |

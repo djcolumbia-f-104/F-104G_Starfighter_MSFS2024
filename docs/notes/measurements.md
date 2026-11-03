@@ -1269,3 +1269,5 @@ M 0.90 (≈ F/C 4), AP ALT + wing leveler, 18 600-19 000 lb. Takeoffs 178/179/18
 - Incidents: (1) Build All with the jet paused at 16 400 ft reloaded the aircraft (AP off, flaps 15, trim 0) -> jet lost
   (rule: Build All only on the runway). (2) v7 used the unit "pounds per square foot" (invalid) -> the module's state
   request was dead (no SAS, BLC/APC inactive) -> v7.1 "psf", unit pairs now probed from Python before a build.
+- **v7.2 (yaw damper default ON, FM 2-15/6-4)**: takeoff 180 kt ✓; doublet on = deadbeat, T3-J mode (damper off) 1.46 s /
+  0.54 ✓; F3 dry run TD 177 KIAS centreline -2 ft; **F3 real with the damper: roll from 165 KIAS -0.6 %** (unchanged) ✓.

@@ -204,3 +204,4 @@ mark the old row superseded and name the replacement log.
 | `H1_doublet_off` / `_g05` / `_g10` | T3-J doublets, yaw damper off / 0.5 / 1.0 (module v7.1) | 16 100 ft M 0.90 | 0.5 / 0.09 per cycle / deadbeat | **valid** |
 | `H1_sideslip_sas0`, `2026-11-03_H1_sideslip_sas10` | T3-E2 sideslip | | aborted (script tuned before C4) | **INVALID** (script) |
 | `H1_step_sas0` / `_sas10` | washout A/B, 2° pedal rudder 10 s | | steady β 0.672 / 0.679° | **valid** |
+| `H1_takeoff4_sas`, `H1_doublet_v72_on` / `_off`, `H1_F3dry_sas`, `H1_F3_sas` | module v7.2 (damper ON): takeoff, doublets, F3 dry/real | 19 340 lb | 180 kt; deadbeat / 0.54; F3 -0.6 % from 165 KIAS | **valid** |
