@@ -6,29 +6,36 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-03 evening) <<<
-**H1 yaw damper PASSED** (card `docs/notes/test-cards/H1-sas.md`, measurements 2026-11-03): module **v7.1**, actuator =
-RUDDER TRIM channel (adds to the pedal rudder, immediate, 1 trim° = 1 rudder°), law trim = trim0 - K HP(r), washout 1 s,
-K 0.7°/(°/s) x 732/q̄ psf. **v7.2 LIVE: damper default ON** (takeoff 180 kt, F3 -0.6 % with the damper ✓)
-like the FM (2-15 after-start check "Dampers OFF and ON again", 6-4 "at all times"); switch L:F104_SAS_YAW_OFF (1 = off),
-build-up gain L:F104_SAS_YAW_GAIN (0 = 1.0); doublet_test.py turns it off for T3-J (SAS-off data) and on again; output
-L:F104_SAS_YAW_DEG. Doublet: SAS off
-0.5/cycle, gain 0.5 0.09/cycle, gain 1.0 deadbeat; steady sideslip unchanged (`tools/sas_step_test.py`). T3-J after C4 ✓.
-**Lessons:** Build All reloads the aircraft (only on the runway!); probe every new SimVar/unit pair from Python before a
-module build ("pounds per square foot" is invalid -> v7 state request dead; "psf" works).
-**NEW FINDING (pitch, 2026-11-03 late):** SAS-off short period (tools/pitch_doublet_test.py, trim step, AP off): ωn 7.6 rad/s,
-ζ 0.16, α/δ 1.0 vs. CR-96008 (shifted to CG 8.7 %) 5.2/0.25/1.7 and CR-2144 F/C 4 4.54/0.29/2.1 - damping right, **static
-longitudinal stability ≈ 2x too high** (Cmα ≈ -2.4 vs. -1.1). ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the θ rate (do not use).
-pete 2026-11-03: **(a) pitch stiffness first** -> card `docs/notes/test-cards/T3-SP-short-period.md`: baseline at 4 points
-(Cmα sim ≈ -2.4 at M 0.84-1.38; sources ≈ -1.0 subsonic, ≈ -2.1 supersonic: the sim neutral point does not move aft with
-Mach); change 1 prepared (NOT built): aero_center_lift 0 -> +3.6 ft (predictions in the card). **Takeoff hazard:** the
-srot stick schedule (S_HOLD -6 600) and the 5° takeoff trim are tuned to the old trim gradient - after the change the first
-flight must not be a scripted takeoff (re-tune S_HOLD with stick_hold_test.py in the air first; air start needed).
-**NEXT:** (1) done 2026-11-03: v7.2 verified (doublet on deadbeat, F3 -0.6 %); (2) pitch damper (see finding above): write a pitch-doublet tool,
-measure the SAS-off short period vs. CR-2144 III-5 (F/C 4 ζ 0.289, ωn 4.54), then K_q 0.084 x 732/q̄ via the trim channel
-(inhibited with the AP on and during kicks); (3) rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still
-open); (4) roll channel: aileron trim range far too large (10 % -> 171°/s); (5) yaw gain at F/C 6 and on the approach;
-(6) then the full-deflection roll C4 with the dampers.
+## >>> CONTINUE HERE (state 2026-11-03 late evening - session ended, sim PAUSED at 16 500 ft on the AP) <<<
+**Start next session with:** (0) discuss with pete `docs/notes/session-watchdog.md` (watchdog/time concept, today's 5 incidents);
+(1) start `tools/watchdog.py` in the background (refuel/pause guard, log build/watchdog.log); (2) **pause the sim before
+any desk work** (rule from today); (3) continue T3-SP below.
+**Rules learned today:** Build All reloads the aircraft (only with the jet on the runway); probe every new SimVar/unit pair
+from Python before a module build ("pounds per square foot" invalid -> "psf"); never call msfs_save_flight with the jet in
+the air (blocked the sim ≈ 20 min); ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the θ rate (do not use; body Y is fine).
+
+**1. H1 yaw damper PASSED and LIVE (module v7.2, default ON as in the FM)** - card `docs/notes/test-cards/H1-sas.md`.
+Actuator = RUDDER TRIM channel (adds to the pedal rudder, immediate, 1 trim° = 1 rudder°), trim = trim0 - K HP(r), washout
+1 s, K 0.7°/(°/s) x 732/q̄ psf; off on the ground. FM 2-15 after-start check "Dampers OFF and ON again", FM 6-4 "at all
+times". L:F104_SAS_YAW_OFF (1 = off), L:F104_SAS_YAW_GAIN (0 = 1.0), output L:F104_SAS_YAW_DEG. Results: doublet SAS off
+0.5/cycle -> on deadbeat; steady sideslip unchanged (sas_step_test.py); takeoff 180 kt and F3 -0.6 % with the damper ✓;
+T3-J after C4 ✓. doublet_test.py (MCP doublet) switches the damper OFF for T3-J (SAS-off reference) and back ON.
+
+**2. T3-SP short period / static longitudinal stability (NEW, pete chose to fix it before the pitch damper)** - card
+`docs/notes/test-cards/T3-SP-short-period.md`, tool `tools/pitch_step_test.py` (trim step ±0.2°, AP off, α fit).
+Baseline at 4 points (M 0.84 / 0.94 / 0.93 at 35k / 1.38): Cmα sim ≈ -2.4 everywhere; sources ≈ -1.0 subsonic (CR-96008,
+CR-2144 F/C 4/6), ≈ -2.1 supersonic -> the sim neutral point (≈ 60 % MAC) does not move aft with Mach; damping (Mq+Mα̇)
+and Cmδ ✓. T3-G acceptance (δ/α 1.07 vs. 0.67-1.05) was too wide.
+**Change 1 prepared, NOT in the cfg yet:** aero_center_lift 0 -> +3.6 ft (wing lift point forward = missing tail downwash;
+predictions in the card: A ωn 7.5 -> 5.3, B 4.9 -> 3.5 = F/C 6, supersonic ≈ 30 % too soft - no Mach knob in the SDK).
+**Takeoff hazard after the change:** srot (S_HOLD -6 600) and the 5° takeoff trim are tuned to the old gradient -> the first
+flight after Build All + FULL restart must not be a scripted takeoff: air start (pete saves a flight in the air via the
+sim menu, or a world-map air start), re-tune S_HOLD with stick_hold_test.py in the air, then T3-D. Regression list in the card
+(T3-A, T3-G new ≈ 0.5, S12, position/AP, T3-D, T3-L/F3, H2, B7).
+
+**Later (H1 rest):** pitch damper on the corrected airframe (q from θ, not body X; trim channel; off with AP on / during
+kicks); rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still open); aileron trim range far too large for a
+roll damper (10 % -> 171°/s); yaw gain check at F/C 6 and on the approach; then the full-deflection roll C4.
 ## Block 2026-11-01 late evening
 **Where we stand (read first in a new session):**
 - Flight model validated against FM/NASA in all longitudinal areas (lift, drag, thrust, takeoff 178-181 kt = FM, climb,
