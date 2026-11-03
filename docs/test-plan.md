@@ -120,7 +120,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 
 | ID | Test | Ref. | Status |
 |---|---|---|---|
-| H1 | Own SAS logic (roll/pitch/yaw dampers) | FM 6-3 Fig. 6-1, CR-2144 SAS on | – |
+| H1 | Own SAS logic (roll/pitch/yaw dampers) | FM 1-68, 6-3/6-4 Fig. 6-1/6-2; CR-2144 (SAS-off data) | ◐ 2026-11-03 yaw damper ✓ (module v7.1, rudder trim channel; doublet deadbeat, washout steady β +1 %); pitch (SAS-off short period first) and roll (aileron trim range) open; card H1-sas.md |
 | H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | ◐ 2026-10-31 native SPS: shaker 0 / -1.5 / -2.8 %, kicker clean +1 %, TAKEOFF -6 %; leaky limiter (no hold), single α, no gear/LAND inhibit (card H2-apc.md); **2026-10-31 SPS DISABLED: makes the MSFS AP diverge after a full sim restart (A/B) - reopened**; **◐ 2026-11-01 own APC in the WASM module (v6): shaker 185/154 KIAS, kicker 200-204 clean / 170 TAKEOFF, LAND inhibited, AP unaffected (card H2-apc.md)** |
 | H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | ◔ 2026-10-31 analysis: ΔCL_BLC ≈ 0.135, f(N1) 0.3 at idle .. 1 at ≥ 83 %, via settable TE flap percent (ground test ✓); predicted F3 +9.6 -> +2 %, float after the idle cut gone (card H3-blc-rpm.md); **◐ 2026-10-31 driver tools/blc_driver.py built and flown: F3 -0.1 %, FM sink after power cut reproduced, fmflare technique**; 2026-11-01 regression B6/B7/T3-L ✓, WASM module prototype built (systems-module.md) |
 | H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | ✓ 2026-10-31: spoiler_limit 65° + drag_coef_spoilers 0.12 -> F2 +0.1 % vs. A8-3, coast 5.23 ft/s² as predicted, B5 unchanged |

@@ -6,7 +6,19 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-01 late evening - pause for a few days) <<<
+## >>> CONTINUE HERE (state 2026-11-03 evening) <<<
+**H1 yaw damper PASSED** (card `docs/notes/test-cards/H1-sas.md`, measurements 2026-11-03): module **v7.1**, actuator =
+RUDDER TRIM channel (adds to the pedal rudder, immediate, 1 trim° = 1 rudder°), law trim = trim0 - K HP(r), washout 1 s,
+K 0.7°/(°/s) x 732/q̄ psf. Switch/gain **L:F104_SAS_YAW (default 0 = OFF)**, output L:F104_SAS_YAW_DEG. Doublet: SAS off
+0.5/cycle, gain 0.5 0.09/cycle, gain 1.0 deadbeat; steady sideslip unchanged (`tools/sas_step_test.py`). T3-J after C4 ✓.
+**Lessons:** Build All reloads the aircraft (only on the runway!); probe every new SimVar/unit pair from Python before a
+module build ("pounds per square foot" is invalid -> v7 state request dead; "psf" works).
+**NEXT:** (1) pete: SAS default ON (FM: always on) or keep OFF for tests? (2) pitch damper: write a pitch-doublet tool,
+measure the SAS-off short period vs. CR-2144 III-5 (F/C 4 ζ 0.289, ωn 4.54), then K_q 0.084 x 732/q̄ via the trim channel
+(inhibited with the AP on and during kicks); (3) rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still
+open); (4) roll channel: aileron trim range far too large (10 % -> 171°/s); (5) yaw gain at F/C 6 and on the approach;
+(6) then the full-deflection roll C4 with the dampers.
+## Block 2026-11-01 late evening
 **Where we stand (read first in a new session):**
 - Flight model validated against FM/NASA in all longitudinal areas (lift, drag, thrust, takeoff 178-181 kt = FM, climb,
   fuel, landings F2/F3 ≈ -1 % from 165 KIAS, min. speeds, APC thresholds). Status table: `docs/test-plan.md`; evidence:

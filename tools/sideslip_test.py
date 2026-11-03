@@ -61,12 +61,14 @@ if ap_on:
     ev["AUTOPILOT_OFF"]()
 time.sleep(0.5)
 # Signs: positive axis value -> bank +/-, pitch +/- (PLANE_PITCH_DEGREES: nose up = negative)
-s_ail = probe("AXIS_AILERONS_SET", "bank", 4000, 0.6)
+# 2026-11-03: since C4 (roll_stability 0.1, aileron_effectiveness 1.17) the roll power is ≈ 3x the value this script
+# was tuned with (25 % stick 14 -> 45°/s); the old probe (4000) rolled the jet to 53° (abort) -> probe and bank gains / 3
+s_ail = probe("AXIS_AILERONS_SET", "bank", 1300, 0.6)
 s_elev = probe("AXIS_ELEVATOR_SET", "pitch", 3000, 0.5)
 start = state()
 
-KP_BANK, KD_BANK = 400.0, 250.0          # counts per ° and per °/s
-KI_BANK = 150.0                          # counts per °·s (round D without integral term: 14° residual bank)
+KP_BANK, KD_BANK = 133.0, 83.0           # counts per ° and per °/s (were 400/250 before C4, see probe)
+KI_BANK = 50.0                           # counts per °·s (round D without integral term: 14° residual bank; was 150)
 integ_bank = 0.0
 KP_VS, KI_VS = 120.0, 40.0               # counts per ft/s and per ft
 phases = [(5.0, 0.0), (rudder_s, rudder_frac * FULL), (5.0, 0.0)]

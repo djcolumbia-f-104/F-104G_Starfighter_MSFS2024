@@ -91,3 +91,23 @@ Module v7 (2026-11-03): yaw damper as in the analysis, switched/scaled by L:F104
 L:F104_SAS_YAW_DEG. Build All (hot reload, v7 confirmed) was done with the jet paused at 16 400 ft -> **the build reloaded
 the aircraft in the air (AP off, flaps 15°, trim 0) and the jet dived into the ground** - lost, no data. Rule: Build All
 only with the jet on the runway. Next: bu1 = L:F104_SAS_YAW 0.5 + doublet (prediction ratio ≈ 0.2/cycle), bu2 = 1.0 (≤ 0.1).
+**v7 bug**: "pounds per square foot" is not a SimConnect unit (NAME_UNRECOGNIZED) -> the whole DEF_STATE request was dead
+(no SAS output; BLC/APC also inactive in v7 - only flown for one takeoff, no landing). v7.1: "psf"; every datum/unit
+pair probed from Python first; BLC ground check TE 0.636 at idle (= law) ✓. **Rule: probe new datum/unit pairs from
+Python before building.**
+
+| Date | Run | Result | Notes |
+|---|---|---|---|
+| 2026-11-03 | doublet SAS off (`..._H1_doublet_off.csv`, 16 100 ft M 0.90) | β -2.43/+1.76/-1.14/+0.91/-0.65/+0.45°, period 1.41 s (mean of 3 cycles), ratio 0.47-0.56/cycle | = T3-J |
+| 2026-11-03 | **bu1 gain 0.5** (`..._doublet_g05.csv`) | β -1.73/+0.44/-0.15/+0.05° -> **0.09/cycle** (ζ ≈ 0.36; prediction 0.2) | quiet in level flight (SAS rudder ± 0.003°) |
+| 2026-11-03 | **bu2 gain 1.0** (`..._doublet_g10.csv`) | β -1.98/+0.16° then nothing -> **deadbeat** ("damped completely", FM Fig. 6-1) ✓ | |
+| 2026-11-03 | T3-E2 `sideslip` (SAS 1.0, then SAS 0) | both **aborted** (bank 53°/57°) - **script problem, not SAS**: probe (4000) and bank loop were tuned before C4 (roll power now ≈ 3x); with /3 gains the loop (9 reads ≈ 0.6 s) still oscillates ± 8-20° | sideslip_test.py needs a rework (fewer reads, faster loop) -> T3-E2 regression after C4 still OPEN |
+| 2026-11-03 | **washout A/B** `tools/sas_step_test.py` (AP WL, pedal rudder 2° for 10 s) | steady β **0.672° (off) / 0.679° (gain 1.0)** (+1 %), SAS rudder decays to 0.004°, max β 1.11 -> 0.83° ✓ | steady sideslip unchanged by the yaw damper ✓ |
+
+**Yaw damper PASSED** (gain 1.0 = K_REF 0.7 at 732 psf). Default still OFF (L:F104_SAS_YAW 0) so the validated SAS-off tests
+(T3-J vs. CR-2144 SAS-off data) stay reproducible; decide with pete whether the module switches it on by default (FM:
+always on) and how scripts then select SAS off (set L:F104_SAS_YAW 0 explicitly).
+Open: (1) pitch damper - first a pitch-doublet tool + SAS-off short period vs. CR-2144 III-5 (ζ 0.289, ωn 4.54 at F/C 4);
+(2) roll channel: aileron trim range far too large (bu0) -> check `aileron_trim_limit` default / set a limit (cfg change,
+regression C4) or leave the roll damper out (FM: yaw damper alone damps the Dutch roll); (3) sideslip_test.py rework;
+(4) gain at other flight conditions (F/C 6 35 000 ft M 0.9 - nearly undamped without SAS) and low speed / approach.

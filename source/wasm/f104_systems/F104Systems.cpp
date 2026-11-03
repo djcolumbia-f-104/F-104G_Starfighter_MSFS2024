@@ -42,7 +42,7 @@
 static HANDLE g_sc = 0;
 // build version, published as L:F104_SYS_VERSION (lets the tools check which module build the sim runs, e.g. after
 // a Build All without restart - hot reload test 2026-11-01)
-static const double SYS_VERSION = 7.0;
+static const double SYS_VERSION = 7.1;
 static bool g_active = false;      // BLC override engaged (latched until the lever leaves LAND)
 static bool g_is_f104 = false;
 
@@ -267,7 +267,7 @@ extern "C" MSFS_CALLBACK void module_init(void)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ELEVATOR TRIM POSITION", "degrees");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "PLANE ALTITUDE", "feet");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "ROTATION VELOCITY BODY Y", "degrees per second");
-    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "DYNAMIC PRESSURE", "pounds per square foot");
+    SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "DYNAMIC PRESSURE", "psf");   // "pounds per square foot" is NOT a unit name (v7: whole definition dead)
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "SIM ON GROUND", "bool");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "RUDDER TRIM PCT", "percent over 100");
     SimConnect_AddToDataDefinition(g_sc, DEF_STATE, "L:F104_SAS_YAW", "number");

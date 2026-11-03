@@ -1255,3 +1255,17 @@ refuel in the air, then `landing_test.py ... 6 2.5 0 nochute` (landing 15).
   67.5 %); roll from 165 KIAS 3 040 ft = **-1.1 %** (driver runs -0.6 / -0.9 %) ✓. **The module replaces blc_driver.py.**
   (Loaded module = first version without the LAND-exit restore; runway_start sync covers the ground cases until pete's
   next Build All + full restart.)
+
+## 2026-11-03: H1 yaw damper (module v7.1) PASSED; T3-J after C4 ✓; T3-E2 script outdated
+Card `docs/notes/test-cards/H1-sas.md` (analysis: CR-2144 data are SAS off; gains from N'δr/M'δs, K ~ 1/q̄). 16 000 ft,
+M 0.90 (≈ F/C 4), AP ALT + wing leveler, 18 600-19 000 lb. Takeoffs 178/179/182 kt ✓ (T3-D after C4 confirmed again).
+- bu0 channels (`..._H1_bu0.csv`): rudder trim settable, immediate, β/trim° 0.33 (= rudder, T3-E2 0.35); +trim -> +body
+  yaw rate. Aileron trim: 10 % -> -171°/s, bank -47° (template trim range far too large; not usable as is).
+- **T3-J after C4 (SAS off)** (`..._H1_doublet_off.csv`): period 1.41 s, 0.47-0.56/cycle = before C4 ✓ (regression closed).
+- Yaw damper doublets: gain 0.5 -> 0.09/cycle, gain 1.0 -> deadbeat (β -1.98 -> +0.16 -> 0) ✓ ("damped completely").
+- Washout A/B (`tools/sas_step_test.py`, 2° pedal rudder 10 s): steady β 0.672 / 0.679° (off / on), SAS rudder -> 0 ✓.
+- T3-E2 `sideslip`: aborted twice (bank 53/57°) - the script's probe and bank loop predate C4 (roll power ≈ 3x); gains /3
+  not enough (0.6 s loop) -> rework open; T3-E2 regression after C4 still OPEN.
+- Incidents: (1) Build All with the jet paused at 16 400 ft reloaded the aircraft (AP off, flaps 15, trim 0) -> jet lost
+  (rule: Build All only on the runway). (2) v7 used the unit "pounds per square foot" (invalid) -> the module's state
+  request was dead (no SAS, BLC/APC inactive) -> v7.1 "psf", unit pairs now probed from Python before a build.

@@ -199,3 +199,8 @@ log here; this index says under which conditions each log was flown and whether 
 ## Keeping this index
 Add a row for every new log in the same commit as its measurements.md entry. When a cfg change supersedes a test,
 mark the old row superseded and name the replacement log.
+| `H1_takeoff` / `takeoff2` / `takeoff3`, 2026-11-03 | takeoffs (srot) + position routine | 19 010-19 340 lb | 178 / 179 / 182 kt | **valid** (T3-D after C4) |
+| `H1_bu0` | H1 channel check (rudder/aileron trim steps, AP WL) | 16 200 ft M 0.89 | β/trim° 0.33; aileron trim 10 % -> 171°/s (abort) | **valid** |
+| `H1_doublet_off` / `_g05` / `_g10` | T3-J doublets, yaw damper off / 0.5 / 1.0 (module v7.1) | 16 100 ft M 0.90 | 0.5 / 0.09 per cycle / deadbeat | **valid** |
+| `H1_sideslip_sas0`, `2026-11-03_H1_sideslip_sas10` | T3-E2 sideslip | | aborted (script tuned before C4) | **INVALID** (script) |
+| `H1_step_sas0` / `_sas10` | washout A/B, 2° pedal rudder 10 s | | steady β 0.672 / 0.679° | **valid** |
