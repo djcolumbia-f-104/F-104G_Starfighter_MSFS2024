@@ -122,3 +122,40 @@ regression C4) or leave the roll damper out (FM: yaw damper alone damps the Dutc
 | doublet `sas=on` / default T3-J mode (`..._doublet_v72_on/off.csv`) | on: β -1.25 -> +0.09° -> quiet; off: 1.46 s, 0.54/cycle; switch back ON afterwards ✓ | |
 | F3 dry run (virtual runway +4 000 ft, `..._H1_F3dry_sas.csv`) | TD 177 KIAS, -335 ft/min, centreline -2 ft ✓ | |
 | **F3 real** (`..._H1_F3_sas.csv`, nochute fmflare, 19 339 lb) | TD 177 KIAS, -258 ft/min, centreline -1 ft; **roll from 165 KIAS 3 056 ft = -0.6 %** (before -0.6/-0.9/-1.1 %) ✓ | approach/landing unchanged with the damper |
+
+## Pitch damper - step 1: SAS-off short period (desk 2026-11-03)
+Tool `tools/pitch_doublet_test.py`: AP off (trim stays at the AP level trim), stabilizer doublet through the TRIM SimVar
+(the damper channel; symmetric, 1 trim° = 1 stab° - SDK "adds to the elevator deflection"; the stick gearing is 17° up /
+5° down) ±0.5° x 0.4 s (≈ half the expected period), free response 7 s with only q and α read (≈ 12 Hz), fit
+q = c0 + c1 t + e^(-σt)(A cos ωd t + B sin ωd t) (checked on synthetic data: 0.301/4.49 for 0.289/4.54 with noise).
+Amplitude estimate: α_ss/δs ≈ M'δs/M'α = 33.6/(0.0200 x 785) ≈ 2.1° per stab° ≈ 1.1 g per stab° at 465 KCAS -> ± 0.5 g.
+**Prediction** (CR-2144 III-5 F/C 4, SAS off): ζ 0.29, ωn 4.5 rad/s (≈ -5 % for our 19 000 vs 16 300 lb), period 1.44 s,
+0.15 per cycle. Tolerance ± 20 % on ωn and ζ (no other F-104 short-period data in the sim so far; stick_hold_test
+2026-10-31 saw "≈ 1.5 s, damped" at 196 KIAS). If far off -> flight-model item (Cmq / pitch_stability), not SAS tuning.
+Abort |q| > 15°/s, |pitch| > 20°, IAS outside 380-540; end via the `position` routine (16 500 ft).
+
+### Step 1 results (2026-11-03, 16 500 ft, M 0.94, 474 KIAS, 18 900 lb, CG 8.7 % MAC, yaw damper on, AP off)
+| Run | Result | Notes |
+|---|---|---|
+| `..._H1_pdoublet_off.csv` (±0.5° x 0.4 s) | abort at q 18.6°/s (body X) after 0.6 s; jet calm (pitch 1.8°) | the body-X reading was the trigger, see below |
+| `..._H1_pstep01.csv` (±0.1° x 2.5 s, q + α + θ at 6.5 Hz) | **ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the true pitch rate** (∫q -0.82° vs Δθ +0.24°; same shape/frequency); sign + = nose DOWN | do not use body X for q (Python); the module derives q from θ (or check body X there first) |
+| `..._H1_pstep02_fast.csv` (+0.2° trim step, α only, 20 Hz distinct) | ELEVATOR_DEFLECTION does NOT include the trim (0 before/after); α_ss **+0.205° per +0.2 trim°** (α/δ 1.0); extrema +0.118 / -0.073 / +0.041 / -0.026 / +0.015 / -0.010° -> **period 0.84 s (ωd 7.5), 0.35 per cycle -> ζ 0.16, ωn 7.6 rad/s** | 58 % overshoot |
+
+**Comparison** (our point: q̄ 760 psf, V 990 ft/s, Iy ≈ 60 000 slug ft²):
+| | sim | CR-96008 cond. 2 (M 0.84) shifted to CG 8.7 % | CR-2144 F/C 4 |
+|---|---|---|---|
+| ωn rad/s | **7.6** | 5.2 | 4.54 |
+| ζ | **0.16** | 0.25 | 0.289 |
+| 2ζωn (total damping) 1/s | 2.48 | 2.63 | 2.62 |
+| α_ss/δs | **1.0** | ≈ 1.7 | ≈ 2.1 |
+| Cmα /rad (sim from ωn²) | **≈ -2.4** | -1.09 (-1.32 at CG 4 %, CLα 4.97) | (-0.67) |
+CR-96008 prediction: Mα = q̄Sc̄Cmα/Iy = -25.9, Mq = -0.92, Mα̇ = -0.45, Lα/V = 1.27 -> ωn² ≈ 25.9 + 1.27 x 0.92 = 27.1.
+**Finding: the damping derivatives are right (2ζωn within 5 %), the static longitudinal stability is ≈ 2x too high**
+(neutral point too far aft relative to the CG, or the sim CG/MAC reference differs). T3-G (trim gradient δ/α 1.07,
+accepted against CR-96008 -Cmα/Cmδ 0.67-1.05) is consistent with this: those ratios are for CGs at 4-18 % with tanks;
+for our CG the expectation is ≈ 0.55-0.6 -> the T3-G acceptance was too wide. FM qualitative: Fig. 6-2 subsonic without
+SAS "good damping but some oscillations" - fits both.
+**Consequence:** the pitch damper would be designed on a too-stiff airframe (K for ζ 0.6 now ≈ 0.115°/(°/s): Δ2ζωn 6.7 /
+Mδ 58). Decision for pete: (a) investigate the pitch stiffness first (flight-model work package: sim CG vs. aerodynamic
+reference, htail position/elevator_lift_coef, downwash; regression T3-A/G, T3-D rotation, T3-L/F flare, AP) or
+(b) build the pitch damper on the current airframe and retune later (1/q̄ schedule kept).

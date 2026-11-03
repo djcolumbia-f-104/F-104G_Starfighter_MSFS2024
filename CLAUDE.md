@@ -16,7 +16,11 @@ L:F104_SAS_YAW_DEG. Doublet: SAS off
 0.5/cycle, gain 0.5 0.09/cycle, gain 1.0 deadbeat; steady sideslip unchanged (`tools/sas_step_test.py`). T3-J after C4 ✓.
 **Lessons:** Build All reloads the aircraft (only on the runway!); probe every new SimVar/unit pair from Python before a
 module build ("pounds per square foot" is invalid -> v7 state request dead; "psf" works).
-**NEXT:** (1) done 2026-11-03: v7.2 verified (doublet on deadbeat, F3 -0.6 %); (2) pitch damper: write a pitch-doublet tool,
+**NEW FINDING (pitch, 2026-11-03 late):** SAS-off short period (tools/pitch_doublet_test.py, trim step, AP off): ωn 7.6 rad/s,
+ζ 0.16, α/δ 1.0 vs. CR-96008 (shifted to CG 8.7 %) 5.2/0.25/1.7 and CR-2144 F/C 4 4.54/0.29/2.1 - damping right, **static
+longitudinal stability ≈ 2x too high** (Cmα ≈ -2.4 vs. -1.1). ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the θ rate (do not use).
+**DECISION FOR PETE:** pitch-stiffness flight-model work package first, or pitch damper on the current airframe.
+**NEXT:** (1) done 2026-11-03: v7.2 verified (doublet on deadbeat, F3 -0.6 %); (2) pitch damper (see finding above): write a pitch-doublet tool,
 measure the SAS-off short period vs. CR-2144 III-5 (F/C 4 ζ 0.289, ωn 4.54), then K_q 0.084 x 732/q̄ via the trim channel
 (inhibited with the AP on and during kicks); (3) rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still
 open); (4) roll channel: aileron trim range far too large (10 % -> 171°/s); (5) yaw gain at F/C 6 and on the approach;

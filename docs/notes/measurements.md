@@ -1271,3 +1271,12 @@ M 0.90 (≈ F/C 4), AP ALT + wing leveler, 18 600-19 000 lb. Takeoffs 178/179/18
   request was dead (no SAS, BLC/APC inactive) -> v7.1 "psf", unit pairs now probed from Python before a build.
 - **v7.2 (yaw damper default ON, FM 2-15/6-4)**: takeoff 180 kt ✓; doublet on = deadbeat, T3-J mode (damper off) 1.46 s /
   0.54 ✓; F3 dry run TD 177 KIAS centreline -2 ft; **F3 real with the damper: roll from 165 KIAS -0.6 %** (unchanged) ✓.
+
+## 2026-11-03: short period SAS off - static longitudinal stability ≈ 2x too high (NEW FINDING)
+Card H1-sas.md (pitch step 1), `tools/pitch_doublet_test.py` (stabilizer doublet/step through the trim, AP off).
+16 500 ft, M 0.94, 18 900 lb, CG 8.7 % MAC. +0.2° trim step (α at 20 Hz): **ωn 7.6 rad/s, ζ 0.16 (0.35/cycle), α_ss/δ 1.0**
+vs. CR-96008 (cond. 2 shifted to our CG) 5.2 / 0.25 / ≈ 1.7 and CR-2144 F/C 4 4.54 / 0.29 / ≈ 2.1. Total damping 2ζωn
+2.48 vs. 2.63/2.62 ✓ -> **Cmα ≈ -2.4/rad vs. ≈ -1.1 expected**. T3-G (δ/α 1.07) is consistent; its acceptance range
+(CR-96008 0.67-1.05, other CGs) was too wide. Side findings: ROTATION_VELOCITY_BODY_X (Python) reads ≈ 3.5x the true pitch
+rate (∫q vs. Δθ), + = nose down; ELEVATOR_DEFLECTION excludes the trim; trim SimVar writes (AP off) act at once.
+Open decision: flight-model work package (pitch stiffness) before or after the pitch damper.
