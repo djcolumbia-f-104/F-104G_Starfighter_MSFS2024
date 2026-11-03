@@ -38,3 +38,7 @@ Logs `flighttest_2026-11-03_SP_A/B/C/D_*.csv`, `_H1_pstep02_fast.csv`.
   trim offset; α thresholds unchanged), B7 minimum speeds. Reported CG % MAC may change if MSFS references the MAC to it.
 - Abort criteria in flight: as the tool (|Δα| > 4°); first flight after the restart = takeoff_test (watch rotation;
   abort/stop on the runway if the nose rises before vr).
+- **First flight after the change (2026-11-03 decision): no air start possible** (MSFS 2024 cannot save/resume a flight in
+  the air) -> `srot taxi` high-speed taxi build-up at idle up to nose-wheel lift-off: break-out stick vs. prediction (≈ half
+  the old value), check that the 5° takeoff trim alone does not lift the nose; derive S_HOLD; takeoff; fine-tune S_HOLD
+  in the air with stick_hold_test.py; then the SP points A-D.

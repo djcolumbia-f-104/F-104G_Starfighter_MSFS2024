@@ -69,8 +69,9 @@ Rule for step 8: a lesson only counts as learned when it is **enforced by a chec
 2. Implement: lessons-learned register (seed with today's 6 entries), selftest.py + unit probe in build_wasm.sh,
    watchdog extensions (reload detection, notification, start script), post.py helper; fold steps 2/6/7/8 into the skill
    `f104-testcard` and the card template.
-3. Then T3-SP change 1 (aero_center_lift +3.6 ft) with the new process: air start prepared by pete (flight saved in the
-   air via the sim menu), predictions in the card.
+3. Then T3-SP change 1 (aero_center_lift +3.6 ft) with the new process; first flight = `srot taxi` build-up on the runway
+   (MSFS 2024 cannot save/resume a flight in the air: [FAQ](https://msfsaddons.com/2025/01/22/flightsave24-brings-improved-flight-saving-functionality-to-msfs-2024/),
+   [forum: saved in flight loads on the ground](https://forums.flightsimulator.com/t/loading-saved-flight-forces-plane-to-the-ground-for-walkaround-even-if-the-plane-is-saved-in-flight/720652)).
 
 Sources: [Edwards AFB instruction 99-105](https://static.e-publishing.af.mil/production/1/edwardsafb/publication/edwardsafbi99-105/edwardsafbi99-105.pdf),
 [SETP flight briefings](https://flighttestsafety.setp.org/images/stories/best-practices/fltbrfs1.docx),

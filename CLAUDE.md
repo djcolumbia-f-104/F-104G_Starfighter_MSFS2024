@@ -31,8 +31,10 @@ and Cmδ ✓. T3-G acceptance (δ/α 1.07 vs. 0.67-1.05) was too wide.
 **Change 1 prepared, NOT in the cfg yet:** aero_center_lift 0 -> +3.6 ft (wing lift point forward = missing tail downwash;
 predictions in the card: A ωn 7.5 -> 5.3, B 4.9 -> 3.5 = F/C 6, supersonic ≈ 30 % too soft - no Mach knob in the SDK).
 **Takeoff hazard after the change:** srot (S_HOLD -6 600) and the 5° takeoff trim are tuned to the old gradient -> the first
-flight after Build All + FULL restart must not be a scripted takeoff: air start (pete saves a flight in the air via the
-sim menu, or a world-map air start), re-tune S_HOLD with stick_hold_test.py in the air, then T3-D. Regression list in the card
+flight after Build All + FULL restart must not be a normal scripted takeoff. MSFS 2024 has NO in-flight save/resume (research
+2026-11-03; a flight saved in the air loads on the ground) -> build-up on the runway: `srot taxi` high-speed taxi at idle up to
+nose-wheel lift-off (break-out stick, does the 5° trim alone lift the nose?), derive the new S_HOLD, then the takeoff, then
+fine-tune S_HOLD with stick_hold_test.py in the air, then T3-D. Regression list in the card
 (T3-A, T3-G new ≈ 0.5, S12, position/AP, T3-D, T3-L/F3, H2, B7).
 
 **Later (H1 rest):** pitch damper on the corrected airframe (q from θ, not body X; trim channel; off with AP on / during
