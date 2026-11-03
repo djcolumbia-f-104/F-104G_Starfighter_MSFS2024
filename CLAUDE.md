@@ -7,7 +7,9 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
 ## >>> CONTINUE HERE (state 2026-11-03 late evening - session ended, sim PAUSED at 16 500 ft on the AP) <<<
-**Start next session with:** (0) discuss with pete `docs/notes/session-watchdog.md` (watchdog/time concept, today's 5 incidents);
+**Start next session (2026-11-04) with:** (0) discuss with pete `docs/notes/test-process.md` (fixed test sequence: preconditions,
+THA, postconditions, debrief, lessons-learned register + robustness: watchdog, selftest, bounded tools; plan in its section 5)
+and `docs/notes/session-watchdog.md` (today's incidents); pete: the watchdog should not pause in normal operation;
 (1) start `tools/watchdog.py` in the background (refuel/pause guard, log build/watchdog.log); (2) **pause the sim before
 any desk work** (rule from today); (3) continue T3-SP below.
 **Rules learned today:** Build All reloads the aircraft (only with the jet on the runway); probe every new SimVar/unit pair
