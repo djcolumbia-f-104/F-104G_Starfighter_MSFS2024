@@ -19,7 +19,11 @@ module build ("pounds per square foot" is invalid -> v7 state request dead; "psf
 **NEW FINDING (pitch, 2026-11-03 late):** SAS-off short period (tools/pitch_doublet_test.py, trim step, AP off): ωn 7.6 rad/s,
 ζ 0.16, α/δ 1.0 vs. CR-96008 (shifted to CG 8.7 %) 5.2/0.25/1.7 and CR-2144 F/C 4 4.54/0.29/2.1 - damping right, **static
 longitudinal stability ≈ 2x too high** (Cmα ≈ -2.4 vs. -1.1). ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the θ rate (do not use).
-**DECISION FOR PETE:** pitch-stiffness flight-model work package first, or pitch damper on the current airframe.
+pete 2026-11-03: **(a) pitch stiffness first** -> card `docs/notes/test-cards/T3-SP-short-period.md`: baseline at 4 points
+(Cmα sim ≈ -2.4 at M 0.84-1.38; sources ≈ -1.0 subsonic, ≈ -2.1 supersonic: the sim neutral point does not move aft with
+Mach); change 1 prepared (NOT built): aero_center_lift 0 -> +3.6 ft (predictions in the card). **Takeoff hazard:** the
+srot stick schedule (S_HOLD -6 600) and the 5° takeoff trim are tuned to the old trim gradient - after the change the first
+flight must not be a scripted takeoff (re-tune S_HOLD with stick_hold_test.py in the air first; air start needed).
 **NEXT:** (1) done 2026-11-03: v7.2 verified (doublet on deadbeat, F3 -0.6 %); (2) pitch damper (see finding above): write a pitch-doublet tool,
 measure the SAS-off short period vs. CR-2144 III-5 (F/C 4 ζ 0.289, ωn 4.54), then K_q 0.084 x 732/q̄ via the trim channel
 (inhibited with the AP on and during kicks); (3) rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still
@@ -55,7 +59,9 @@ open); (4) roll channel: aileron trim range far too large (10 % -> 171°/s); (5)
 **Safety rules learned (also in skill f104-testcard):** runway_start after every flight load (trim 0°); AP only engaged
 in stabilised level flight at ≈ 450 KIAS (it sets the trim to ≈ 2.5°) - test scripts end via the `position` routine;
 never call `position`/set_pos while the jet still rotates (unload/level or PAUSE first); refuel before every test.
-**Session start:** check_build, preflight, wind/QNH, runway_start, `tools/refuel.py`, takeoff with
+**Session start:** start `tools/watchdog.py` in the background first (refuels < 1 500 lb in the air, pauses on a dive;
+log build/watchdog.log - msfs_save_flight blocked the sim ≈ 20 min on 2026-11-03, never use it with the jet in the air),
+check_build, preflight, wind/QNH, runway_start, `tools/refuel.py`, takeoff with
 `tools/takeoff_test.py <csv> 157 10.5` (MCP `takeoff` needs an /mcp reconnect for its 420 s timeout).
 Other open items (lower priority): kicker α Mach table (Fig. 6-3), config_test clean-up re-trim, shaker output, D1b +9 %,
 remaining test plan items (A3/A4, B9, C5/C6, D6, E2, F4-F9, G1/G2), then 3D model (AP-9).
