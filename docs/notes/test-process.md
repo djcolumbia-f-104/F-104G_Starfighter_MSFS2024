@@ -1,4 +1,9 @@
-# Fixed test process: preconditions, postconditions, debrief, lessons learned (draft 2026-11-03, for 2026-11-04)
+# Fixed test process: preconditions, postconditions, debrief, lessons learned (draft 2026-11-03)
+
+**DECIDED 2026-11-04 (pete):** sequence adopted as proposed (now in skill `f104-testcard`, section "Fixed test
+sequence"); go/no-go decided by Claude without a confirmation question; the watchdog only refuels (no pausing, no popup).
+Implemented 2026-11-04: `tools/selftest.py`, `tools/probe_units.py` (also in build_wasm.sh), `tools/post.py` (end of the
+takeoff/pitch_step/roll/doublet/sas_step scripts), `docs/notes/lessons-learned.md`, watchdog refuel-only.
 
 pete's question (2026-11-03): define a fixed test sequence - preconditions that must be met, postconditions, analyse the
 findings afterwards and learn from them - plus the robustness measures (watchdog, routine checks). This draft combines

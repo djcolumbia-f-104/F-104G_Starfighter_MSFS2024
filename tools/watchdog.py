@@ -5,7 +5,8 @@ Usage (with the Python of the simconnect-mcp venv, in the background for the who
 Every 2 s: fuel, height AGL, vertical speed, bank, on-ground.
 - airborne and fuel < 1 500 lb -> refuel to the standard state (tools/refuel.py logic: main cells 4 080 lb, rest 0); logged
   as REFUEL (a test running at that moment sees a weight step - check the log against the test time).
-- airborne and (AGL < 2 000 ft with sink > 6 000 ft/min, or |bank| > 90°) -> PAUSE_ON, logged as PAUSE (once per event).
+- airborne and (AGL < 2 000 ft with sink > 6 000 ft/min, or |bank| > 90°) -> logged as ALERT only (pete 2026-11-04: the
+  watchdog only refuels, it never pauses the sim).
 One status line per minute. Background: msfs_save_flight blocked the sim for ≈ 20 min on 2026-11-03 (fuel 3 509 -> 1 280 lb).
 Reconnects after SimConnect errors (sim restart) every 10 s.
 """
@@ -13,7 +14,7 @@ import os
 import sys
 import time
 
-from SimConnect import AircraftEvents, AircraftRequests, SimConnect
+from SimConnect import AircraftRequests, SimConnect
 
 LOG = sys.argv[1] if len(sys.argv) > 1 else os.path.join("build", "watchdog.log")
 DEG = 57.29578
@@ -28,9 +29,8 @@ def log(msg):
 def run():
     sm = SimConnect()
     aq = AircraftRequests(sm, _time=0)
-    pause = AircraftEvents(sm).find("PAUSE_ON")
     log("connected")
-    last_status, paused_event = 0.0, False
+    last_status, alerted = 0.0, False
     while True:
         fuel = aq.get("FUEL_TOTAL_QUANTITY_WEIGHT")
         ground = aq.get("SIM_ON_GROUND")
@@ -47,10 +47,9 @@ def run():
             aq.set("FUEL_TANK_CENTER_QUANTITY", 4080 / 6.5)
             log(f"REFUEL at {fuel:.0f} lb (AGL {agl:.0f} ft)")
         danger = ground < 0.5 and ((agl < 2000 and vs < -6000) or abs(bank) > 90)
-        if danger and not paused_event:
-            pause()
-            log(f"PAUSE: AGL {agl:.0f} ft, VS {vs:.0f} ft/min, bank {bank:.0f}°")
-        paused_event = danger
+        if danger and not alerted:
+            log(f"ALERT: AGL {agl:.0f} ft, VS {vs:.0f} ft/min, bank {bank:.0f}°")
+        alerted = danger
         if time.time() - last_status > 60:
             log(f"ok: fuel {fuel:.0f} lb, AGL {agl:.0f} ft, VS {vs:.0f}, bank {bank:.0f}, ground {ground:.0f}")
             last_status = time.time()

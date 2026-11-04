@@ -1,6 +1,6 @@
 ---
 name: f104-testcard
-description: Flight-test method for this project - write and validate a test card (objective, preconditions, setup, expected values, abort criteria, build-up) BEFORE any sim test, check every precondition with the tools, fly a safe build-up step first, then the real test, then evaluate against the card. Load before any sim flight test (takeoff, approach, landing, doublet, accel, sideslip) or when a test failed and is to be repeated.
+description: Flight-test method for this project - the fixed test sequence (session-start selftest, plan with prediction, hazard list, checkable preconditions, go/no-go, build-up, postconditions, debrief, lessons-learned register) and the test card BEFORE any sim test. Load before any sim flight test (takeoff, approach, landing, doublet, step, accel, sideslip), before any cfg or module change that will be flown, or when a test failed and is to be repeated.
 ---
 
 # Flight-test method (test cards, build-up, go/no-go)
@@ -8,6 +8,23 @@ description: Flight-test method for this project - write and validate a test car
 Real flight test never "just flies": every test point has a **test card**, reviewed before flight, and risky points
 are approached by **build-up** (safe altitude / lower energy first). Do the same here - a crashed test costs pete a
 flight reload and gives no data. Load the `f104-pilot` skill too (FM procedures and limits).
+
+## Fixed test sequence (since 2026-11-04, pete; background `docs/notes/test-process.md`)
+Every test follows these steps; each has an output. Claude decides go/no-go itself (pete 2026-11-04: no confirmation
+question), but writes the go/no-go line into the card before risky points.
+| Step | What | Output / gate |
+|---|---|---|
+| 0 Session start | `tools/watchdog.py` in the background (refuels only), `tools/selftest.py` (module version, all SimVar/unit pairs, watchdog alive, ISA calm weather, build current) | SELFTEST ALL OK, else stop; repeat after every Build All / restart |
+| 1 Plan | objective, reference value **shifted to the test condition** (CG, Mach, weight), prediction (2b); every new measurement channel cross-checked against an independent one | card: Objective, Analysis |
+| 2 Hazards (light THA) | one line per new risk: cause -> effect -> minimising procedure -> **recovery action** (scripted where possible); after a cfg change: list the scripts tuned to the old behaviour | card: Hazards |
+| 3 Preconditions | checkable items, each with the tool that checks it; scripts assert them | card: Preconditions |
+| 4 Go/no-go | Claude runs the checks; one line "GO: ..." / "NO-GO: ..." | card |
+| 5 Execute | build-up first; abort criteria in the script; **PAUSE_ON before any desk work longer than ≈ 1 min**, `sim_state` between long steps; no unbounded tool calls while airborne | logs in docs/data |
+| 6 Postconditions | `tools/post.py` (air: AP on, level, fuel ≥ 1 500, gear/flaps up, damper default; ground: stopped, idle) - flight scripts print POST OK/FAIL at the end | POST OK, else fix before the next test |
+| 7 Debrief (at once) | prediction vs. measurement, every anomaly (also small ones), surprises - 5 lines | card: Debrief |
+| 8 Lessons learned | each lesson -> where it is **enforced** (assert, selftest/probe item, postcondition, skill step) | `docs/notes/lessons-learned.md` |
+| 9 Commit | card, data, measurements.md, data index, register | git |
+A lesson only counts as learned when a check or a script enforces it.
 
 ## 0. Think like test pilot + test engineer
 - **Test engineer**: what exactly is validated (one parameter / cfg value per test where possible), against which
@@ -35,10 +52,14 @@ Preconditions (each with HOW it is checked):
 Setup: exact position/altitude/speed/configuration and how the script establishes it (incl. what set_pos resets).
 Procedure: phases with target values (FM numbers) and who controls what (AP mode, throttle loop, script axis).
 Expected values per phase (e.g. α, trim, N1, sink rate) - computed BEFORE the test (CL = W / (q S) etc.).
+Hazards: one line each - cause -> effect -> minimising procedure -> recovery action.
 Abort / go-around criteria and the safe recovery (must itself be FM-conform and tested).
+Postconditions: the state the script leaves (post.py air/ground + test-specific items, e.g. damper switch back ON).
 Data: which logs (script CSV + simlog for α/pitch/elevator/trim/N1), file names.
 Build-up: the safe step that validates the setup first (e.g. dry run at altitude).
-Result: filled in after the run (with the measurement entry in docs/notes/measurements.md).
+Go/no-go: one line before the run.
+Result + Debrief: filled in right after the run - prediction vs. measurement, anomalies, surprises (5 lines);
+  measurement entry in docs/notes/measurements.md; lessons -> docs/notes/lessons-learned.md.
 ```
 
 ## 2. Validate the card before flying (desk check)
@@ -73,7 +94,7 @@ Before flying, write into the card (section "Analysis") and check:
 Not needed for pure regression re-runs of an unchanged test.
 
 ## 3. Check the preconditions in the sim (go/no-go)
-MCP `check_build`, `preflight`, `sim_state`. No-go if anything deviates from the card (e.g. fuel < 1 500 lb after
+`tools/selftest.py` (step 0), MCP `check_build`, `preflight`, `sim_state`. No-go if anything deviates from the card (e.g. fuel < 1 500 lb after
 idling on the runway, engine not at idle N1, wrong flaps/trim). Scripts must also abort themselves on these.
 
 ## 4. Build-up, then the test

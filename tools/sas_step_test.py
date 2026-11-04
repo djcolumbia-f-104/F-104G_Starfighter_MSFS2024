@@ -9,6 +9,8 @@ last 3 s of the hold must equal the SAS-off run (bu0: 0.33° beta per rudder deg
 Abort: |beta| > 5°, |bank| > 30°, |yaw rate| > 15°/s -> rudder 0, damper OFF (left off).
 """
 import csv
+import os
+import subprocess
 import sys
 import time
 
@@ -69,3 +71,8 @@ print(f"gain {gain}: steady (last 3 s of the hold) beta {mean(lambda t: h1 - 3 <
       f"bank {mean(lambda t: h1 - 3 <= t < h1, 3):+.2f}°, SAS rudder {mean(lambda t: h1 - 3 <= t < h1, 5):+.3f}°")
 print(f"SAS rudder peak during the hold {min((r[5] for r in rows if h0 <= r[0] < h1), default=0):+.2f} / "
       f"{max((r[5] for r in rows if h0 <= r[0] < h1), default=0):+.2f}°; max |beta| {max(abs(r[2]) for r in rows):.2f}°")
+
+# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+                      capture_output=True, text=True, timeout=60)
+print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

@@ -148,3 +148,8 @@ pos = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(__file_
                       "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
                      capture_output=True, text=True, timeout=120)
 print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1][:140])
+
+# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+                      capture_output=True, text=True, timeout=60)
+print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

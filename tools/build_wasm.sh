@@ -9,6 +9,16 @@ W="$SDK/WASM"
 SRC="$(dirname "$0")/../source/wasm/f104_systems/F104Systems.cpp"
 OUT="$(dirname "$0")/../build/wasm"
 mkdir -p "$OUT"
+# 2026-11-04 (lesson 2026-11-03, invalid unit "pounds per square foot" killed the module's state request): probe every
+# SimVar/unit pair of the source in the running sim first; a FAIL stops the build, no sim = warning only.
+PY="/c/Users/pete/AppData/Local/simconnect-mcp/.venv/Scripts/python.exe"
+set +e
+"$PY" -I "$(dirname "$0")/probe_units.py" "$SRC" > "$OUT/probe_units.txt"
+RC=$?
+set -e
+tail -1 "$OUT/probe_units.txt"
+if [ $RC -eq 1 ]; then grep FAIL "$OUT/probe_units.txt"; echo "BUILD STOPPED: invalid SimVar/unit pair"; exit 1; fi
+if [ $RC -eq 2 ]; then echo "WARNING: sim not reachable - SimVar units NOT probed (run tools/probe_units.py before Build All)"; fi
 "$W/llvm/bin/clang-cl.exe" --driver-mode=g++ --target=wasm32-unknown-wasi --sysroot="$W/wasi-sysroot" \
   -I"$W/include" -I"$SDK/SimConnect SDK/include" \
   -D_MSFS_WASM=1 -D__wasi__ -D_LIBCPP_HAS_NO_THREADS -D_LIBCPP_NO_EXCEPTIONS \

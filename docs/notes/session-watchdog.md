@@ -1,4 +1,7 @@
-# Watchdog concept: no lost jets, no lost time (draft 2026-11-03, for discussion with pete)
+# Watchdog concept: no lost jets, no lost time (draft 2026-11-03)
+
+**DECIDED 2026-11-04 (pete):** the watchdog only refuels (dive/bank events are logged as ALERT, no pause, no popup).
+Process decisions: `docs/notes/test-process.md`.
 
 ## What went wrong on 2026-11-03
 | # | Event | Cost | Root cause |

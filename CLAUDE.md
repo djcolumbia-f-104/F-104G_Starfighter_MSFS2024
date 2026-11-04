@@ -7,11 +7,11 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
 ## >>> CONTINUE HERE (state 2026-11-03 late evening - session ended, sim PAUSED at 16 500 ft on the AP) <<<
-**Start next session (2026-11-04) with:** (0) discuss with pete `docs/notes/test-process.md` (fixed test sequence: preconditions,
-THA, postconditions, debrief, lessons-learned register + robustness: watchdog, selftest, bounded tools; plan in its section 5)
-and `docs/notes/session-watchdog.md` (today's incidents); pete: the watchdog should not pause in normal operation;
-(1) start `tools/watchdog.py` in the background (refuel/pause guard, log build/watchdog.log); (2) **pause the sim before
-any desk work** (rule from today); (3) continue T3-SP below.
+**Since 2026-11-04: fixed test sequence** (skill `f104-testcard`, section "Fixed test sequence"; decided with pete):
+session start = `tools/watchdog.py` in the background (refuels only) + `tools/selftest.py` (SELFTEST ALL OK); hazards and
+postconditions in every card; flight scripts end with `tools/post.py` (POST OK/FAIL); debrief at once; lessons ->
+`docs/notes/lessons-learned.md` (only "enforced" counts); `build_wasm.sh` probes all SimVar/unit pairs (tools/probe_units.py).
+Claude decides go/no-go itself; PAUSE_ON before desk work.
 **Rules learned today:** Build All reloads the aircraft (only with the jet on the runway); probe every new SimVar/unit pair
 from Python before a module build ("pounds per square foot" invalid -> "psf"); never call msfs_save_flight with the jet in
 the air (blocked the sim ≈ 20 min); ROTATION_VELOCITY_BODY_X reads ≈ 3.5x the θ rate (do not use; body Y is fine).
@@ -70,7 +70,7 @@ roll damper (10 % -> 171°/s); yaw gain check at F/C 6 and on the approach; then
 **Safety rules learned (also in skill f104-testcard):** runway_start after every flight load (trim 0°); AP only engaged
 in stabilised level flight at ≈ 450 KIAS (it sets the trim to ≈ 2.5°) - test scripts end via the `position` routine;
 never call `position`/set_pos while the jet still rotates (unload/level or PAUSE first); refuel before every test.
-**Session start:** start `tools/watchdog.py` in the background first (refuels < 1 500 lb in the air, pauses on a dive;
+**Session start:** start `tools/watchdog.py` in the background first (refuels < 1 500 lb in the air, logs dive ALERTs; then `tools/selftest.py`;
 log build/watchdog.log - msfs_save_flight blocked the sim ≈ 20 min on 2026-11-03, never use it with the jet in the air),
 check_build, preflight, wind/QNH, runway_start, `tools/refuel.py`, takeoff with
 `tools/takeoff_test.py <csv> 157 10.5` (MCP `takeoff` needs an /mcp reconnect for its 420 s timeout).

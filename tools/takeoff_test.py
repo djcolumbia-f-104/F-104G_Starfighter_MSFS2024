@@ -20,6 +20,8 @@ Tail strike guard: on the ground the target pitch is limited to 11° (ground con
 Evaluation: liftoff IAS, ground roll, max. pitch on the ground (printed at the end + CSV).
 """
 import csv
+import os
+import subprocess
 import sys
 import time
 
@@ -467,3 +469,8 @@ if fa:
     print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
 if lo:
     print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
+
+# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+                      capture_output=True, text=True, timeout=60)
+print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

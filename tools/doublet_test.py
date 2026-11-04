@@ -10,6 +10,8 @@ Only 4 SimVars per sample (simlog.py with 26 SimVars reaches only ~0.7 Hz, too s
 Prints the sideslip peaks after the doublet: period and ratio of successive peaks (damping).
 """
 import csv
+import os
+import subprocess
 import sys
 import time
 
@@ -59,3 +61,8 @@ if len(peaks) >= 3:
     period = (peaks[2][0] - peaks[0][0])
     ratio = abs(peaks[2][1] / peaks[0][1])
     print(f"period ≈ {period:.2f} s, amplitude ratio per cycle ≈ {ratio:.2f}")
+
+# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+                      capture_output=True, text=True, timeout=60)
+print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])
