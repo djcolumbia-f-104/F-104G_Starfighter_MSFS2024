@@ -99,8 +99,9 @@ while time.time() - t0 < 60:
     ev("THROTTLE1_SET", int(st["th"]))
     ev("AXIS_ELEVATOR_SET", int(cmd))
     ev("AXIS_AILERONS_SET", int(clamp(-(250.0 * bank), -4000, 4000)))
-    if not -10 < theta < 25 or abs(bank) > 30 or ias < 150:
-        reason = f"ABORT: pitch {theta:.0f}°, bank {bank:.0f}°, IAS {ias:.0f}"
+    # 2026-11-04 (T3-SP): the kicker is inhibited with the gear down -> own alpha limit below the kicker alpha (14.5°)
+    if not -10 < theta < 25 or abs(bank) > 30 or ias < 150 or alpha > 13.0:
+        reason = f"ABORT: pitch {theta:.0f}°, bank {bank:.0f}°, IAS {ias:.0f}, alpha {alpha:.1f}°"
         break
     rows.append([round(el, 2), phase, round(alt), round(ias, 1), round(vs), round(theta, 2), round(q, 2), round(alpha, 2),
                  int(cmd), round(g("ELEVATOR_POSITION"), 3)])

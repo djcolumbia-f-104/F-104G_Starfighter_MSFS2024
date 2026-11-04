@@ -148,3 +148,17 @@ measurements.md. Re-verification in ISA/calm is part of the order below (marked 
 - USAFTPS Performance Phase Textbook Vol. I (DTIC ADA170957), Flying Qualities Textbook Vol. II (ADA170959/60),
   USNTPS FTM-103/108 - test techniques (sawtooth climbs, level accelerations, stall approaches).
 - FM appendix Part 6 (range, PDF 520-537) and Part 9 charts for D3/D5.
+
+## 6. Sorties: many test points per flight (pete 2026-11-04)
+A sortie = one flight with several test cards in a fixed order; each card's postcondition (tools/post.py) is the next card's
+precondition. Planned tool `tools/sortie.py <plan>`: runs the steps, checks POST between them, stops the sortie on POST FAIL
+or any abort and leaves the jet in a safe state (AP, level, 16 500 ft) - the whole sortie in one go, one debrief at the end.
+**Only on a stable configuration** (no open cfg change): sorties are for regression and for tests that do not change the
+cfg; a cfg change is still flown alone with its own build-up (lesson 16).
+| Sortie | Content (order) | Duration | Covers |
+|---|---|---|---|
+| S1 regression | takeoff (T3-D) -> climb (D7) -> AP/position check -> T3-J doublet -> SP step A -> accel run (T3-F/T3-H) -> supersonic SP D + trim (S12) -> descent (D6, new) -> approach (T3-L) -> landing F3 | ≈ 25 min | the full regression list after any change |
+| S2 open performance | D6 descent rates, D2/D3 rest, E1 trim vs. Mach, C6 spiral stability, C5 transonic lateral oscillation (M 0.94-0.98 > 25 000 ft) | ≈ 20 min | 6 open/partial points |
+| S3 landing variants | takeoff -> pattern -> F4 minimum run ... F7 touch-and-go back into the pattern -> F8 go-around from the flare -> F5 no-flap -> F6 BLC failure; F9 crosswind with weather set | ≈ 30 min | F4-F9 |
+| S4 engine | G1 AB light/blowout at altitude, G2 air start, G3 flameout pattern (at altitude first) | ≈ 20 min | G1-G3 |
+Prerequisites: sortie.py; post.py in landing_test/config_test; the sideslip script rework; descent/spiral tools.

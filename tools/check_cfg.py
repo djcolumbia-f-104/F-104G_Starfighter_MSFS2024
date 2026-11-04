@@ -62,9 +62,9 @@ check("AP-1", "lift_coef_at_drag_zero set (mandatory per SDK; D-7137 polar -> 0)
       "lift_coef_at_drag_zero" in aero, info=f"is {aero.get('lift_coef_at_drag_zero')}")
 check("AP-1", "wing_camber != 0 (per tutorial 'Fine Tuning' 0 is silently replaced by 1)",
       num(geo.get("wing_camber")) not in (None, 0), info=f"is {geo.get('wing_camber')}")
-# 2026-11-04 T3-SP change 1: 0 -> 3.6 (wing lift point forward = missing tail downwash, card T3-SP-short-period.md)
-check("AP-1", "aero_center_lift = 3.6 (T3-SP change 1), compute_aero_center = 0",
-      num(aero.get("aero_center_lift")) == 3.6 and num(aero.get("compute_aero_center")) == 0,
+# 2026-11-04 T3-SP change 1 (3.6) tried and REVERTED (card T3-SP-short-period.md) -> back to 0
+check("AP-1", "aero_center_lift = 0 (25 % MAC = datum = model origin)",
+      num(aero.get("aero_center_lift")) == 0 and num(aero.get("compute_aero_center")) == 0,
       info=f"is {aero.get('aero_center_lift')}")
 legacy = {k: num(aero.get(k)) for k in ("lift_coef_delta_elevator", "lift_coef_horizontal_incidence",
                                         "lift_coef_pitch_rate", "lift_coef_daoa")}

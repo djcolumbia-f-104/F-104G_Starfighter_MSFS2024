@@ -134,3 +134,19 @@ v2 = srot structure (validated dynamics: stick schedule + slow integrator + rate
 θ-scheduled hold value S(θ) = S_HOLD + (S_AIR - S_HOLD) x min(1, θ/θ_target) instead of an attitude PID; S_AIR from an
 in-air stick_hold_test (gear down, TAKEOFF flaps, 15 000 ft) with a SMALL stick first (≈ -1 800, kicker inhibited with gear
 down -> abort α > 12°); build-up with that law in the air (simulated rotation at altitude), then taxi, then takeoff.
+
+## S_AIR measurement (in the air, 2026-11-04)
+stick_hold_test.py (gear down, TAKEOFF flaps, trim 5°, 185 KIAS, 15 000 ft), new abort α > 13° (kicker inhibited with gear
+down). Prediction stick -1 800 -> α 10.5 ± 2.7° (old stiffness would give ≈ 5.9°). Hazard: settle-phase elevator PI with the
+softer airframe -> oscillation at altitude only (aborts pitch/bank/α). Go: GO.
+| Run | Result |
+|---|---|
+| SP_hold1800 (`..._SP_hold1800.csv`) | settle phase: the elevator PI saturated at -8 000 (stab 13.3°) and the jet still sank 6 000-8 000 ft/min at 200 kt with TAKEOFF flaps; after the ramp to -1 800 the dive went on (abort pitch -10°); the end routine left the flaps at 15° -> AP-held dive to pitch -22.7°, 3 800 ft AGL at 435 kt; **recovered with FLAPS_UP** (nose came up at once), then `position` |
+**DEBRIEF:** change 1b (`add aft feet` -3.6) moves the lift of the WHOLE flapped section, not only the flap increment: on the
+ground (α ≈ 1°) small, in the air at α 8-10° a huge nose-down moment. Third serious event of the day.
+**DECISION (Claude, go/no-go owner; 2026-11-04): changes 1 and 1b REVERTED to the validated state** (values identical to
+ccb24bc). T3-SP stays an OPEN, documented deviation (subsonic Cmα ≈ 2x). A next attempt only after: (1) the mechanism of each
+knob is measured in isolation at altitude (e.g. aero_center_lift alone: SP points + stick-hold with TAKEOFF/LAND flaps;
+`add aft feet` alone), (2) a prediction that covers ALL configurations (clean / TAKEOFF / LAND, ground and air), (3) the
+full regression plan written in advance. Alternative to study: emulate the downwash by a lower tail lift slope
+(elevator_lift_coef) + restore Cmq with pitch_stability (target damping) + restore Cmδ with elevator_chordangle_scalar.

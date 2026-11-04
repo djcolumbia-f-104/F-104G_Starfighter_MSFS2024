@@ -80,6 +80,9 @@ Before flying, write into the card (section "Analysis") and check:
    pages from docs.flightsimulator.com into docs/sdk-ref/). Write the formula and a numeric prediction with its source
    ("drag = coef x deflection [rad] -> 0.12 x 1.134 = ΔCD 0.136 -> ground roll ≈ -12 %"). Only then build. After the test:
    prediction vs. measurement; if the gap is > 2x the tolerance, stop and find out why before the next change.
+   **A new knob is first measured in isolation at altitude in every configuration it touches** (clean / TAKEOFF / LAND,
+   ground and air) before it is combined or flown near the ground (2026-11-04: aero_center_lift and flap `add aft feet`
+   each did something different from the assumption -> taxi liftoff, then a dive with TAKEOFF flaps; both reverted).
 2. **New or changed control law** (takeoff, flare, any closed loop near the ground): estimate the loop rate
    (≈ 70 ms per SimConnect read: n reads -> 1/(n x 0.07) Hz), the fastest dynamics it must handle (e.g. nose-wheel
    break-out ≈ 3-6°/s) and the worst output (never push during a rotation, never hand over to the AP near the ground).

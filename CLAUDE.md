@@ -37,13 +37,12 @@ nose-wheel lift-off (break-out stick, does the 5° trim alone lift the nose?), d
 fine-tune S_HOLD with stick_hold_test.py in the air, then T3-D. Regression list in the card
 (T3-A, T3-G new ≈ 0.5, S12, position/AP, T3-D, T3-L/F3, H2, B7).
 
-**2026-11-04 state of T3-SP:** change 1 (aero_center_lift 3.6) + 1b (flap add aft feet -3.6) ARE IN THE SIM. Taxi: the nose
-stays down with the 5° trim ✓, break-out ≈ 164-174 kt at -6 600 (≈ as before). Scripted takeoff: srot would over-rotate
-(in-air need ≈ -1 800); the new `brot` law (attitude PID) gave a NEAR-LOSS (pitch limit cycle at 0-24 ft, 24° heading error,
-tail contact) -> flight tests stopped. **NEXT (desk first):** rotation law v2 = srot structure with a θ-scheduled hold value
-S(θ) (card T3-SP, section "brot runs and DEBRIEF"); S_AIR from an in-air stick_hold_test with a small stick first; build-up
-of the airborne phase at altitude; then taxi, then takeoff. Then SP points A-D, regression list. Jet left PAUSED at 16 450 ft
-on the AP. Lessons 9-14 in docs/notes/lessons-learned.md.
+**2026-11-04 state of T3-SP: changes 1 + 1b REVERTED in source/cfg (validated values again; needs Build All + FULL restart).**
+Three serious events (taxi liftoff with change 1; brot takeoff limit cycle at 0-24 ft; dive with TAKEOFF flaps from 1b,
+recovered by flaps up). T3-SP stays an open, documented deviation (subsonic Cmα ≈ 2x); next attempt only with each knob
+measured in isolation at altitude in all configurations (card T3-SP, lessons 9-16). `brot` law exists (option) but is NOT
+safe - srot stays the default. **Next:** pete Build All + restart -> selftest -> regression takeoff (srot, should be the
+old 178 kt) -> then the sortie plan (test-plan.md section 6: sortie.py, S1-S4).
 **Later (H1 rest):** pitch damper on the corrected airframe (q from θ, not body X; trim channel; off with AP on / during
 kicks); rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still open); aileron trim range far too large for a
 roll damper (10 % -> 171°/s); yaw gain check at F/C 6 and on the approach; then the full-deflection roll C4.
