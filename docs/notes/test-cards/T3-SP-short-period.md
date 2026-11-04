@@ -89,3 +89,18 @@ up to vr; break-out with back stick ≈ 160-166 kt); remaining difference = the 
 3.6 ft (CL ≈ 0.05-0.1 -> ≈ 35-70 ft³, i.e. break-out a few knots earlier). Unknown: whether "add aft feet" moves only the
 flap increment or the whole flapped-section lift - the taxi run shows it. Hazard 1/2 now guarded by the script.
 **Go/no-go 1b: GO** (flap-lift shift reverted per stage; taxi run guarded by the uncommanded-rotation stop).
+
+## Change 1b - taxi runs (2026-11-04)
+| Run | Result |
+|---|---|
+| SP1b (`..._SP1b_taxi.csv`, vr 157, shold -2000) | nose stays down with the 5° trim up to 166 kt (θ ≤ 1.0°) ✓ - the false Cm0 is gone; POST OK |
+| SP1c (`..._SP1c_taxi.csv`, vr 145, shold -6600 -> stick -5 620 at 166.6 kt) | **no break-out yet** (θ 1.1°): on the ground slightly more nose-down than before (old: break-out 166 kt at -5 159); POST OK |
+**Go/no-go for a scripted takeoff: NO-GO.** On the ground (α ≈ 1°) the balance is ≈ the old one (break-out ≈ -6 000 at ≈ 168 kt),
+but in the air at α 10.5° the new stiffness applies: stab ≈ δ0 (≈ 1.1° incl. the slightly more nose-down flaps) + 0.55 x 10.5
+≈ 6.9° instead of 11.85° -> S_HOLD ≈ -1 800 (± 1 500) instead of -6 600. srot pulls and HOLDS -6 600 (attitude integrator
+150 counts/°s far too slow) -> α runs away after liftoff, kicker inhibited with gear down -> pitch-up near the ground.
+Needed: rotation law "break-out stick, then attitude hold around ≈ -1 800" (what a pilot does; FM 6-5 high response rates)
+- a new law near the ground -> in-air build-up first (stick_hold_test.py, gear down, TAKEOFF flaps). Options to get airborne:
+(1) pete hand-flies the takeoff and climb to 16 500 ft + AP (test-pilot build-up; also gives a handling impression);
+(2) old attitude law (`old`, closed loop θ ramp, FF 5 000, KP 800, KD 200) - loop gain in the air doubles, history of
+overshoot on the ground -> second choice; (3) revert to change 0 for takeoffs (needs restarts) - no.

@@ -62,6 +62,7 @@ check(wind is not None and wind < 3, "wind < 3 kt", f"{wind:.1f} kt" if wind is 
 check(qnh is not None and abs(qnh - 1013.25) <= 1, "QNH 1013.25 ± 1", f"{qnh:.2f}" if qnh is not None else "no value")
 check(oat is not None and abs(oat - isa) <= 5, "OAT within ± 5 °C of ISA", f"{oat:.1f} °C (ISA {isa:.1f})"
       if oat is not None else "no value")
+fuel_now = g("FUEL_TOTAL_QUANTITY_WEIGHT") or 0
 state = (f"ground {g('SIM_ON_GROUND'):.0f}, N1 {g('TURB_ENG_N1:1'):.1f} %, fuel {g('FUEL_TOTAL_QUANTITY_WEIGHT'):.0f} lb, "
          f"flaps {g('TRAILING_EDGE_FLAPS_LEFT_ANGLE') * DEG:.1f}°, trim {g('ELEVATOR_TRIM_POSITION') * DEG:.2f}°, AP "
          f"{g('AUTOPILOT_MASTER'):.0f}")
@@ -71,6 +72,13 @@ log = os.path.join(ROOT, "build", "watchdog.log")
 age = time.time() - os.path.getmtime(log) if os.path.exists(log) else None
 check(age is not None and age < 120, "watchdog alive (log < 120 s)", f"log age {age:.0f} s" if age is not None else
       "no log - start tools/watchdog.py")
+# 2026-11-04: a watchdog on a dead connection kept logging stale values -> its last fuel must match the sim
+wd_fuel = None
+if age is not None:
+    oks = [ln for ln in open(log, encoding="utf-8").read().splitlines() if " ok: fuel " in ln]
+    wd_fuel = float(oks[-1].split("fuel ")[1].split(" lb")[0]) if oks else None
+check(wd_fuel is not None and abs(wd_fuel - fuel_now) < 100, "watchdog sees the live sim (fuel ± 100 lb)",
+      f"watchdog {wd_fuel} lb, sim {fuel_now:.0f} lb")
 if "nounits" not in sys.argv[1:]:
     r = subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "probe_units.py")], capture_output=True,
                        text=True, timeout=180)

@@ -30,13 +30,23 @@ def run():
     sm = SimConnect()
     aq = AircraftRequests(sm, _time=0)
     log("connected")
-    last_status, alerted, misses = 0.0, False, 0
+    last_status, alerted, misses, frozen, last_simt = 0.0, False, 0, 0, None
     while True:
         fuel = aq.get("FUEL_TOTAL_QUANTITY_WEIGHT")
         ground = aq.get("SIM_ON_GROUND")
         agl = aq.get("PLANE_ALT_ABOVE_GROUND")
         vs = aq.get("VERTICAL_SPEED")                      # ft/min in this library
         bank = (aq.get("PLANE_BANK_DEGREES") or 0) * DEG
+        simt = aq.get("ABSOLUTE_TIME")                   # SIMULATION_TIME is not in the library catalog (None)
+        # 2026-11-04: after a sim restart the old connection kept returning its last cached values (fuel 155 lb while the
+        # new flight had 4 081) -> frozen simulation time for 30 s = stale (or paused) -> reconnect
+        if simt is not None and simt == last_simt:
+            frozen += 1
+            if frozen >= 15:
+                raise ConnectionError("simulation time frozen for 30 s (sim restarted or paused)")
+        else:
+            frozen = 0
+        last_simt = simt
         if None in (fuel, ground, agl, vs):
             # 2026-11-04: after a sim restart the old connection returns None forever -> reconnect after 30 s
             misses += 1
@@ -56,7 +66,8 @@ def run():
             log(f"ALERT: AGL {agl:.0f} ft, VS {vs:.0f} ft/min, bank {bank:.0f}°")
         alerted = danger
         if time.time() - last_status > 60:
-            log(f"ok: fuel {fuel:.0f} lb, AGL {agl:.0f} ft, VS {vs:.0f}, bank {bank:.0f}, ground {ground:.0f}")
+            log(f"ok: fuel {fuel:.0f} lb, AGL {agl:.0f} ft, VS {vs:.0f}, bank {bank:.0f}, ground {ground:.0f}, simtime "
+                f"{(simt or 0) % 86400:.0f} s")
             last_status = time.time()
         time.sleep(2)
 
