@@ -36,7 +36,8 @@ depend on part power, (C) the full regression set.
 | S6 | FM appendix cruise / endurance charts | check whether rpm is given (if yes: more anchor points) | to check (desk) |
 | S8 | **FM Fig. A7-1** (PDF 540, flight test, 14 400-16 000 lb) | idle descent at 300 KIAS, flaps + gear up: average **5 600 ft/min** (speed brakes in), **11 150 ft/min** (out); 29 000 ft -> SL in 32 NM / 5.2 min / 54 lb | idle net thrust in flight (+ drag check); a further anchor for the low end |
 | S9 | FM A7-1 remark 4 -> **Section IX "85 % rpm jet penetration descent"**; A7-3 ff. (PDF 541-543: probably the TAKEOFF-flap / speed-brake variants) | descent rates at 85 % rpm | **another part-power point** - read tomorrow |
-| S7 | J79 thesis (UMSL, `J79_Thesis_Rev._E.pdf`), DTIC AD0855992 | possibly J79 maps / part-power data | **download blocked for the tools (HTTP 403) - pete: please download in the browser into docs/sources/** |
+| S10 | **T.O. 1F-4C-2-8 J79-15/17 power plant maintenance instructions** (USAF 1978, archive.org: https://archive.org/details/f-4-c-j-79-15-17-power-plant-maintenance-instructions; found by pete; read via the full text) | nozzle check (para. 2-66 d/e): **nozzle starts to close at 66-68 % rpm, stops closing at 86 %**, at idle 3/4-7/8 open; figures 2-11 EGT/RPM schedule, 2-13 throttle schedule, 2-14 military fuel flow; no test-cell thrust curve | confirms the Fig. 1-30 shape for the J79 family (-15/17 starts closing earlier than the -11A reading ≈ 74 %); throttle schedule for the A0 reading |
+| S7 | J79 thesis (UMSL, `J79_Thesis_Rev._E.pdf`), DTIC AD0855992 (DTIC in maintenance 2026-11-04; title unknown - low priority) | possibly J79 maps / part-power data | **download blocked for the tools (HTTP 403) - pete: please download in the browser into docs/sources/** |
 
 ## 4. Plan (each step with gate)
 **A0 (desk, now):** this document; FM appendix check (S6); reading of Fig. 1-30 with uncertainty (throttle-angle -> rpm map,
