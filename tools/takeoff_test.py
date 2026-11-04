@@ -47,6 +47,8 @@ QROT = "qrot" in sys.argv[4:]
 AP_DIAG = "apdiag" in sys.argv[4:]                 # 2026-10-31: AP divergence diagnostic instead of the AP handover
 SROT = not QROT and "old" not in sys.argv[4:]
 S_HOLD = -6600.0                          # [M] -6 400 -> α 10.2° (stick_hold_test); target 10.5° -> + 0.3° x 965 counts/°
+# 2026-11-04 (T3-SP change 1 halves the trim gradient): option shold=<counts> overrides S_HOLD for build-ups
+S_HOLD = next((float(a.split("=")[1]) for a in sys.argv[4:] if a.startswith("shold=")), S_HOLD)
 # build-up for a new rotation law (testcard rule 2026-10-30): high-speed taxi - apply the rotation law from vr until pitch
 # 2.5° or 165 kt, then idle, hold the nose at 0°, brake to a stop (no liftoff)
 TAXI = "taxi" in sys.argv[4:]

@@ -42,3 +42,26 @@ Logs `flighttest_2026-11-03_SP_A/B/C/D_*.csv`, `_H1_pstep02_fast.csv`.
   the air) -> `srot taxi` high-speed taxi build-up at idle up to nose-wheel lift-off: break-out stick vs. prediction (≈ half
   the old value), check that the 5° takeoff trim alone does not lift the nose; derive S_HOLD; takeoff; fine-tune S_HOLD
   in the air with stick_hold_test.py; then the SP points A-D.
+
+## Change 1 - hazards, preconditions, go/no-go (fixed test sequence, 2026-11-04)
+**Hazards** (cause -> effect -> minimising -> recovery):
+1. Takeoff stick schedule tuned to the old stiffness -> over-rotation / tail strike / kicker after liftoff -> first run
+   = `srot taxi` with `shold=-2000` (taxi ends at θ 2.5° or 165 kt) -> script: idle, active nose-down push, brakes.
+   Prediction: wing lift 3.6 ft further forward ≈ +21 000 ft lb nose-up at 160 kt (≈ +3.7° stab) -> break-out ≈ 163 kt with
+   stick ≈ -1 600 (was -5 159 at 166 kt); the 5° trim alone would need ≈ 190 kt; no liftoff possible in the taxi run
+   (CL 1.11 needed at 160 kt / θ 5°).
+2. 5° takeoff trim lifts the nose before vr -> uncommanded rotation -> watch θ in the taxi log before vr ->
+   recovery: the taxi stop routine (push, idle, brakes); next step would be a lower takeoff trim (FM 5°: flag, not change).
+3. MSFS AP flies by trim; a less stiff airframe changes its loop -> oscillation after `position` -> post.py checks AP/level
+   at the end of every script -> recovery: AP off, wings level, re-position from level flight; sim PAUSE if divergent.
+4. Prediction wrong in the other direction (wing share 4.4 instead of 3.4) -> Cmα ≈ -0.75, still stable; short period
+   slower -> no hazard; if any test shows |α| growing without input -> abort (tool |Δα| > 4°).
+5. APC kicker = trim offset based on the stick-to-stab mapping; α thresholds unchanged -> first kicker check later (H2
+   regression), not part of the first flights.
+**Preconditions**: selftest ALL OK after the restart (module 7.2, units, watchdog, weather); check_build after build_cfg;
+FULL sim restart done (normalization; lift check T3-A follows); runway_start (trim 5°, flaps 15); refuel; wind < 3 kt.
+**Order**: (a) taxi `takeoff_test.py <csv> 157 10.5 taxi shold=-2000`; (b) takeoff with S_HOLD from (a) (proportional to the
+break-out stick); (c) stick_hold_test.py in the air (gear down, TAKEOFF flaps) -> S_HOLD for α 10.5°; (d) SP points A, B, D
+with pitch_step_test.py; (e) regression list above.
+**Postconditions**: taxi: post.py ground (stopped, idle); flights: post.py air.
+**Go/no-go 2026-11-04: GO** for the cfg change (prediction + hazards written, worst case still stable); flights after the FULL restart in the order above, each step gated by its postcondition.
