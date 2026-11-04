@@ -34,6 +34,8 @@ depend on part power, (C) the full regression set.
 | S4 | **FM 3-33** simulated flameout | 83 % + speed brakes out + gear up + TAKEOFF flaps ≈ dead-engine drag; flaps/gear up, RAT in: 275 KIAS at 84 % with speed brakes | net(83 %) ≈ ΔD speed brakes (ΔCD 0.046 x 229 x 196 ≈ 2 060 lbf) - windmill/RAT drag -> **≈ 1 500-2 000 lbf**; second independent point |
 | S5 | FM 2-24/2-25, approach | ≥ 83 %, typ. 87-90 % at 175 KIAS LAND + gear; flare 82-83 %, idle at touchdown | D5 ✓ (anchor) |
 | S6 | FM appendix cruise / endurance charts | check whether rpm is given (if yes: more anchor points) | to check (desk) |
+| S8 | **FM Fig. A7-1** (PDF 540, flight test, 14 400-16 000 lb) | idle descent at 300 KIAS, flaps + gear up: average **5 600 ft/min** (speed brakes in), **11 150 ft/min** (out); 29 000 ft -> SL in 32 NM / 5.2 min / 54 lb | idle net thrust in flight (+ drag check); a further anchor for the low end |
+| S9 | FM A7-1 remark 4 -> **Section IX "85 % rpm jet penetration descent"**; A7-3 ff. (PDF 541-543: probably the TAKEOFF-flap / speed-brake variants) | descent rates at 85 % rpm | **another part-power point** - read tomorrow |
 | S7 | J79 thesis (UMSL, `J79_Thesis_Rev._E.pdf`), DTIC AD0855992 | possibly J79 maps / part-power data | **download blocked for the tools (HTTP 403) - pete: please download in the browser into docs/sources/** |
 
 ## 4. Plan (each step with gate)
@@ -74,3 +76,29 @@ follows N1 in the flare), position/AP routine (throttle 8 000 = N1 ≈ 90 %: una
 - Every acceptance band is shifted to the test condition (lesson 7); the two FM points S3/S4 are a consistency check of each
   other (both ≈ 1 500-2 000 lbf at 83 %).
 - One change per round; predictions for ALL configurations and the whole regression matrix before the build (lessons 15/16).
+
+## 7. Agenda for the next session (2026-11-05) - written 2026-11-04 evening
+Session start: watchdog (background), selftest; sim: EDDM 26L, runway_start. The validated state is in the sim (changes 1/1b
+reverted, S1a passed).
+1. **A0 finish (desk, sim paused):** read FM A7-3 ff. (PDF 541-543) and the Section IX 85 % penetration descent; read Fig. 1-30
+   with a pixel scan (throttle angle -> rpm, nozzle position; calibrate the method on the axis ticks, write the uncertainty);
+   if pete downloaded them: J79 thesis / DTIC report. Result: table of FM part-power points (rpm, config, speed, altitude,
+   descent rate -> net thrust from the validated drag) in this document.
+2. **A1 tool `tools/engine_sweep.py`** (desk, then sim): ground run with parking brake (N1 steps 67-100 %, throttle loop on N1,
+   8 s each; parking brake holds military - no AB) and an in-flight sweep at ≈ 6 500 ft / 260 KIAS (gear up, TAKEOFF flaps;
+   short N1 steps, AP ALT hold not used - elevator holds the altitude like config_test; stop after each step if IAS
+   leaves 240-290). Output: net thrust, FF, EGT, nozzle?, corrected N1 per step + the table formula prediction. Gate:
+   measured = formula (consistency check of the engine model). Hazards: ground - none (brake, no AB); air - low altitude
+   ≥ 6 500 ft MSL, abort AGL < 3 500, speed/bank/pitch limits, end via `position`.
+3. **A2 target curve (desk):** net-thrust targets at M 0.4 from S3/S4/S8/S9 + the Fig. 1-30 shape; gross-table rows 70-88 %
+   (all Mach columns, same relative factor), rows ≥ 90 % unchanged; predictions for every line of the regression matrix
+   (section 5) written into this document BEFORE the build.
+4. **A3** one cfg change (engines.f104.cfg thrust table rows), build_cfg, check_build -> pete: Build All (+ restart if the
+   engine normalisation needs it - check with the selftest/engine_sweep) -> engine_sweep again (target ± 5 %).
+5. **B** sortie S5-EPP: D6 descent 6 500 ft (1 800-2 000 ft/min ± 10 %), simulated-flameout config at 83 % vs. B4 glide, idle
+   descent 300 KIAS vs. A7-1, D5 approach N1 + cruise FF points.
+6. **C** regression master set: S1a + F2 + T3-L + B6 (+ H3 BLC TE log in the flare); update test plan D6, measurements, data
+   index, lessons; commit.
+Open items parked: T3-SP longitudinal stiffness (deviation, see its card), H1 pitch/roll dampers, sideslip_test rework, S3/S4
+sorties (landing variants, engine), H2 kicker Mach table.
+

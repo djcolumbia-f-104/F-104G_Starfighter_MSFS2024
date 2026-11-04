@@ -6,7 +6,15 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-03 late evening - session ended, sim PAUSED at 16 500 ft on the AP) <<<
+## >>> CONTINUE HERE (state 2026-11-04 evening - session ended, sim PAUSED in the air on the AP) <<<
+**START 2026-11-05: work package EPP (J79 part-power thrust) - agenda in `docs/notes/workpackage-EPP-part-power-thrust.md`
+section 7** (A0 FM part-power points incl. A7-1 idle descent / Section IX 85 % penetration, A1 new engine_sweep.py component
+test, A2 target curve + predictions, A3 one cfg change, B sortie S5-EPP, C regression master set). Finding behind it: at 83 % N1
+the sim gives ≈ 3 000 lbf net vs. ≈ 1 500-2 000 from FM 3-41 and FM 3-33 (linear thrust table; FM Fig. 1-30: nozzle open
+below ≈ 74 % rpm, closing 74-87 %). pete may download the J79 thesis (UMSL) + DTIC AD0855992 (tools: HTTP 403).
+**Today (2026-11-04):** fixed test sequence adopted (skill f104-testcard; selftest/probe_units/post/watchdog/lessons register);
+T3-SP stiffness change tried and REVERTED (3 serious events, lessons 9-16; deviation stays open); sortie runner
+(`tools/sortie.py`, plans in tools/sorties/): S1a regression PASSED (7 min), S2: C5 ✓, C6 ✓, D6 ✗ (thrust).
 **Since 2026-11-04: fixed test sequence** (skill `f104-testcard`, section "Fixed test sequence"; decided with pete):
 session start = `tools/watchdog.py` in the background (refuels only) + `tools/selftest.py` (SELFTEST ALL OK); hazards and
 postconditions in every card; flight scripts end with `tools/post.py` (POST OK/FAIL); debrief at once; lessons ->
