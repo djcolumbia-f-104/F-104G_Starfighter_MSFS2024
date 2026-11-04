@@ -47,6 +47,10 @@ old 178 kt) -> then the sortie plan (test-plan.md section 6: sortie.py, S1-S4).
 7 min: selftest, runway, takeoff, T3-J doublet, SP step, F3 landing -2.4 %). Next: more sortie plans (S1 full incl. accel/
 supersonic/approach config, S2 open performance points D6/E1/C6/C5, S3 landing variants, S4 engine) + the tools they need
 (descent, spiral; post.py in landing/config tests; sideslip rework).
+**NEXT SESSION: work package EPP part-power thrust - plan `docs/notes/workpackage-EPP-part-power-thrust.md`** (QTG-style:
+engine component first: A0 desk/FM appendix check, A1 engine_sweep baseline, A2 target curve from FM 3-41 + FM 3-33 (both
+≈ 1 500-2 000 lbf net at 83 %) + Fig. 1-30 nozzle schedule, A3 one change, B system checks, C regression master set).
+pete: download the J79 thesis (UMSL) and DTIC AD0855992 in the browser (tools get HTTP 403).
 **DONE 2026-11-04 late:** sortie S2/S2b - **C6 spiral ✓** (tools/spiral_test.py), **C5 transonic Dutch roll ✓** (0.53 Hz, FM 0.5),
 **D6 ✗ NEW FINDING: part-power thrust ≈ 2x too high at 83 % N1** (jet climbs where FM 3-41 descends 1 800-2 000 ft/min;
 n1_and_mach_on_thrust_table linear between idle and 100 %, correct near 90 % (D5)) -> next work package "part-power thrust
