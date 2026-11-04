@@ -141,5 +141,5 @@ print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no outpu
 
 # postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
 post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
-                      capture_output=True, text=True, timeout=60)
+                      capture_output=True, text=True, timeout=90)
 print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

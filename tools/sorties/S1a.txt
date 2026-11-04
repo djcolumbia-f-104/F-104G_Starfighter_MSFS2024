@@ -1,0 +1,12 @@
+# S1a regression sortie, first part (2026-11-04): takeoff -> Dutch roll (SAS off reference) -> short period step -> F3 landing
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+doublet  | tools/doublet_test.py {csv} 25 | POST OK | 180
+pstep    | tools/pitch_step_test.py {csv} 0.2 4 | POST OK | 300
+refuel3  | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare | TOUCHDOWN | 600
+roll     | tools/roll_from_speed.py {csv:landing} 165 nochute | roll from | 60

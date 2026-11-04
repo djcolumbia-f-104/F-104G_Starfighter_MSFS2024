@@ -169,6 +169,21 @@ t0 = prev["t"]
 theta_cmd = 0.0
 gear_up = flaps_up = False
 aborted = ""
+
+
+def report_and_post():
+    """Results + postconditions (test process step 6, tools/post.py) - called by every normal end path (2026-11-04: the
+    position-routine end exited before the postcondition block)."""
+    lo, fa = res["liftoff"], res["first_air"]
+    print(aborted or "done", "->", out)
+    print(f"Vr reached after {res['vr_t']} s; max. pitch on the ground {res['theta_max_gnd']:.1f}° (tail at 12.3°)")
+    if fa:
+        print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
+    if lo:
+        print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
+    post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"),
+                           "ground" if (TAXI or aborted) else "air"], capture_output=True, text=True, timeout=90)
+    print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])
 air_since = None
 dist = 0.0
 with open(out, "w", newline="", encoding="utf-8") as f:
@@ -439,13 +454,7 @@ else:
                               "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
                              capture_output=True, text=True, timeout=120)
         print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1])
-        lo, fa = res["liftoff"], res["first_air"]
-        print(aborted or "done", "->", out)
-        print(f"Vr reached after {res['vr_t']} s; max. pitch on the ground {res['theta_max_gnd']:.1f}° (tail at 12.3°)")
-        if fa:
-            print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
-        if lo:
-            print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
+        report_and_post()
         sys.exit(0)
     # trim transfer (AP off: the trim SimVar is accepted), elevator -> 0, then AP ALT hold
     de = rad(aq.get("ELEVATOR_DEFLECTION")) * DEG                      # + = nose up (simlog 2026-10-31)
@@ -512,15 +521,4 @@ else:
           f"max |VS| in the first 30 s on the AP {worst:.0f} ft/min")
 sm.exit()
 lo, fa = res["liftoff"], res["first_air"]
-print(aborted or "done", "->", out)
-print(f"Vr reached after {res['vr_t']} s; max. pitch on the ground {res['theta_max_gnd']:.1f}° (tail at 12.3°)")
-if fa:
-    print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
-if lo:
-    print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
-
-# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
-post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"),
-                       "ground" if (TAXI or aborted) else "air"],
-                      capture_output=True, text=True, timeout=60)
-print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])
+report_and_post()

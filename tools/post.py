@@ -7,6 +7,8 @@ air (default): airborne, AP master on, |vertical speed| < 500 ft/min, |bank| < 5
                gear and flaps up, yaw damper switch at the default (L:F104_SAS_YAW_OFF 0, L:F104_SAS_YAW_GAIN 0).
 ground: on the ground, ground speed < 5 kt, throttle idle, damper switches at the default.
 Prints "POST OK" or "POST FAIL: <items>"; exit code 0/1. The AP is read twice 1 s apart (a toggle event can leave it off).
+2026-11-04: the checks are repeated every 3 s for up to `settle` s (default 45) - after `position` the AP still climbs back
+to its altitude for ≈ 30 s; only the state after that counts.
 """
 import sys
 import time
@@ -16,7 +18,18 @@ sys.stdout.reconfigure(encoding="utf-8")
 DEG = 57.29578
 
 
-def post_check(aq, sm, mode="air"):
+def post_check(aq, sm, mode="air", settle=45.0):
+    t_end = time.time() + settle
+    while True:
+        bad = _failed_items(aq, sm, mode)
+        if not bad or time.time() > t_end:
+            break
+        time.sleep(3.0)
+    print("POST OK" if not bad else "POST FAIL: " + "; ".join(bad))
+    return not bad
+
+
+def _failed_items(aq, sm, mode):
     from SimConnect.RequestList import Request
 
     def g(n):
@@ -46,9 +59,7 @@ def post_check(aq, sm, mode="air"):
         ]
     checks += [((lv["L:F104_SAS_YAW_OFF"] or 0) == 0, "yaw damper switched OFF"),
                ((lv["L:F104_SAS_YAW_GAIN"] or 0) == 0, f"yaw damper gain {lv['L:F104_SAS_YAW_GAIN']} (not default)")]
-    bad = [msg for ok, msg in checks if not ok]
-    print("POST OK" if not bad else "POST FAIL: " + "; ".join(bad))
-    return not bad
+    return [msg for ok, msg in checks if not ok]
 
 
 if __name__ == "__main__":
