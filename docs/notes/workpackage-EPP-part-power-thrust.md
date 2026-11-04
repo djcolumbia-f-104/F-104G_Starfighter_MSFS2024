@@ -37,7 +37,8 @@ depend on part power, (C) the full regression set.
 | S8 | **FM Fig. A7-1** (PDF 540, flight test, 14 400-16 000 lb) | idle descent at 300 KIAS, flaps + gear up: average **5 600 ft/min** (speed brakes in), **11 150 ft/min** (out); 29 000 ft -> SL in 32 NM / 5.2 min / 54 lb | idle net thrust in flight (+ drag check); a further anchor for the low end |
 | S9 | FM A7-1 remark 4 -> **Section IX "85 % rpm jet penetration descent"**; A7-3 ff. (PDF 541-543: probably the TAKEOFF-flap / speed-brake variants) | descent rates at 85 % rpm | **another part-power point** - read tomorrow |
 | S10 | **T.O. 1F-4C-2-8 J79-15/17 power plant maintenance instructions** (USAF 1978, archive.org: https://archive.org/details/f-4-c-j-79-15-17-power-plant-maintenance-instructions; found by pete; read via the full text) | nozzle check (para. 2-66 d/e): **nozzle starts to close at 66-68 % rpm, stops closing at 86 %**, at idle 3/4-7/8 open; figures 2-11 EGT/RPM schedule, 2-13 throttle schedule, 2-14 military fuel flow; no test-cell thrust curve | confirms the Fig. 1-30 shape for the J79 family (-15/17 starts closing earlier than the -11A reading ≈ 74 %); throttle schedule for the A0 reading |
-| S7 | J79 thesis (UMSL, `J79_Thesis_Rev._E.pdf`), DTIC AD0855992 (DTIC in maintenance 2026-11-04; title unknown - low priority) | possibly J79 maps / part-power data | **download blocked for the tools (HTTP 403) - pete: please download in the browser into docs/sources/** |
+| S11 | **NAVWEPS 02B-151AGA-502, J79-GE-2 maintenance manual (1960)**, local `docs/sources/NAVWEPS02B-...pdf` (504 pages, text layer; via the ww2aircraft.net thread, pete) | p. 400: engine speed / nozzle position / EGT vs. throttle angle chart (third source for the nozzle schedule); p. 483: test-run sheet (idle 5 000 rpm, military 7 720 rpm 604 °C, maximum); pp. 385/389 run-up procedures | **read systematically on 2026-11-05** for part-power check points (rpm/EGT/fuel flow/thrust) |
+| S7 | J79 thesis = Brimer 2017 (UMSL), local "Designing Simplicity ... The Ge.pdf": history of the J79, **no performance data**; DTIC AD0855992 (DTIC in maintenance, title unknown) - dropped | possibly J79 maps / part-power data | **download blocked for the tools (HTTP 403) - pete: please download in the browser into docs/sources/** |
 
 ## 4. Plan (each step with gate)
 **A0 (desk, now):** this document; FM appendix check (S6); reading of Fig. 1-30 with uncertainty (throttle-angle -> rpm map,
@@ -81,7 +82,8 @@ follows N1 in the flare), position/AP routine (throttle 8 000 = N1 ≈ 90 %: una
 ## 7. Agenda for the next session (2026-11-05) - written 2026-11-04 evening
 Session start: watchdog (background), selftest; sim: EDDM 26L, runway_start. The validated state is in the sim (changes 1/1b
 reverted, S1a passed).
-1. **A0 finish (desk, sim paused):** read FM A7-3 ff. (PDF 541-543) and the Section IX 85 % penetration descent; read Fig. 1-30
+1. **A0 finish (desk, sim paused):** read the J79-GE-2 maintenance manual (S11: p. 400 chart, test-run/trim tables, any
+   part-power thrust or fuel-flow points); read FM A7-3 ff. (PDF 541-543) and the Section IX 85 % penetration descent; read Fig. 1-30
    with a pixel scan (throttle angle -> rpm, nozzle position; calibrate the method on the axis ticks, write the uncertainty);
    if pete downloaded them: J79 thesis / DTIC report. Result: table of FM part-power points (rpm, config, speed, altitude,
    descent rate -> net thrust from the validated drag) in this document.
