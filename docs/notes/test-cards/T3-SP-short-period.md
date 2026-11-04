@@ -65,3 +65,27 @@ break-out stick); (c) stick_hold_test.py in the air (gear down, TAKEOFF flaps) -
 with pitch_step_test.py; (e) regression list above.
 **Postconditions**: taxi: post.py ground (stopped, idle); flights: post.py air.
 **Go/no-go 2026-11-04: GO** for the cfg change (prediction + hazards written, worst case still stable); flights after the FULL restart in the order above, each step gated by its postcondition.
+
+## Change 1 - run (a) taxi SP1 (2026-11-04) and DEBRIEF
+`takeoff_test.py ... taxi shold=-2000` (`flighttest_2026-11-04_SP1_taxi.csv`), 19 340 lb, trim 5°, TAKEOFF flaps:
+- **The nose rose by itself from ≈ 137 kt with the 5° trim and no stick** (θ 0.5 -> 7.3° at 158 kt); the taxi end was only
+  checked after vr (157 kt) -> **airborne 160-167 kt (θ up to 8.6°)**, the stop routine pushed it down at 169 kt; clean stop.
+- Prediction "5° trim alone needs ≈ 190 kt" was WRONG (hand-waved scaling). Moment balance about the main gear with the
+  data: old break-out 166 kt (q̄ 93) with stab 10.35°, new ≈ 138 kt (q̄ 64.5) with stab 5° -> the change added ≈ 490 ft³
+  (moment per psf) nose-up on the ground, ≈ 2x the 240 ft³ from the wing lift alone (CL ≈ 0.34 x 196 x 3.6).
+- **Root cause (concept):** moving the lift point moves the moment of the WHOLE lift, including the flap lift (TE + LE
+  TAKEOFF/LAND); real downwash only changes the tail's α-derivative. With flaps at low speed this gives a large false
+  nose-up Cm0. Before the change the takeoff matched the FM (5° trim, rotation with back stick at vr) = FM data point; the
+  real flaps are strongly nose-down (CR-2144 PA: stab 7.1° nose-up at α 2.3°).
+- Script gaps: taxi end only after vr; postconditions checked "air" after a taxi run -> fixed (uncommanded-rotation
+  guard before vr in every mode -> stop routine; post.py ground after taxi/abort).
+- Rule 2b.1 (gap > 2x tolerance -> stop and analyse) applied: no further flight with change 1 alone.
+
+## Change 1b (2026-11-04): flap lift centre back to the validated place
+SDK `flaps-position.i` value 7 `add aft feet`: centre of lift of the flap stage, positive = forward (pitch up). Set -3.6 for
+TAKEOFF and LAND of [FLAPS.0] (TE) and [FLAPS.1] (LE) -> the flap lift acts where it did before change 1; the clean-wing
+stiffness correction stays. Prediction: taxi break-out back near the validated values (nose stays down with the 5° trim
+up to vr; break-out with back stick ≈ 160-166 kt); remaining difference = the basic-wing lift at ground attitude moved
+3.6 ft (CL ≈ 0.05-0.1 -> ≈ 35-70 ft³, i.e. break-out a few knots earlier). Unknown: whether "add aft feet" moves only the
+flap increment or the whole flapped-section lift - the taxi run shows it. Hazard 1/2 now guarded by the script.
+**Go/no-go 1b: GO** (flap-lift shift reverted per stage; taxi run guarded by the uncommanded-rotation stop).

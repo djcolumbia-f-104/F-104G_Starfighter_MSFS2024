@@ -173,6 +173,10 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         q = (s["theta"] - prev["theta"]) / dt
         if s["ias"] >= vr and res["vr_t"] is None:
             res["vr_t"] = s["t"] - t0
+        # 2026-11-04 (T3-SP change 1 taxi run SP1): the nose rose by itself from 137 kt with the 5° takeoff trim and the jet
+        # left the ground at 160 kt, because the taxi end was only checked after vr -> guard in every mode
+        if res["vr_t"] is None and s["gnd"] and s["theta"] >= 2.5 and not aborted:
+            aborted = f"Abort: uncommanded rotation before vr at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
         if res["vr_t"] is not None:
             theta_cmd = min(THETA_CLIMB if res["liftoff"] else theta_target, theta_cmd + (2.0 if res["liftoff"] else 3.0) * dt)
             if s["gnd"]:
@@ -285,7 +289,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             aborted = f"Abort: heading deviation {err_h:.1f}°"
         elif res["liftoff"] is None and s["t"] - t0 > 90:
             aborted = "Abort: 90 s without liftoff"
-        if aborted and TAXI and "taxi" in aborted:
+        if aborted and (TAXI and "taxi" in aborted or "uncommanded" in aborted):
             # gentle stop: idle, nose down over 3 s, wheel brakes once the nose is down, heading hold by rudder
             ev["THROTTLE1_SET"](0)
             t_s = time.time()
@@ -473,6 +477,7 @@ if lo:
     print(f"Result: sustained liftoff at {lo['ias']:.0f} kt IAS after {lo['dist']:.0f} ft / {lo['tt']:.1f} s")
 
 # postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
-post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"),
+                       "ground" if (TAXI or aborted) else "air"],
                       capture_output=True, text=True, timeout=60)
 print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

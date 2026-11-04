@@ -30,7 +30,7 @@ def run():
     sm = SimConnect()
     aq = AircraftRequests(sm, _time=0)
     log("connected")
-    last_status, alerted = 0.0, False
+    last_status, alerted, misses = 0.0, False, 0
     while True:
         fuel = aq.get("FUEL_TOTAL_QUANTITY_WEIGHT")
         ground = aq.get("SIM_ON_GROUND")
@@ -38,8 +38,13 @@ def run():
         vs = aq.get("VERTICAL_SPEED")                      # ft/min in this library
         bank = (aq.get("PLANE_BANK_DEGREES") or 0) * DEG
         if None in (fuel, ground, agl, vs):
+            # 2026-11-04: after a sim restart the old connection returns None forever -> reconnect after 30 s
+            misses += 1
+            if misses >= 15:
+                raise ConnectionError("no values for 30 s (sim restarted?)")
             time.sleep(2)
             continue
+        misses = 0
         if ground < 0.5 and fuel < 1500:
             aq.set("FUEL_TANK_LEFT_TIP_QUANTITY", 0.0)
             aq.set("FUEL_TANK_RIGHT_TIP_QUANTITY", 0.0)
