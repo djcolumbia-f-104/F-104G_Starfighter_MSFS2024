@@ -104,3 +104,33 @@ Needed: rotation law "break-out stick, then attitude hold around ≈ -1 800" (wh
 (1) pete hand-flies the takeoff and climb to 16 500 ft + AP (test-pilot build-up; also gives a handling impression);
 (2) old attitude law (`old`, closed loop θ ramp, FF 5 000, KP 800, KD 200) - loop gain in the air doubles, history of
 overshoot on the ground -> second choice; (3) revert to change 0 for takeoffs (needs restarts) - no.
+
+## Rotation law `brot` (2026-11-04; pete: keyboard only, Claude flies everything by script)
+Design (takeoff_test.py option `brot`): (1) from vr the stick ramps over 15 kt to S_HOLD (-6 600) until the nose wheel lifts
+(θ ≥ 1.5°); (2) attitude PID (KP 800/°, KI 300/°s, KD 300/(°/s)) around a feed-forward that blends from the break-out stick
+to S_AIR (-1 800, option sair=) in 1 s; θ_cmd ramps 2°/s to 10.5°; push +1 500/° above target + 2°; tail guard > 11° on
+the ground; same law to 35 ft AGL; then the climb-out law starts from brot's last stick (scaled with ks ~ 1/q) + a slow
+attitude integrator (the fixed 0.5 x FF_TH belonged to the old stiffness). Loop ≈ 3 Hz on the ground; in-air short period
+with flaps at ≈ 110 psf ωn ≈ 2 rad/s (period ≈ 3 s) -> loop fast enough.
+Hazards: (a) release too fast after the break-out -> nose drops back / bounce -> 1 s blend + the PID; taxi build-up shows it;
+(b) wrong S_AIR -> integrator (± 8°s x 300 = ± 2 400) + P absorb ± 1 500 counts; (c) over-rotation after liftoff (kicker
+inhibited with gear down) -> push above 12.5°; (d) name clash KP_B (aileron) caught in the desk check, renamed KP_R.
+Build-up: taxi `takeoff_test.py <csv> 150 10.5 brot taxi` (end θ 4° or 168 kt; no liftoff possible: CL ≈ 1.0 needed, ≈ 0.5
+available) -> break-out stick/speed, transition without nose drop; then the takeoff `... 157 10.5 brot`.
+
+## brot runs and DEBRIEF (2026-11-04)
+| Run | Result |
+|---|---|
+| SP1d taxi brot (vr 150) | break-out 167 kt at -6 600 (prediction ≈ -6 000 at ≈ 168) ✓; release -6 600 -> -3 923 |
+| SP1e taxi brot (vr 145, window θ 4.5° / 172 kt) | break-out 164 kt; rotation ≈ 6°/s, stick released to -930 by θ 5.1°, rotation arrested at 5.3°; no nose drop ✓ |
+| **SP1f takeoff brot (vr 157)** | **near-loss**: break-out 174 kt; first liftoff 183 kt at θ 5°; the PID released the pull to 0 (θ_cmd ramp 2°/s lagged the natural ≈ 6°/s rotation -> e ≈ -3° -> no pull) -> the nose dropped, touchdown; then a **pitch limit cycle at 0-24 ft AGL** (θ -8 .. +15°, 190-245 kt, stick -12 000 .. +3 000, period ≈ 1-1.5 s), several ground contacts, one at heading error **24°** (pete: "neben der Bahn"), **tail contact 12.4°**; sustained liftoff 197 kt; recovered above 35 ft by the climb-out law, AP at 16 450 ft |
+**Root causes:** (1) the high ground gains (KP 800, KD 300) stayed active in the air up to 35 ft - known since 2026-10-30
+("ground-run gains oscillate at ≈ 3 Hz in the air -> half gains", the old law and the climb-out law have that note) and NOT
+checked in the desk check; the taxi build-up ends at θ 5° and cannot show it; (2) the θ_cmd ramp started at the break-out
+attitude and rose 2°/s while the airframe rotates ≈ 6°/s by itself -> the attitude loop worked AGAINST the rotation and took
+all pull out at liftoff (srot never did that: feed-forward schedule, only slow loops).
+**Consequence:** flight tests stopped for the day (two serious events: SP1 taxi airborne, SP1f). Next (desk): rotation law
+v2 = srot structure (validated dynamics: stick schedule + slow integrator + rate damping, never push before liftoff) with a
+θ-scheduled hold value S(θ) = S_HOLD + (S_AIR - S_HOLD) x min(1, θ/θ_target) instead of an attitude PID; S_AIR from an
+in-air stick_hold_test (gear down, TAKEOFF flaps, 15 000 ft) with a SMALL stick first (≈ -1 800, kicker inhibited with gear
+down -> abort α > 12°); build-up with that law in the air (simulated rotation at altitude), then taxi, then takeoff.

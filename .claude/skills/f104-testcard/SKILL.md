@@ -84,7 +84,10 @@ Before flying, write into the card (section "Analysis") and check:
    (≈ 70 ms per SimConnect read: n reads -> 1/(n x 0.07) Hz), the fastest dynamics it must handle (e.g. nose-wheel
    break-out ≈ 3-6°/s) and the worst output (never push during a rotation, never hand over to the AP near the ground).
    Then a build-up WITHOUT the hazard (in the air at the same speed/configuration, or a taxi run without liftoff), then the
-   real test. Never tune a law live on a takeoff or landing.
+   real test. Never tune a law live on a takeoff or landing. **The build-up must cover EVERY phase of the law** (2026-11-04:
+   the brot taxi build-up passed, but the airborne part to 35 ft had none -> pitch limit cycle at 0-24 ft, near-loss).
+   Before replacing a law, read the card/measurements of the old law for its known failure modes (here: "ground-run gains
+   oscillate in the air", known since 2026-10-30).
 3. **Reading an FM / NASA chart**: calibrate the reading method on the chart's own sample problem first (FM appendix
    texts give them), identify the lines by their labels on a zoom (pixel scan), write the reading with its uncertainty.
 4. **Measurement**: check that the logger rate and the definition fit the question (touchdown/skip needs ≥ 2 Hz on few
@@ -185,3 +188,6 @@ and the jet sank into the ground after an otherwise perfect dry run.
 - Full-deflection rolls (FM 5-14 inertial coupling) only with pitch/yaw dampers (H1) - the sim departed without them.
 - **Build All reloads the aircraft** (2026-11-03: module hot reload with the jet paused at 16 400 ft -> AP off, flaps 15°,
   trim 0 -> dived into the ground). Build All only with the jet standing on the runway; afterwards runway_start again.
+- **Rotation laws keep the srot structure** (stick schedule + slow integrator + rate damping, never push before liftoff); a
+  high-gain attitude PID between break-out and 35 ft AGL (brot, 2026-11-04) fought the natural rotation, dropped the nose at
+  liftoff and limit-cycled at 0-24 ft (θ -8..+15°, heading 24° off, tail contact).

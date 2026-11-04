@@ -45,13 +45,22 @@ FM_TECH = "fm" in sys.argv[4:]
 # DEFAULT since 2026-10-31 (srot3: break-out 168 kt, ≈ 6°/s, single liftoff 178 kt = FM, no nose drop); old law: option `old`
 QROT = "qrot" in sys.argv[4:]
 AP_DIAG = "apdiag" in sys.argv[4:]                 # 2026-10-31: AP divergence diagnostic instead of the AP handover
-SROT = not QROT and "old" not in sys.argv[4:]
+# 2026-11-04 (T3-SP change 1/1b: on the ground the break-out needs the old ≈ -6 000, in the air at α 10.5° only ≈ -1 800 -
+# srot would hold -6 600 and over-rotate): break-out + attitude-hold rotation ("brot") - from vr the stick ramps over 15 kt to
+# S_HOLD until the nose wheel lifts (θ ≥ 1.5°), then an attitude PID around a feed-forward that blends from the break-out stick
+# to S_AIR in 1 s, θ_cmd ramps 2°/s to the target; push protection above target + 2°; same law to 35 ft AGL
+BROT = "brot" in sys.argv[4:]
+SROT = not QROT and not BROT and "old" not in sys.argv[4:]
+S_AIR = next((float(a.split("=")[1]) for a in sys.argv[4:] if a.startswith("sair=")), -1800.0)   # [S] T3-SP card
+KP_R, KI_R, KD_R = 800.0, 300.0, 300.0    # counts per °, per °s, per °/s [S] (KP as the old attitude law)
 S_HOLD = -6600.0                          # [M] -6 400 -> α 10.2° (stick_hold_test); target 10.5° -> + 0.3° x 965 counts/°
 # 2026-11-04 (T3-SP change 1 halves the trim gradient): option shold=<counts> overrides S_HOLD for build-ups
 S_HOLD = next((float(a.split("=")[1]) for a in sys.argv[4:] if a.startswith("shold=")), S_HOLD)
 # build-up for a new rotation law (testcard rule 2026-10-30): high-speed taxi - apply the rotation law from vr until pitch
-# 2.5° or 165 kt, then idle, hold the nose at 0°, brake to a stop (no liftoff)
+# 2.5° (brot: 4° - no liftoff possible: CL ≈ 1.0 needed at 168 kt, ≈ 0.5 available) or 165 kt (brot 168), then idle, hold the
+# nose at 0°, brake to a stop
 TAXI = "taxi" in sys.argv[4:]
+TAXI_THETA, TAXI_IAS = (4.5, 172.0) if BROT else (2.5, 165.0)   # brot: CL ≈ 0.55 available vs 0.97 needed
 DEG = 57.29578
 FULL = 16383
 
@@ -184,7 +193,33 @@ with open(out, "w", newline="", encoding="utf-8") as f:
         cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
         cmd_rud = max(-LIM_RUD, min(LIM_RUD, cmd_rud))
         cmd_elev = 0.0
-        if res["vr_t"] is not None and SROT and not res.get("srot_done"):
+        if res["vr_t"] is not None and BROT and not res.get("srot_done"):
+            res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
+            if res.get("brk") is None:
+                cmd_elev = S_HOLD * max(0.0, min(1.0, (s["ias"] - vr) / 15.0))     # break-out pull
+                if s["theta"] >= 1.5:
+                    res["brk"], res["brk_cmd"], res["thc"], res["ib"] = s["t"], cmd_elev, s["theta"], 0.0
+                    print(f"brot: nose-wheel break-out at {s['ias']:.0f} KIAS, stick {cmd_elev:.0f}")
+            else:
+                res["thc"] = min(theta_target, res["thc"] + 2.0 * dt)
+                ff = res["brk_cmd"] + (S_AIR - res["brk_cmd"]) * min(1.0, (s["t"] - res["brk"]) / 1.0)
+                e = res["thc"] - s["theta"]
+                res["ib"] = max(-8.0, min(8.0, res["ib"] + e * dt))
+                cmd_elev = ff - KP_R * e - KI_R * res["ib"] + KD_R * res["qf"]    # +axis = nose down
+                if s["theta"] > theta_target + 2.0:                               # over-rotation: push
+                    cmd_elev += 1500.0 * (s["theta"] - theta_target - 2.0)
+                if s["gnd"] and s["theta"] > 11.0:                                # tail strike guard (12.3°)
+                    cmd_elev += 2000.0 * (s["theta"] - 11.0)
+                cmd_elev = max(-LIM_PULL, min(LIM_PUSH if not s["gnd"] else 0.0, cmd_elev))
+            res["srot_cmd"] = cmd_elev
+            theta_cmd = s["theta"]
+            if TAXI and (s["theta"] >= TAXI_THETA or s["ias"] >= TAXI_IAS):
+                aborted = f"taxi test end at {s['ias']:.0f} kt, pitch {s['theta']:.1f}°"
+            if not s["gnd"] and s["agl"] > 35:
+                res["srot_done"] = s["t"]                                 # bumpless transfer to the climb-out law
+                res["srot_off"] = None
+                print(f"brot -> climb-out law at {s['agl']:.0f} ft, {s['ias']:.0f} KIAS, pitch {s['theta']:.1f}°")
+        elif res["vr_t"] is not None and SROT and not res.get("srot_done"):
             res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
             # ramp over 25 kt ≈ 2.5 s (srot1/2 with 12 kt: the stick kept rising fast after the break-out at ≈ 166 kt ->
             # ≈ 10°/s rotation, 12.5° at liftoff; FM 6-5: fast stick input = dynamic overshoot)
@@ -246,7 +281,15 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             # 2026-10-30 (pete: "schwingt beim Starten"): 400/150 gave a pitch limit cycle 1° <-> 21° (≈ 1.5 s) - the airborne
             # loop runs at only ≈ 1.3 Hz (more reads) -> lower gains
             cmd_elev = -(0.5 * FF_TH * ks + ks * (200.0 * (theta_cmd - s["theta"]) - 60.0 * q))
-            if SROT:
+            if BROT:
+                # 2026-11-04: the fixed feed-forward 0.5 x FF_TH belongs to the old stiffness -> start from the stick brot held
+                # at the transfer (scaled with ks ~ 1/q) plus a slow attitude integrator
+                if res.get("air_ff") is None:
+                    res["air_ff"], res["air_ks"], res["ic"] = res.get("srot_cmd", -2000.0), ks, 0.0
+                res["ic"] = max(-20.0, min(20.0, res["ic"] + (theta_cmd - s["theta"]) * dt))
+                cmd_elev = res["air_ff"] * ks / res["air_ks"] - ks * (200.0 * (theta_cmd - s["theta"]) + 60.0 * res["ic"]
+                                                                       - 60.0 * q)
+            elif SROT:
                 # bumpless transfer: start from the last srot command, offset decays over 5 s
                 if res.get("srot_off") is None:
                     res["srot_off"] = res.get("srot_cmd", cmd_elev) - cmd_elev
