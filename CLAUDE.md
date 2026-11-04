@@ -43,6 +43,10 @@ recovered by flaps up). T3-SP stays an open, documented deviation (subsonic Cmα
 measured in isolation at altitude in all configurations (card T3-SP, lessons 9-16). `brot` law exists (option) but is NOT
 safe - srot stays the default. **Next:** pete Build All + restart -> selftest -> regression takeoff (srot, should be the
 old 178 kt) -> then the sortie plan (test-plan.md section 6: sortie.py, S1-S4).
+**DONE 2026-11-04 evening:** revert built + restarted, T3-D 178 kt ✓; **sortie S1a PASSED** (`tools/sortie.py tools/sorties/S1a.txt`,
+7 min: selftest, runway, takeoff, T3-J doublet, SP step, F3 landing -2.4 %). Next: more sortie plans (S1 full incl. accel/
+supersonic/approach config, S2 open performance points D6/E1/C6/C5, S3 landing variants, S4 engine) + the tools they need
+(descent, spiral; post.py in landing/config tests; sideslip rework).
 **Later (H1 rest):** pitch damper on the corrected airframe (q from θ, not body X; trim channel; off with AP on / during
 kicks); rework tools/sideslip_test.py for the post-C4 roll power (T3-E2 still open); aileron trim range far too large for a
 roll damper (10 % -> 171°/s); yaw gain check at F/C 6 and on the approach; then the full-deflection roll C4.

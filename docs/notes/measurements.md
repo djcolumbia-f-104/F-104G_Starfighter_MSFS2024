@@ -1280,3 +1280,14 @@ vs. CR-96008 (cond. 2 shifted to our CG) 5.2 / 0.25 / ≈ 1.7 and CR-2144 F/C 4 
 (CR-96008 0.67-1.05, other CGs) was too wide. Side findings: ROTATION_VELOCITY_BODY_X (Python) reads ≈ 3.5x the true pitch
 rate (∫q vs. Δθ), + = nose down; ELEVATOR_DEFLECTION excludes the trim; trim SimVar writes (AP off) act at once.
 Open decision: flight-model work package (pitch stiffness) before or after the pitch damper.
+
+## 2026-11-04: fixed test sequence live; T3-SP attempt reverted; first sortie S1a = full regression PASSED
+- Robustness: selftest.py, probe_units.py (gates build_wasm.sh), post.py (postconditions, waits 45 s for the AP), watchdog
+  refuel-only with stale-connection reconnect, lessons-learned register (16 entries). Module bit-identical with SDK 1.8.2.
+- T3-SP change 1 (aero_center_lift 3.6) + 1b (flap add aft feet -3.6): taxi liftoff (change 1), brot takeoff near-loss,
+  dive with TAKEOFF flaps (1b) -> **both reverted**; T3-SP stays an open deviation (card T3-SP-short-period.md).
+- T3-D regression after the revert (`..._T3D_regression.csv`): 178 kt, pitch on the ground ≤ 6.6° ✓ (= validated).
+- **Sortie S1a** (`tools/sortie.py tools/sorties/S1a.txt`, 7 min, all steps POST OK, logs `flighttest_2026-11-04_S1a_*`):
+  takeoff 178 kt ✓ | T3-J doublet SAS off 1.44 s / 0.52 per cycle ✓ | SP step ωn 7.34, ζ 0.164, α/δ 1.02 (= baseline A,
+  reproducible) | F3 TD 176 KIAS, -254 ft/min, centreline -1 ft; roll from 165 KIAS 3 000 ft = **-2.4 %** vs. FM A8-4
+  (earlier -0.6 .. -1.1 %; within ± 5 %) ✓.

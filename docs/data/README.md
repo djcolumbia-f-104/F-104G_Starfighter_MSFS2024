@@ -206,3 +206,6 @@ mark the old row superseded and name the replacement log.
 | `H1_step_sas0` / `_sas10` | washout A/B, 2° pedal rudder 10 s | | steady β 0.672 / 0.679° | **valid** |
 | `H1_takeoff4_sas`, `H1_doublet_v72_on` / `_off`, `H1_F3dry_sas`, `H1_F3_sas` | module v7.2 (damper ON): takeoff, doublets, F3 dry/real | 19 340 lb | 180 kt; deadbeat / 0.54; F3 -0.6 % from 165 KIAS | **valid** |
 | `H1_takeoff5`, `H1_pdoublet_off`, `H1_pstep01`, `H1_pstep02_fast` (deduplicated, 20 Hz) | short period SAS off (trim doublet/steps) | 18 900-19 000 lb, CG 8.4-8.7 % | abort (body-X q reading); body X ≈ 3.5x θ-rate; ωn 7.6, ζ 0.16, α/δ 1.0 | **valid** |
+| `SP1_taxi`, `SP1b/c_taxi`, `SP1d/e_taxi_brot`, `SP1f_takeoff_brot`, `SP_hold1800`, 2026-11-04 | T3-SP changes 1/1b + brot law (REVERTED) | | taxi liftoff; brot limit cycle; dive with TAKEOFF flaps | valid (incident evidence, not the current cfg) |
+| `T3D_regression`, 2026-11-04 | takeoff after the revert | 19 010 lb | 178 kt | **valid** |
+| `S1a_takeoff/doublet/pstep/landing`, 2026-11-04 | **sortie S1a** (regression) | 19 007-19 010 lb | 178 kt; 1.44 s / 0.52; ωn 7.34 ζ 0.164; F3 -2.4 % | **valid** |
