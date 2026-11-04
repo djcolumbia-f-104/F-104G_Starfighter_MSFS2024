@@ -24,7 +24,8 @@ plan_path = sys.argv[1]
 first = sys.argv[2] if len(sys.argv) > 2 else None
 plan = os.path.splitext(os.path.basename(plan_path))[0]
 date = datetime.date.today().isoformat()
-KEY = re.compile(r"Result|POST|peak|zeta|period|TOUCHDOWN|roll from|ABORT|Abort|FAIL|SELFTEST|on runway|equilibrium|after")
+KEY = re.compile(r"Result|POST|peak|zeta|period|TOUCHDOWN|roll from|ABORT|Abort|FAIL|SELFTEST|on runway|equilibrium|after|"
+                 r"DESCENT|GLIDE|spiral|right:|left:|positioned")
 os.makedirs(os.path.join(ROOT, "build", "sorties"), exist_ok=True)
 
 steps = []
@@ -53,8 +54,11 @@ for label, cmd, expect, tmo in steps:
     for ln in out.splitlines():
         if KEY.search(ln):
             print("   ", ln[:160])
-    ok = rc == 0 and (not expect or expect in out)
-    summary.append((label, "OK" if ok else f"FAIL (rc {rc}{', no ' + repr(expect) if expect and expect not in out else ''})",
+    # 2026-11-04 (S2 d6 aborted but printed POST OK afterwards): an ABORT line always fails the step
+    aborted = any(ln.lstrip().upper().startswith("ABORT") for ln in out.splitlines())
+    ok = rc == 0 and (not expect or expect in out) and not aborted
+    summary.append((label, "OK" if ok else f"FAIL (rc {rc}{', no ' + repr(expect) if expect and expect not in out else ''}"
+                           f"{', ABORT' if aborted else ''})",
                     time.time() - t0))
     if not ok:
         print(f"!!! sortie stopped at step '{label}'")

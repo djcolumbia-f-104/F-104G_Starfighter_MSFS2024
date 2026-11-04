@@ -191,10 +191,11 @@ while time.time() - t0 < 300:
             bad = abs(bank) > 30 or not -10 < theta < 25 or agl < 3000 or res["vs_f"] < -2000
             done = ias < IAS_STOP or alpha > ALPHA_STOP or el > 240
         else:
-            bad = ias < 150 or abs(bank) > 30 or not (-20 if GLIDE else -10) < theta < 20 or agl < (3000 if GLIDE else 1500)
+            # descent (D6, FM 3-41 = pattern altitude): flown from ≈ 6 500 ft MSL down to 1 500 ft AGL
+            bad = ias < 150 or abs(bank) > 30 or not (-20 if GLIDE else -10) < theta < 20 or                 agl < (1500 if DESC else 3000 if GLIDE else 1500)
             # level: 180 s (2026-10-31 B5: after the idle pre-phase the jet started ≈ 35 ft low and was still accelerating
             # at 120 s - 177.5 KIAS rising vs. 182.8 steady on 2026-10-29)
-            done = (el > 200 or alt < alt0 - 9000) if GLIDE else (el > (180 if mode == "level" else 120)
+            done = (el > 120 or agl < 1800) if DESC else (el > 200 or alt < alt0 - 9000) if GLIDE else (el > (180 if mode == "level" else 120)
                                                                    or (mode == "climb" and alt > alt0 + 3000 and el > 40))
         if bad or done:
             reason = (f"ABORT: IAS {ias:.0f}, bank {bank:.0f}°, pitch {theta:.0f}°, AGL {agl:.0f}, VS {res['vs_f']:.0f}" if bad
@@ -247,7 +248,9 @@ while time.time() - t0 < 300:
     bank_tgt = -clamp(2.0 * wrap(HDG - hdg), -15, 15)
     e_b = bank - bank_tgt
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
-    ev("AXIS_AILERONS_SET", int(clamp(-(KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -4000, 4000)))
+    # 2026-11-04 (S2 d6: bank oscillation ±18° -> abort at 260 KIAS): the gains are tuned at ≈ 185 kt; since C4 the roll power
+    # is ≈ 3x and it grows with q -> scale with ks = (185/IAS)², as the elevator loop
+    ev("AXIS_AILERONS_SET", int(clamp(-ks * (KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -4000, 4000)))
     rows.append([round(el, 2), phase, round(alt), round(ias, 1), round(vs), round(vs_tgt), round(bank, 1), round(theta, 1),
                  round(g("INCIDENCE_ALPHA") * DEG, 2), round(g("TURB_ENG_N1:1"), 1), round(g("TURB_ENG_JET_THRUST:1")),
                  round(g("ENG_FUEL_FLOW_PPH:1")), round(g("TOTAL_WEIGHT")), round(g("AIRSPEED_TRUE"), 1),

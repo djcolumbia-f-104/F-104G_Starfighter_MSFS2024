@@ -1291,3 +1291,17 @@ Open decision: flight-model work package (pitch stiffness) before or after the p
   takeoff 178 kt ✓ | T3-J doublet SAS off 1.44 s / 0.52 per cycle ✓ | SP step ωn 7.34, ζ 0.164, α/δ 1.02 (= baseline A,
   reproducible) | F3 TD 176 KIAS, -254 ft/min, centreline -1 ft; roll from 165 KIAS 3 000 ft = **-2.4 %** vs. FM A8-4
   (earlier -0.6 .. -1.1 %; within ± 5 %) ✓.
+- **Sortie S2** (`tools/sorties/S2.txt`, all steps POST OK; logs `flighttest_2026-11-04_S2_*`): takeoff 179 kt ✓ |
+  **C6 spiral** (`tools/spiral_test.py`, 16 500 ft, 477 KIAS, ailerons/rudder free, altitude held): right 17.5 -> 55.4° in
+  40 s (doubles in 65 s), left 36 -> 19.6° (converges) -> **PASS** (doubling > 20 s); asymmetric (right divergent, left
+  convergent) - noted | **C5 transonic lateral oscillation** (30 000 ft, M 0.96): SAS off period **1.89 s = 0.53 Hz**
+  (FM 6-17 ≈ 0.5 Hz ✓), 0.36 per cycle ("lightly damped" ✓); SAS on: β -1.21 -> +0.17° -> quiet ✓ |
+  **D6 descent** at 15 000 ft: bank oscillation ±18° -> abort (config_test aileron gains tuned at 185 kt, roll power since
+  C4 ≈ 3x and ∝ q -> gains now scaled with (185/IAS)²); the runner showed the step as OK -> sortie.py now fails any ABORT.
+- **S2b D6 at pattern altitude** (6 500 ft MSL, TAKEOFF flaps, 260 KIAS target, N1 83 %): the jet CLIMBED (+366 ft/min) and
+  accelerated to 291 KIAS -> **net thrust at 83 % ≈ 3 100 lbf vs. ≈ 1 460 lbf implied by FM 3-41** (1 800-2 000 ft/min
+  at 260 KIAS: γ ≈ -4.1°, D ≈ 2 830 lbf). Cause: n1_and_mach_on_thrust_table is LINEAR between idle 67 % (0.035) and 100 %
+  (0.709 at M 0); real turbojet part-power thrust is strongly convex; at ≈ 90 % the table matches (D5 approach N1 ✓).
+  -> NEW work package "part-power thrust curve" (sources: FM rpm points - idle 500 lbf, approach 87-90 %, descent 83 %,
+  flare 82-83 %; search J79 thrust-vs-rpm data); regression: D5 approach N1 + cruise FF, H3 BLC (N1-based), F2/F3 flare
+  (fmflare 82-83 %), B6, T3-L. Also: descent mode cannot climb to hold the speed (vs_cmd ≤ 0) - fine for a correct engine.

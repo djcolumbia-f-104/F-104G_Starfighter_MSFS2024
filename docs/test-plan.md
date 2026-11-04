@@ -70,8 +70,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | C2 | Steady heading sideslip (T3-E2) | closed loop | δa/δr 0.27-0.47 | ✓ |
 | C3 | Dutch roll (T3-J) | rudder doublet | period 1.41 s, damping (CR-2144) | ✓ 1.48 s |
 | C4 | Roll rate (T3-K) | full aileron, gear up (±9.75°) | CR-2144 Clδa; roll limits FM 5-14 | ○; ◐ 2026-11-01 roll_stability 0.1 + aileron_effectiveness 1.17: δa 5/10° -> 45/95°/s vs CR-2144 48/96 ✓; full δa 20° 248°/s (+30 %) + inertial-coupling departure (no SAS) -> H1 first (card C4-roll-rate.md) |
-| C5 | Transonic lateral oscillation | M 0.94-0.98 above 25 000 ft | ≈ 0.5 Hz, lightly damped without SAS (FM 6-17) | ○ |
-| C6 | Spiral stability | release 30° bank | > 20 s doubling time | ○ |
+| C5 | Transonic lateral oscillation | M 0.94-0.98 above 25 000 ft | ≈ 0.5 Hz, lightly damped without SAS (FM 6-17) | ✓ 2026-11-04 S2: 0.53 Hz, 0.36/cycle SAS off; SAS on deadbeat |
+| C6 | Spiral stability | release 30° bank | > 20 s doubling time | ✓ 2026-11-04 S2: doubles in 65 s (R), converges (L) |
 
 ### Phase D - Performance
 
@@ -83,7 +83,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | D3 | Level acceleration | M 0.9 -> 1.8 at 35 000 ft (740 KIAS limit at M ≈ 1.8) | Fig. A9-1 time/fuel/distance | ◐ time +8 %, distance +3 % ✓; fuel +20 % (AB FF rises with Mach, known) |
 | D4 | Top speed (T3-I) | 36 000-40 000 ft, max AB | M 2.0 / engine inlet temperature limit, 750 KEAS | ✓ M 2.056 at 40 000 ft, still accelerating 0.18 M/min at M 1.96 (sim IAS reads high supersonic -> limits on EAS) |
 | D5 | **Fuel flow / range** | stabilised cruise points (e.g. 260 KIAS, M 0.8, M 0.9) | Appendix Part 6 (miles per pound), Part 9 | ✓ after TSFC 1.26 -> 0.72: 0.96-1.07 (M 0.5-0.85, 5-30 kft); was 1.66-1.86 |
-| D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ○ |
+| D6 | Descent rates | partial-power pattern (TAKEOFF flaps, 260 KIAS, 83 %) and simulated flameout (83 %, speed brakes, TAKEOFF flaps) | 1 800-2 000 ft/min (FM 3-41); flameout glide 245-260 KIAS | ✗ 2026-11-04 S2b: at 83 % the jet climbs (net thrust ≈ 3 100 vs ≈ 1 460 lbf) -> part-power thrust curve (linear table) |
 | D7 | Climb schedule | max thrust / military climb | Fig. 6-7 climb angles, appendix climb charts | ✓ max thrust M 0.90 (Fig. A3-7, DI 0): 10 000 -> 35 000 ft 1.09 vs. 1.13 min, pitch ≤ 50°; military M 0.85 (Fig. A3-10): 3.50 vs. 3.36 min (+4 %) |
 
 ### Phase E - Transonic / supersonic

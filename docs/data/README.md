@@ -209,3 +209,4 @@ mark the old row superseded and name the replacement log.
 | `SP1_taxi`, `SP1b/c_taxi`, `SP1d/e_taxi_brot`, `SP1f_takeoff_brot`, `SP_hold1800`, 2026-11-04 | T3-SP changes 1/1b + brot law (REVERTED) | | taxi liftoff; brot limit cycle; dive with TAKEOFF flaps | valid (incident evidence, not the current cfg) |
 | `T3D_regression`, 2026-11-04 | takeoff after the revert | 19 010 lb | 178 kt | **valid** |
 | `S1a_takeoff/doublet/pstep/landing`, 2026-11-04 | **sortie S1a** (regression) | 19 007-19 010 lb | 178 kt; 1.44 s / 0.52; ωn 7.34 ζ 0.164; F3 -2.4 % | **valid** |
+| `S2_takeoff/d6/c6/c5off/c5on`, `S2b_d6low`, 2026-11-04 | **sorties S2/S2b**: C6 spiral, C5 transonic Dutch roll, D6 descent | 19 010 lb | C6 65/102 s ✓; C5 0.53 Hz 0.36 ✓; D6 15k abort (lateral loop), D6 6 500 ft climbs at 83 % (thrust ≈ 2x) | **valid** (D6 = finding) |
