@@ -6,6 +6,9 @@ Usage (with the Python of the simconnect-mcp venv):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\config_test.py <output.csv> <alt_ft MSL> climb|level|glide [ias=170] [sb|clean]
   glide: B4 (FM 3-38, Fig. 3-8) idle, gear up, TAKEOFF flaps at 245 KIAS (or "clean": flaps up, 275 KIAS), speed hold by
          elevator, down to alt - 9 000 ft -> glide ratio (energy) and aerodynamic L/D in NM per 10 000 ft
+  descent: D6 (FM 3-41, 2026-11-04) `descent [ias=260] [n1=83] [sb]`: as glide (TAKEOFF flaps, gear up, speed hold by
+         elevator) but a throttle loop holds N1 -> mean rate of descent of the steady part vs. FM 1 800-2 000 ft/min
+         (partial-power pattern descent; with "sb" the simulated-flameout variant with speed brakes)
   climb: elevator holds IAS (default 170 KIAS) at Military -> mean rate of climb over the steady part (after 25 s)
   level: elevator holds the start altitude at Military -> IAS it settles at (mean of the last 30 s)
   slow:  B7 (FM Fig. 6-4) `slow <ias_start> clean|to|land <ias_stop> [alpha_stop=16]`: level 1 kt/s deceleration
@@ -74,7 +77,9 @@ fuel, n1 = g("FUEL_TOTAL_QUANTITY_WEIGHT"), g("TURB_ENG_N1:1")
 if fuel < 2500 or n1 < 60:
     sm.exit()
     sys.exit(f"ABORT: fuel {fuel:.0f} lb, N1 {n1:.0f} % - refuel / start the engine first")
-GLIDE = mode == "glide"
+GLIDE = mode in ("glide", "descent")
+DESC = mode == "descent"
+N1_TGT = next((float(a.split("=")[1]) for a in sys.argv[4:] if a.startswith("n1=")), 83.0)
 CLEAN = "clean" in sys.argv[4:]
 SLOW = mode == "slow"
 if SLOW:
@@ -85,7 +90,7 @@ if SLOW:
     TRIM_DEG = {"clean": 8.0, "to": 7.0, "land": 5.2}[CFG]          # [S] elevator does the rest (T3-G: tail ≈ 1.08 α)
 if GLIDE:
     # B4 (FM 3-38/Fig. 3-8): idle, gear up, TAKEOFF flaps 245 KIAS (or flaps up 275 KIAS: "clean")
-    ias_tgt = float(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] not in ("sb", "clean") else (275.0 if CLEAN else 245.0)
+    ias_tgt = float(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] not in ("sb", "clean") and "=" not in sys.argv[4]         else (260.0 if DESC else 275.0 if CLEAN else 245.0)
     TRIM_DEG = 3.0                                    # [S] CL ≈ 0.48 at 245 KIAS -> α ≈ 3° (T3-G: tail ≈ 1.08 α)
 ap_master(False)
 ev("SPOILERS_OFF")
@@ -118,7 +123,7 @@ PRE_ACC = SLOW and (g("AIRSPEED_INDICATED") or 0) < ias_tgt - 10
 PRE = PRE or PRE_ACC
 # 2026-11-01 (H3_B7land): Military could not accelerate 140 -> 180 KIAS with LAND flaps + gear at 12 000 ft in 120 s ->
 # the acceleration pre-phase uses Maximum (AB, as in the FM go-around)
-ev("THROTTLE1_SET", 16383 if PRE_ACC else 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start
+ev("THROTTLE1_SET", 16383 if PRE_ACC else 6500 if DESC else 0 if GLIDE or PRE else 7000 if SLOW else 11141)   # glide: idle; slow: decel loop start
 w = g("TOTAL_WEIGHT")
 print(f"{mode} at {alt0:.0f} ft MSL, {'speed brakes OUT, ' if SB else ''}weight {w:.0f} lb, OAT {g('AMBIENT_TEMPERATURE'):.1f} °C, "
       f"trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°" + (f", IAS target {ias_tgt:.0f}" if mode == "climb" else ""))
@@ -169,6 +174,10 @@ while time.time() - t0 < 300:
             # start at the current VS, slower integrator)
             res["vs_cmd"] = clamp(res.get("vs_cmd", res["vs_f"]) + 15.0 * (ias - ias_tgt) * dt, -9000.0, 0.0)
             vs_tgt = clamp(res["vs_cmd"] + 40.0 * (ias - ias_tgt), -9000.0, 500.0)
+            if DESC:
+                # throttle loop on N1 (D6: 83 %, FM 3-41)
+                res["th"] = clamp(res.get("th", 6500.0) + 300.0 * (N1_TGT - (g("TURB_ENG_N1:1") or 0)) * dt, 0.0, 11141.0)
+                ev("THROTTLE1_SET", int(res["th"]))
         else:
             vs_tgt = clamp(4.0 * (alt0 - alt), -1000.0, 1000.0)
         if SLOW:
@@ -266,7 +275,14 @@ with open(out, "w", newline="", encoding="utf-8") as f:
 
 # evaluation: steady part of the test phase
 test = [r for r in rows if r[1] == "test"]
-if GLIDE:
+if DESC:
+    st = [r for r in test if r[0] > 40]
+    if len(st) > 10:
+        m = lambda i: sum(r[i] for r in st) / len(st)
+        print(f"DESCENT {st[0][0]:.0f}-{st[-1][0]:.0f} s: {st[0][2]:.0f} -> {st[-1][2]:.0f} ft, IAS {m(3):.0f} KIAS, N1 {m(9):.1f} %, "
+              f"rate of descent {-m(4):.0f} ft/min{' (speed brakes out)' if SB else ''}; FM 3-41: TAKEOFF flaps, 260 KIAS, 83 % "
+              f"-> 1 800-2 000 ft/min")
+elif GLIDE:
     st = [r for r in test if r[0] > 30]
     if len(st) > 10:
         dist = sum((st[i][14] * 1.68781) * (st[i][0] - st[i - 1][0]) for i in range(1, len(st)))   # ground speed, calm
@@ -306,3 +322,8 @@ elif len(steady) > 5:
 else:
     print("not enough steady data")
 print(f"{len(rows)} samples -> {out}")
+
+# postconditions (test process step 6, tools/post.py): jet in a safe, defined state after the script
+post = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "post.py"), "air"],
+                      capture_output=True, text=True, timeout=90)
+print((post.stdout.strip().splitlines() or ["POST FAIL: no output"])[-1])

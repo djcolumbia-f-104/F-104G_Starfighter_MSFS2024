@@ -1,0 +1,14 @@
+# S2 open performance points (2026-11-04): D6 partial-power descent, C6 spiral stability, C5 transonic lateral oscillation
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+d6       | tools/config_test.py {csv} 15000 descent 260 | POST OK | 600
+refuel3  | tools/refuel.py | after | 60
+c6       | tools/spiral_test.py {csv} 30 40 | POST OK | 400
+refuel4  | tools/refuel.py | after | 60
+pos30k   | tools/mcp_f104/sim_actions.py position 30000 565 263 48.36 11.9 11141 wl | positioned; AP on | 120
+c5off    | tools/doublet_test.py {csv} 30 | POST OK | 200
+c5on     | tools/doublet_test.py {csv} 30 on | POST OK | 200
