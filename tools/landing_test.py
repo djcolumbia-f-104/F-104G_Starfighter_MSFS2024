@@ -80,6 +80,27 @@ def wrap(d):
     return (d + 180) % 360 - 180
 
 
+def lat_fast(n=2):
+    """2026-11-05 (F6 dry 2): the main loop runs at ≈ 1.8 Hz (≈ 12 reads per pass) - at 210 KIAS the bank loop had no
+    margin left (oscillation ±10-24°, lesson 19). Inner bank loop for the landing variants: n extra aileron updates per
+    pass that read ONLY the bank (one read ≈ 30 ms) against the localizer bank target of the last fly() call.
+    cfg=land keeps the validated 2 Hz behaviour (sleep only)."""
+    # DISABLED 2026-11-05 (F6 dry 4): with the fast P+D updates the bank loop diverged too (29° level, 103° in the
+    # go-around) - the loop must be designed at the desk from identified roll response data first (lesson 20)
+    if True or CFG == "land" or "bank_tgt" not in res:
+        time.sleep(0.05)
+        return
+    for _ in range(n):
+        tb = time.time()
+        bank = g("PLANE_BANK_DEGREES") * DEG
+        dtb = max(tb - res.get("fast_t", tb - 0.1), 0.03)
+        p = (bank - res.get("fast_bank", bank)) / dtb
+        res["fast_t"], res["fast_bank"] = tb, bank
+        e_b = bank - res["bank_tgt"]           # no integration here: fly() integrates (dry 3: double-counted I term)
+        ev("AXIS_AILERONS_SET", int(clamp(-res["ka"] * (KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)))
+        res["n_fast"] = res.get("n_fast", 0) + 1
+
+
 def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
     """Hand flying: elevator PI on vertical speed + pitch-rate damping (+axis = nose down); ailerons PID on a bank
     target from the localizer (heading from cross-track; right turn = negative raw bank)."""
@@ -96,7 +117,10 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
     # the gains, not the limit, set the small-signal stability - dry run 11)
     # 2026-11-05 (F6 dry 1, cfg=to at 200-213 KIAS: bank ±8-13°): roll power ∝ q̄ -> gains scaled down above 185 KIAS
     # for the landing variants only (cfg=land unchanged: validated landings at 175-190 KIAS)
-    ka = 1.0 if CFG == "land" else clamp((185.0 / max(res.get("ias", 185.0), 100.0)) ** 2, 0.4, 1.0)
+    # F6 dry 2/3 (2026-11-05): scaling P/D down with (185/IAS)² left the integrator dominant -> 4.5 s divergent PI
+    # oscillation (bank 30-36°) -> no scaling (ka = 1); dry 1 with the original gains flew level/approach cleanly
+    ka = 1.0
+    res["bank_tgt"], res["ka"] = bank_tgt, ka                         # for the fast inner bank loop (lat_fast)
     cmd_a = clamp(-ka * (KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)
     ev("AXIS_AILERONS_SET", int(cmd_a))
 
@@ -348,7 +372,10 @@ while time.time() - t0 < 600:
             break
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
                  round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
-    time.sleep(0.05)
+    if phase in ("level", "approach", "flare", "go-around"):
+        lat_fast()
+    else:
+        time.sleep(0.05)
 
 for n in ("AXIS_ELEVATOR_SET", "AXIS_RUDDER_SET", "AXIS_AILERONS_SET"):
     ev(n, 0)
@@ -379,7 +406,7 @@ with open(out, "w", newline="", encoding="utf-8") as f:
     wr.writerow(["t", "phase", "along_ft", "cross_ft", "agl", "ias", "vs_fpm", "bank", "pitch", "path_err_ft",
                  "vs_tgt", "throttle"])
     wr.writerows(rows)
-print(f"{len(rows)} samples ({len(rows) / max(rows[-1][0], 1):.1f} Hz) -> {out}" if rows else "no samples")
+print(f"{len(rows)} samples ({len(rows) / max(rows[-1][0], 1):.1f} Hz main loop, {res.get('n_fast', 0) / max(rows[-1][0], 1):.1f} Hz extra bank updates) -> {out}" if rows else "no samples")
 if "td" in res:
     print(f"Result: touchdown {res['td']['ias']:.0f} KIAS (FM normal {v_td:.0f}-{v_td + 5:.0f}), "
           f"{res['td']['s']:.0f} ft past the threshold, ground roll {res.get('roll', float('nan')):.0f} ft from the final touchdown "

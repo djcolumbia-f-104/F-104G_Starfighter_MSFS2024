@@ -1375,3 +1375,12 @@ light (FM: fuel < 3 000 lb) and/or with a higher touchdown speed (vtd); F6 at 18
   lateral loop has no margin left** (same mechanism as T3-E2, lesson 19); validated LAND landings at 175-190 KIAS are
   just inside. **Next:** fast control loop in landing_test (bank/pitch/alt/VS each pass, the rest every n-th pass,
   print the loop period) -> F3 regression (cfg=land) -> F6 dry -> F6 -> F5 light.
+- **F6 dry 3/4 (correction of the dry-2 diagnosis):** an inner fast bank loop (3.5 Hz extra updates) made it WORSE
+  (dry 3: bank 30-36°, integrator double-counted; dry 4 with P+D only: 29° level, **103° in the go-around** - at the
+  virtual runway altitude, no hazard to the jet but a near-loss in a real approach). Re-read of dry 2/3: the period was
+  ≈ 4.5 s (not Dutch roll, not a delay oscillation) = PI loop with P/D scaled down (x 0.77) and the integrator left
+  dominant. Dry 1 with the ORIGINAL gains flew level and approach cleanly (oscillation only in the flare). -> gain scaling
+  reverted (ka = 1), fast loop disabled; parameter changes in the air stopped (lesson 20). **Next (desk first):** identify
+  the roll response at 210 KIAS / TAKEOFF flaps / gear down from a high-rate log (aileron step in the level segment of a
+  dry run), design the bank loop (crossover, margin with the measured 0.55 s loop) at the desk, then fly dry runs.
+  landing_test cfg=land is back to the validated behaviour (only the tail-strike guard is new; LAND landings fly 2-4°).
