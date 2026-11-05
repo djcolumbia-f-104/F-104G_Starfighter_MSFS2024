@@ -1360,3 +1360,18 @@ throttle PI on IAS, rudder ramp 2 s, build-up half -> full rudder; end via `posi
 **Result (2nd half of the full-rudder hold, 467 KIAS, 15 000 ft, 19 340 lb): β 2.06°, rudder -6.00°, aileron -2.19° ->
 β/δr 0.34, δa/δr 0.37** (prediction after C4: 0.34 / 0.43/1.17 = 0.37; CR-2144 0.32-0.42 / 0.27-0.47; before C4 0.34/0.43).
 Half rudder: 0.34 / 0.41. -> roll_stability 0.1 / aileron_effectiveness 1.17 (C4) regression complete for T3-E2.
+
+## 2026-11-05: S3 landing variants - started (F6 BLC failure, dry runs) - WORK IN PROGRESS
+`tools/landing_test.py` new options `cfg=land|to|up` (FM 3-32 BLC malfunction: TAKEOFF flaps, final ≥ 195, TD ≥ 165;
+FM 3-36 no-flap: final ≥ 230, TD ≥ 190; +5 kt per 1 000 lb; trim preset 5.2/7.0/8.0°), `vtd=` override, tail-strike guard
+(pitch > 11° below 60 ft -> go-around, all configs; LAND landings fly 2-4°). cfg=land behaviour unchanged otherwise.
+Desk: no-flap at the sim weight (19 340 lb) needs α > 14° at 190 KIAS (NASA trimmed CL, no ground effect) -> F5 only
+light (FM: fuel < 3 000 lb) and/or with a higher touchdown speed (vtd); F6 at 181 KIAS ≈ T3-D liftoff (180 kt, 9.4°).
+- **F6 dry 1** (virtual runway +4 000 ft, `..._F6_dry1.csv`): approach 211 KIAS α 7.3° ✓; flare from 112 ft with the
+  idle cut bled 213 -> 192 KIAS, sink rose to -926 ft/min, pitch 12° at 11 ft -> tail-strike guard go-around ✓ (guard
+  works). Bank ±8-13° in the flare. -> variants: flare from 150 ft, FM 82 % N1 floor, aileron gains x (185/IAS)².
+- **F6 dry 2** (`..._F6_dry2.csv`): bank oscillation ±10-24° already in the level segment (period 2-3 s), go-around at
+  834 ft (bank 39°). **Cause: the landing_test loop runs at 1.8 Hz (≈ 12-14 SimVar reads per pass) - at 210 KIAS the
+  lateral loop has no margin left** (same mechanism as T3-E2, lesson 19); validated LAND landings at 175-190 KIAS are
+  just inside. **Next:** fast control loop in landing_test (bank/pitch/alt/VS each pass, the rest every n-th pass,
+  print the loop period) -> F3 regression (cfg=land) -> F6 dry -> F6 -> F5 light.

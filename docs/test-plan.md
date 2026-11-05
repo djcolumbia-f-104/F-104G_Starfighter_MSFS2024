@@ -102,8 +102,8 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | F2 | **Normal landing** | `landing_test.py <csv> 6 2.5` | TD 155-160 KIAS +5/1 000 lb (Fig. 2-7), ground roll Fig. A8-3 2 760 ft @ 17 900 lb (with chute) | ✓ 2026-10-31 (chute emulation): +0.1 % from the final touchdown; 2026-10-31 with BLC driver -7 % (chute coefficient to re-tune); **✓ 2026-11-01 chute 0.07 + BLC driver: -0.9 / -0.4 % (roll from 165 KIAS)** |
 | F3 | Landing without chute | `landing_test.py <csv> 6 2.5 0 nochute` | Fig. A8-4: 3 130 ft | ✓ 2026-10-30 after the CG rework, roll from the FINAL touchdown (skips excluded): -0.3 / -4.8 / -2.6 %; open: touchdown skip (flare/gear dynamics); 2026-10-31 with BLC driver + fmflare -0.1 % (before +9.6 %); 2026-11-01 repeat -0.6 % (from 165 KIAS) |
 | F4 | Minimum-run landing | TD 140 kt near the threshold | FM 2-28 | ○ |
-| F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ○ |
-| F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ○ |
+| F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ○ (landing_test cfg=up ready; needs a light jet / vtd: α > 14° at 190 KIAS at 19 340 lb) |
+| F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ◔ 2026-11-05 dry runs: approach ✓, lateral loop unstable at 210 KIAS (landing_test 1.8 Hz loop) -> fast loop next |
 | F7 | Touch-and-go | idle, flaps TAKEOFF, military | FM 2-28 | ○ |
 | F8 | Go-around from the flare | FM 2-29 procedure | Fig. 6-8 climb, height loss ≤ 100 ft | ○ |
 | F9 | Crosswind landing | 15-25 kt crosswind | FM 2-25 (max 25 kt) | ○ |

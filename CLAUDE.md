@@ -14,8 +14,11 @@ section 8, measurements.md 2026-11-05): FM Appendix A7 flight-test descents digi
 regression S1a (takeoff 180 kt, T3-J ✓, F3 -4.1 %). **`position` now uses throttle 8 800 (≈ 93 % N1, ≈ 440 KIAS)**; cruise
 N1 is now ≈ 88-91 % (was 81-85 %), approach N1 ≈ 92 % at 18 900 lb / 190 KIAS. Corrections: the nozzle is closed from
 ≈ 83 % rpm (Fig. 1-30); FM 3-41 uses speed brakes "as necessary" (lessons 17/18).
-**D5 re-flown after EPP -> TSFC 0.72 -> 0.69 (built): FF/FM 0.99-1.04 ✓.** Sim left PAUSED at 16 500 ft on the AP.
-**Next:** the parked items: T3-SP
+**D5 re-flown after EPP -> TSFC 0.72 -> 0.69 (built): FF/FM 0.99-1.04 ✓.**
+**2026-11-05 late: S3 landing variants started** (landing_test `cfg=to|up`, tail-strike guard; F6 dry runs: lateral
+loop unstable at 210 KIAS because the landing_test loop runs at 1.8 Hz) -> **NEXT: fast control loop in landing_test,
+F3 regression, then F6/F5** (measurements.md 2026-11-05 last block). Sim PAUSED at 16 200 ft on the AP.
+**Later:** the parked items: T3-SP
 deviation, H1 pitch/roll dampers, S3/S4 sorties, H2 kicker Mach table. **DONE 2026-11-05: sideslip_test v2 + T3-E2
 regression after C4 ✓** (β/δr 0.34, δa/δr 0.37; damper ON by default, aileron PID 100/50/30 + feed-forward, fast loop).
 Watch: roll_test/spiral_test still use the aileron gains 250/150/60 that diverged in S7-E2 at 460 KIAS (fine in their

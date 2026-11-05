@@ -3,6 +3,7 @@ autopilot OFF before landing). Test card: docs/notes/test-cards/T3-L-landing.md.
 
 Usage (with the Python of the simconnect-mcp venv):
   C:\\Users\\pete\\AppData\\Local\\simconnect-mcp\\.venv\\Scripts\\python.exe -I tools\\landing_test.py <output.csv> [start_nm=6] [glide_deg=2.5] [high_ft=0] [nochute]
+      [fmflare] [cfg=land|to|up] [vtd=kt]
 Sequence: reposition on the extended centreline start_nm before the threshold, level ~2 NM below/short of the glide
 path, nose 3° up, gear down + LAND flaps, trim preset 5.2° with the AP OFF -> level segment -> glide path intercept from
 below -> glide path (vertical speed from ground speed + path error) -> flare from 120 ft (sink eased to -150 ft/min,
@@ -40,11 +41,19 @@ glide = math.radians(float(sys.argv[3]) if len(sys.argv) > 3 else 2.5)   # FM: 7
 HIGH = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
 CHUTE = "nochute" not in sys.argv[5:]                               # F3: landing without drag chute (FM Fig. A8-4)
 FM_FLARE = "fmflare" in sys.argv[5:]       # FM 2-25 flare power (82-83 % rpm, idle at TD) - for the rpm-dependent BLC (H3)
+# 2026-11-05 (S3 landing variants): cfg=land (default) | to (FM 3-32 BLC malfunction: TAKEOFF flaps, final >= 195, TD >= 165)
+# | up (FM 3-36 no-flap: final >= 230, sink <= 2 000 ft/min, TD >= 190); speeds +5 kt per 1 000 lb above 16 100 lb like
+# Fig. 2-7; vtd=<kt> overrides the touchdown speed (no-flap at sim weights: alpha vs. the 12.3 deg tail-strike angle)
+CFG = next((a.split("=")[1] for a in sys.argv[5:] if a.startswith("cfg=")), "land")
+VTD = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("vtd=")), None)
+if CFG != "land":
+    FM_FLARE = True       # F6 dry 1: the idle cut in the flare bled 213 -> 192 KIAS and the sink rose to -926 ft/min ->
+                          # FM 2-25 technique (82 % floor, idle at the touchdown) for the landing variants
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
 AIM_FT = 1000.0                                                     # aim point past the threshold
-TRIM_DEG = 5.2          # approach trim: 4.4° -> α 2.7°, T3-L 5.6° -> 4.1° => 5.2° for α ≈ 3.2° (CL 0.80 at 190 KIAS)
+TRIM_DEG = {"land": 5.2, "to": 7.0, "up": 8.0}[CFG]   # to/up [S] as config_test slow mode; land: approach trim: 4.4° -> α 2.7°, T3-L 5.6° -> 4.1° => 5.2° for α ≈ 3.2° (CL 0.80 at 190 KIAS)
 # controller gains (sideslip_test.py at ~350 KIAS: 120/40 and 400/250/150; scaled up for ~190 KIAS, q about 1/3)
 KP_VS, KI_VS, KQ = 300.0, 10.0, 150.0    # counts per ft/s, per ft (integral), per °/s pitch rate
 # dry run 11: 600/400/200 -> roll limit cycle ±20-31°, period ~4.5 s (F-104 roll power + ~2 Hz loop) -> ~40 %
@@ -85,7 +94,10 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
     # limit ±8000 (landing 9: a gust rolled the jet -7 -> -22° in the flare with the ailerons at the ±4000 limit;
     # the gains, not the limit, set the small-signal stability - dry run 11)
-    cmd_a = clamp(-(KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)
+    # 2026-11-05 (F6 dry 1, cfg=to at 200-213 KIAS: bank ±8-13°): roll power ∝ q̄ -> gains scaled down above 185 KIAS
+    # for the landing variants only (cfg=land unchanged: validated landings at 175-190 KIAS)
+    ka = 1.0 if CFG == "land" else clamp((185.0 / max(res.get("ias", 185.0), 100.0)) ** 2, 0.4, 1.0)
+    cmd_a = clamp(-ka * (KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)
     ev("AXIS_AILERONS_SET", int(cmd_a))
 
 
@@ -126,8 +138,9 @@ fuel, n1 = g("FUEL_TOTAL_QUANTITY_WEIGHT"), g("TURB_ENG_N1:1")
 if fuel < 1500 or n1 < 60:                                           # idling on the runway burns the tanks empty
     sm.exit()
     sys.exit(f"ABORT: fuel {fuel:.0f} lb, N1 {n1:.0f} % - reload the flight / refuel before the landing test")
-v_app = 175 + 5 * (w / 1000 - 16.1)                                  # FM Fig. 2-7: final 175 KIAS @ 16 100 lb
-v_td = 155 + 5 * (w / 1000 - 16.1)                                   # FM Fig. 2-7: touchdown 155-160 KIAS
+V_FM = {"land": (175, 155), "to": (195, 165), "up": (230, 190)}[CFG]   # Fig. 2-7 / FM 3-32 / FM 3-36 at 16 100 lb
+v_app = V_FM[0] + 5 * (w / 1000 - 16.1)                               # final approach, +5 kt per 1 000 lb
+v_td = VTD if VTD else V_FM[1] + 5 * (w / 1000 - 16.1)               # touchdown
 start_ft = start_nm * 6076.12
 lat_s = LAT0 - start_ft * U[1] / FT_PER_DEG
 lon_s = LON0 - start_ft * U[0] / (FT_PER_DEG * math.cos(math.radians(LAT0)))
@@ -142,7 +155,7 @@ ev("SPOILERS_OFF")                                                   # chute/spe
 sm.set_pos(alt0, lat_s, lon_s, int(v_app), -3.0, 0.0, HDG, 0)
 time.sleep(1.0)
 ev("GEAR_DOWN")                                                      # AFTER set_pos: positioning in the air
-ev("FLAPS_DOWN")                                                     # retracts the gear (landings 1/3 were belly landings)
+ev({"land": "FLAPS_DOWN", "to": "FLAPS_1", "up": "FLAPS_UP"}[CFG])   # set_pos retracts the gear (landings 1/3 were belly landings)
 ap_master(False)
 # trim preset with the AP OFF (AP engaged = trim locked; 2026-10-27 isolated test, sim settings fixed by pete)
 for _ in range(5):
@@ -151,7 +164,7 @@ for _ in range(5):
     if g("ELEVATOR_TRIM_POSITION") * DEG > TRIM_DEG - 0.3:
         break
 ev("THROTTLE1_SET", 9500)
-print(f"weight {w:.0f} lb -> final approach {v_app:.0f} KIAS, touchdown {v_td:.0f} KIAS; start {start_nm} NM, "
+print(f"cfg {CFG}: weight {w:.0f} lb -> final approach {v_app:.0f} KIAS, touchdown {v_td:.0f} KIAS; start {start_nm} NM, "
       f"level at {alt0:.0f} ft MSL; trim {g('ELEVATOR_TRIM_POSITION') * DEG:.1f}°, AP {g('AUTOPILOT_MASTER'):.0f}")
 # full-rate flight data (alpha, pitch, elevator, trim, N1 ...) next to this script's own log
 log = subprocess.Popen([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "simlog.py"),
@@ -183,7 +196,7 @@ while time.time() - t0 < 600:
         alt = res["prev_alt"]
     if ias == 0 and "last_ias" in res and not gnd:
         ias = res["last_ias"]
-    res["last_ias"] = ias
+    res["last_ias"] = res["ias"] = ias
     if HIGH:                                                         # dry run: height above the virtual runway
         agl = alt - field_elev
         gnd = agl < 5
@@ -208,7 +221,7 @@ while time.time() - t0 < 600:
         elif phase == "approach":
             # nominal VS for the ground speed, corrected by the path error (1 ft/min per 0.25 ft, ±800)
             vs_tgt = -gs_kt * 101.27 * math.tan(glide) - clamp(4.0 * path_err, -800, 800)
-            if agl < 120:
+            if agl < (120 if CFG == "land" else 150):            # F6 dry 1: flare from 112 ft could not stop the sink
                 phase = "flare"
                 res["vs0"] = res["vs_f"]
                 print(f"flare at {agl:.0f} ft AGL, {ias:.0f} KIAS, {s:.0f} ft from the threshold, path error {path_err:+.0f} ft, "
@@ -254,7 +267,8 @@ while time.time() - t0 < 600:
         # low speed: FM Fig. 6-4 minimum control speed LAND flaps ≈ 150-155 KIAS at 19 500 lb (not in the flare)
         bad = (abs(bank) > 35 or not -15 < theta < 20 or (agl < 500 and (abs(c) > 300 or abs(bank) > 30))
                or (phase != "flare" and ias < v_app - 25)
-               or (agl < 400 and path_err < -300) or res.get("gear_go"))
+               or (agl < 400 and path_err < -300) or res.get("gear_go")
+               or (agl < 60 and theta > 11.0))                         # tail strike at 12.3 deg pitch (CR-2144, AP-5)
         if bad and not gnd:
             phase = go_around(f"AGL {agl:.0f}, {ias:.0f} KIAS, cross-track {c:.0f} ft, bank {bank:.0f}°, "
                               f"pitch {theta:.0f}°, path error {path_err:+.0f} ft")
