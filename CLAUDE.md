@@ -14,7 +14,8 @@ section 8, measurements.md 2026-11-05): FM Appendix A7 flight-test descents digi
 regression S1a (takeoff 180 kt, T3-J ✓, F3 -4.1 %). **`position` now uses throttle 8 800 (≈ 93 % N1, ≈ 440 KIAS)**; cruise
 N1 is now ≈ 88-91 % (was 81-85 %), approach N1 ≈ 92 % at 18 900 lb / 190 KIAS. Corrections: the nozzle is closed from
 ≈ 83 % rpm (Fig. 1-30); FM 3-41 uses speed brakes "as necessary" (lessons 17/18).
-**Next:** D5 re-fly A/C/E1 (B is 1.11 ◐) -> decide TSFC 0.72 -> ≈ 0.70 (own change round); then the parked items: T3-SP
+**D5 re-flown after EPP -> TSFC 0.72 -> 0.69 (built): FF/FM 0.99-1.04 ✓.** Sim left PAUSED at 16 500 ft on the AP.
+**Next:** the parked items: T3-SP
 deviation, H1 pitch/roll dampers, sideslip_test rework, S3/S4 sorties, H2 kicker Mach table.
 
 ## Previous block (state 2026-11-04 evening)

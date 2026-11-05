@@ -1342,3 +1342,7 @@ Work package `docs/notes/workpackage-EPP-part-power-thrust.md` section 8 (source
   (fuel only, no thrust effect; predicted C 1.03, B 1.06, A 1.03, E2 1.00, E1 0.99; static Military FF ≈ 4 600 lb/h,
   known deviation; full-AB FF unaffected - AB TSFC only). Needs Build All + reload; verify with S6-D5 (cruise points).
 - **F3 extra landing** (`S6b-land_landing`, TSFC 0.72): TD 173 KIAS, -173 ft/min, roll from 165 KIAS **+0.9 %** ✓.
+- **D5 after TSFC 0.69** (Build All + reload; S6-D5 re-fly, logs `flighttest_2026-11-05_S6-D5_*` overwritten with this run):
+  FF/FM **C 1.02, A 1.04, E2 1.00, E1 0.99** (predicted 1.03/1.03/1.00/0.99; B scaled 1.11 x 0.958 ≈ 1.06) ✓; takeoff
+  180 kt ✓. (First attempt stopped at the selftest: watchdog fuel 3 934 vs. sim 4 080 lb - the Build All reload refuelled
+  between two watchdog log lines; re-check 1 min later OK. The check worked as intended.)
