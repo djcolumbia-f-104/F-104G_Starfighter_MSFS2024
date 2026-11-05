@@ -6,7 +6,18 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-04 evening - session ended, sim PAUSED in the air on the AP) <<<
+## >>> CONTINUE HERE (state 2026-11-05) <<<
+**2026-11-05: work package EPP (part-power thrust) DONE and PASSED** (`docs/notes/workpackage-EPP-part-power-thrust.md`
+section 8, measurements.md 2026-11-05): FM Appendix A7 flight-test descents digitized (`docs/data/fm_a7_descent.csv`),
+`tools/epp_desk.py` (fit / cand / flight modes); thrust table rows 70-90 reduced by q̄ x A_s(N1c) (old table kept as
+`;EPP-OLD` in engines.f104.cfg). Verified by sortie S5-EPP (A7-3 1.12, A7-2 1.04, idle 0.95, FM 3-41 2 205 ft/min) and
+regression S1a (takeoff 180 kt, T3-J ✓, F3 -4.1 %). **`position` now uses throttle 8 800 (≈ 93 % N1, ≈ 440 KIAS)**; cruise
+N1 is now ≈ 88-91 % (was 81-85 %), approach N1 ≈ 92 % at 18 900 lb / 190 KIAS. Corrections: the nozzle is closed from
+≈ 83 % rpm (Fig. 1-30); FM 3-41 uses speed brakes "as necessary" (lessons 17/18).
+**Next:** D5 re-fly A/C/E1 (B is 1.11 ◐) -> decide TSFC 0.72 -> ≈ 0.70 (own change round); then the parked items: T3-SP
+deviation, H1 pitch/roll dampers, sideslip_test rework, S3/S4 sorties, H2 kicker Mach table.
+
+## Previous block (state 2026-11-04 evening)
 **START 2026-11-05: work package EPP (J79 part-power thrust) - agenda in `docs/notes/workpackage-EPP-part-power-thrust.md`
 section 7** (A0 FM part-power points incl. A7-1 idle descent / Section IX 85 % penetration, A1 new engine_sweep.py component
 test, A2 target curve + predictions, A3 one cfg change, B sortie S5-EPP, C regression master set). Finding behind it: at 83 % N1

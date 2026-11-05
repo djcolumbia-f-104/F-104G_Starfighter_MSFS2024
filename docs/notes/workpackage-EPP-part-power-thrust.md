@@ -132,6 +132,11 @@ needs only 85.8 % with the current table (FM 87-90 %) -> the current table is to
 | H3 BLC f(N1) | - | approach N1 higher -> f = 1 unchanged | unchanged |
 Script adaptation in the same change set: `position` callers throttle 8 000 -> 8 800 (49 % -> 53.7 % lever = ≈ 93 % N1,
 mapping from the sortie logs: 49 % -> 90.5 %, 68 % -> 100 %).
+**A3/B/C flown 2026-11-05 (Build All + reload): PASSED** - details measurements.md 2026-11-05. S5-EPP: A7-3 1.12, A7-2
+1.04, A7-1 idle 0.95, FM 3-41 2 205 ft/min, takeoff 182 kt, position 440 KIAS; D5 B FF 1.11 ◐ (N1 91.2 %). S1a regression
+passed (approach N1 ≈ 92 % at 18 900 lb / 190 KIAS, F3 -4.1 %). **Status: EPP closed; follow-ups:** D5 A/C/E1 re-fly, then
+decide TSFC 0.72 -> ≈ 0.70 (own change round); rows 70-80 stay [S] until a part-power point below 83 % is found (FM
+Section IX not located yet). The A1 tool `engine_sweep.py` was not needed (desk formula gate + replica sortie).
 
 ## 7. Agenda for the next session (2026-11-05) - written 2026-11-04 evening
 Session start: watchdog (background), selftest; sim: EDDM 26L, runway_start. The validated state is in the sim (changes 1/1b

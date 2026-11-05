@@ -210,3 +210,5 @@ mark the old row superseded and name the replacement log.
 | `T3D_regression`, 2026-11-04 | takeoff after the revert | 19 010 lb | 178 kt | **valid** |
 | `S1a_takeoff/doublet/pstep/landing`, 2026-11-04 | **sortie S1a** (regression) | 19 007-19 010 lb | 178 kt; 1.44 s / 0.52; ωn 7.34 ζ 0.164; F3 -2.4 % | **valid** |
 | `S2_takeoff/d6/c6/c5off/c5on`, `S2b_d6low`, 2026-11-04 | **sorties S2/S2b**: C6 spiral, C5 transonic Dutch roll, D6 descent | 19 010 lb | C6 65/102 s ✓; C5 0.53 Hz 0.36 ✓; D6 15k abort (lateral loop), D6 6 500 ft climbs at 83 % (thrust ≈ 2x) | **valid** (D6 = finding) |
+| `S5-EPP_takeoff/a73/a72/d6/idle/cruB`, 2026-11-05 | **sortie S5-EPP** after the part-power thrust change (EPP): FM A7-3/A7-2/A7-1 replicas, FM 3-41, D5 B | 19 300 lb | 182 kt; A7-3 1.12, A7-2 1.04, idle 0.95; 83 % 2 205 ft/min; D5 B N1 91.2 % FF 1.11 | **valid** (new engine table) |
+| `S1a_takeoff/doublet/pstep/landing`, 2026-11-05 | **sortie S1a** regression after EPP | 19 340 lb | 180 kt; 1.41 s / 0.48; ωn 6.82 at ≈ 430 KIAS; F3 -4.1 % | **valid** |

@@ -230,6 +230,30 @@ if __name__ == "__main__":
                 print(f"{x['h']:7.0f} {x['m']:5.2f} {x['q']:5.0f} {x['n1c']:5.1f} {x['t_req']:6.0f} {x['t_sim']:6.0f} "
                       f"{x['mult']:6.3f} {x['m_req']:6.3f} {(x['t_sim'] - x['t_req']) / x['q']:6.2f}")
         report(THR, "current table")
+    elif mode == "flight":     # flight <config_test descent csv> <chart>: evaluation of a flown FM A7 replica
+        log, chart = sys.argv[4], sys.argv[5]
+        rows = [x for x in csv.DictReader(open(log, encoding="utf-8")) if x["phase"] == "test" and float(x["t"]) > 40]
+        f = lambda k: sum(float(x[k]) for x in rows) / len(rows)
+        h, ias, w, vs, tn = f("alt"), f("ias"), f("weight"), f("vs_fpm"), f("thrust_lbf")
+        m = mach_from_cas(ias, h)
+        v = m * A0 * math.sqrt(atm(h)[0])
+        q = q_of(h, m)
+        gam = math.asin(vs / 60 / v)                         # negative descending
+        dvdh = (mach_from_cas(ias, h + 500) * A0 * math.sqrt(atm(h + 500)[0]) - mach_from_cas(ias, h - 500) * A0
+                * math.sqrt(atm(h - 500)[0])) / 1000
+        acc = w / G * dvdh * v * math.sin(gam)
+        d_meas = tn - w * math.sin(gam) - acc                 # energy balance: T - D = W sin γ + W/g dV/dt
+        dcd = CHARTS[chart][3]
+        d_nasa = q * S * (cd_nasa(m, w / (q * S)) + dcd)
+        P = chart_points(chart, THR)
+        t_fm = lin(h, [x["h"] for x in P], [x["t_req"] for x in P])
+        # FM-equivalent rate of descent at the SIM weight: same engine (T_FM), drag at the sim weight (NASA)
+        vs_fm = 60 * v * (t_fm - d_nasa) / (w + w / G * dvdh * v)     # acc term solved together with sin γ
+        print(f"{chart} flown: {h:.0f} ft mean, {ias:.0f} KIAS, M {m:.2f}, {w:.0f} lb: rate of descent {-vs:.0f} ft/min, "
+              f"net thrust {tn:.0f} lbf")
+        print(f"  FM engine at this altitude: net {t_fm:.0f} lbf (sim - FM {tn - t_fm:+.0f} lbf); drag from the energy balance "
+              f"{d_meas:.0f} vs. NASA + config {d_nasa:.0f} lbf ({d_meas / d_nasa:.2f}); FM-equivalent rate of descent at "
+              f"{w:.0f} lb: {-vs_fm:.0f} ft/min -> sim/FM {vs / vs_fm:.2f}")
     else:          # cand "n1c:A,n1c:A,..."
         knots = [tuple(float(v) for v in k.split(":")) for k in sys.argv[4].split(",")]
         C = candidate(knots)

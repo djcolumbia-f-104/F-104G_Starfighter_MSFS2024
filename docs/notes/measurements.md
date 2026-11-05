@@ -1305,3 +1305,34 @@ Open decision: flight-model work package (pitch stiffness) before or after the p
   -> NEW work package "part-power thrust curve" (sources: FM rpm points - idle 500 lbf, approach 87-90 %, descent 83 %,
   flare 82-83 %; search J79 thrust-vs-rpm data); regression: D5 approach N1 + cruise FF, H3 BLC (N1-based), F2/F3 flare
   (fmflare 82-83 %), B6, T3-L. Also: descent mode cannot climb to hold the speed (vs_cmd ≤ 0) - fine for a correct engine.
+
+## 2026-11-05: EPP part-power thrust - desk analysis, ONE change, verification sortie S5-EPP, regression S1a - PASSED
+Work package `docs/notes/workpackage-EPP-part-power-thrust.md` section 8 (sources, method, predictions), tool
+`tools/epp_desk.py`, digitized FM charts `docs/data/fm_a7_descent.csv`.
+- **Desk:** J79-GE-2 MM: 90 % rpm = 72.3 % of Military static (sim 71.2 % ✓). FM Fig. 1-30 at 300 dpi: nozzle closed from
+  ≈ 83 % rpm (the 2026-11-04 nozzle explanation was a misreading). FM 3-41: speed brakes "as necessary" (S2b no clean
+  contradiction). **FM A7-1/A7-2/A7-3 (flight test)**: at 85 % the sim had 2-6x the required net thrust; deficit / q̄ = one
+  curve for A7-2 and A7-3 (≈ 8 ft² at N1c 85, 0 at 95), idle OK. Formula gate: engine formula = measured sim thrust
+  +2..+6 % (D5, approach, idle, Military).
+- **Change** (engines.f104.cfg, Build All + reload): n1_and_mach_on_thrust_table rows 70-90 reduced by q̄ x A_s(N1c)
+  (A_s 70:0.5 75:3 80:5.5 85:8 90:4.4 ft², held above M 0.85, monotonic); M 0 column and rows ≥ 95 unchanged; old table
+  kept as `;EPP-OLD`. Script adaptation: `position` throttle 8 000 -> 8 800 (≈ 93 % N1).
+- **S5-EPP** (logs `flighttest_2026-11-05_S5-EPP_*`, 19 300 lb; evaluation `epp_desk.py . "" flight <csv> <chart>`, FM
+  converted to the sim weight with the NASA drag):
+  | test | sim | FM-equivalent | sim/FM | predicted |
+  |---|---|---|---|---|
+  | A7-3 85 % clean 300 KIAS (11 500 ft) | 2 763 ft/min, net 395 lbf | 2 472 ft/min, net 501 | **1.12 ✓** | ≈ 1.0-1.2 |
+  | A7-2 85 % TO + brakes 275 KIAS (12 900 ft) | 6 156 ft/min, net 870 | 5 930, net 1 144 | **1.04 ✓** | ≈ 1.0-1.1 |
+  | A7-1 idle clean 300 KIAS (14 100 ft) | 4 995 ft/min | 5 248 | **0.95 ✓** | unchanged |
+  | FM 3-41 83 % TO 260 KIAS brakes in (≈ 4 700 ft) | 2 205 ft/min | 1 800-2 000 | **+10..+22 % ✓** (± 25 %) | 2 300 |
+  | D5 B 19 600 ft M 0.80 | N1 91.2 % (was 84.7), FF 3 528 lb/h | FF 3 168 | **1.11 ◐** (± 10 %) | 90.5 %, 1.09 |
+  | T3-D takeoff | 182 kt | 178-185 | ✓ | unchanged |
+  | position (throttle 8 800) | 437-442 KIAS | | ✓ | ≈ 450 |
+  Data consistency: drag from the energy balance 0.95-1.04 x NASA polar + config ΔCD in all three replicas.
+- **S1a regression** (logs `flighttest_2026-11-05_S1a_*`): takeoff 180 kt ✓; T3-J 1.41 s / 0.48 per cycle ✓ (1.44/0.52);
+  SP step ωn 6.82, ζ 0.17, α/δ 1.01 - ωn lower than 7.34 because `position` now leaves ≈ 430 instead of ≈ 480 KIAS
+  (α0 2.94 vs 2.43°, ωn ∝ √q̄ -> 6.7 expected) = test condition, not aero; F3: approach throttle 46.3 -> 52.1 % (N1
+  ≈ 89.5 -> ≈ 92.3 % at 18 900 lb / 190 KIAS; ≈ 90 % at the FM weight = upper edge of 87-90 %), TD 174 KIAS, -293 ft/min,
+  1 skip, roll from 165 KIAS **-4.1 %** ✓ (± 5 %).
+- Open (small): D5 cruise FF B +11 % (1 % outside; candidate TSFC 0.72 -> 0.70 after the other D5 points are re-flown);
+  approach N1 at the FM upper edge; rows 70-80 [S] (no part-power data below 83 %).
