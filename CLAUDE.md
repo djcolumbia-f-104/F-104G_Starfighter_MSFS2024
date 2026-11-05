@@ -16,8 +16,9 @@ N1 is now ≈ 88-91 % (was 81-85 %), approach N1 ≈ 92 % at 18 900 lb / 190 KIA
 ≈ 83 % rpm (Fig. 1-30); FM 3-41 uses speed brakes "as necessary" (lessons 17/18).
 **D5 re-flown after EPP -> TSFC 0.72 -> 0.69 (built): FF/FM 0.99-1.04 ✓.**
 **2026-11-05 late: S3 landing variants started** (landing_test `cfg=to|up`, tail-strike guard; F6 dry runs: lateral
-loop unstable at 210 KIAS because the landing_test loop runs at 1.8 Hz) -> **NEXT: fast control loop in landing_test,
-F3 regression, then F6/F5** (measurements.md 2026-11-05 last block). Sim PAUSED at 16 200 ft on the AP.
+bank loop oscillates at 210 KIAS; three in-air fixes made it worse -> reverted, lesson 20) -> **NEXT (desk first): identify
+the roll response at 210 KIAS / TAKEOFF flaps / gear down from a high-rate log, design the bank loop at the desk, then
+virtual-runway dry runs, then F6/F5** (measurements.md 2026-11-05 last blocks). Sim PAUSED at 16 700 ft on the AP.
 **Later:** the parked items: T3-SP
 deviation, H1 pitch/roll dampers, S3/S4 sorties, H2 kicker Mach table. **DONE 2026-11-05: sideslip_test v2 + T3-E2
 regression after C4 ✓** (β/δr 0.34, δa/δr 0.37; damper ON by default, aileron PID 100/50/30 + feed-forward, fast loop).
