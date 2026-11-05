@@ -1,0 +1,7 @@
+# S7-E2 (2026-11-05): T3-E2 regression after C4 with sideslip_test v2; build-up half rudder -> full rudder
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+ss50     | tools/sideslip_test.py {csv} 15 0.5 | POST OK | 300
+refuel2  | tools/refuel.py | after | 60
+ss100    | tools/sideslip_test.py {csv} 15 1.0 | POST OK | 300

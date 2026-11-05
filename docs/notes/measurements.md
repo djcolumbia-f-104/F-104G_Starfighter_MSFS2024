@@ -1346,3 +1346,17 @@ Work package `docs/notes/workpackage-EPP-part-power-thrust.md` section 8 (source
   FF/FM **C 1.02, A 1.04, E2 1.00, E1 0.99** (predicted 1.03/1.03/1.00/0.99; B scaled 1.11 x 0.958 ≈ 1.06) ✓; takeoff
   180 kt ✓. (First attempt stopped at the selftest: watchdog fuel 3 934 vs. sim 4 080 lb - the Build All reload refuelled
   between two watchdog log lines; re-check 1 min later OK. The check worked as intended.)
+
+## 2026-11-05: T3-E2 regression after C4 with sideslip_test v2 - PASSED (sortie S7-E2)
+`tools/sideslip_test.py` rewritten (v2): known axis signs instead of probe inputs; set_pos 15 000 ft / 460 KIAS (F/C 4),
+throttle PI on IAS, rudder ramp 2 s, build-up half -> full rudder; end via `position` + POST. Development in the air
+(logs `flighttest_2026-11-05_S7-E2_ss50/ss100`, last run kept):
+1. roll_test gains 250/150/60, all 13 SimVar reads per pass: loop 0.41 s -> full rudder diverged (bank ±15 -> -37°, abort).
+2. fast loop (bank/pitch/alt each pass, IAS every 5th, logging every 4th): 164 ms median - still diverging (phase 2 ±27°
+   at half rudder, -32° at full rudder; 1.8 s period = Dutch roll coupling, damper off).
+3. damper ON (FM default; washout -> steady values unchanged): still -34° at full rudder.
+4. aileron PID 100/50/30 (crossover ≈ 1 rad/s, ≈ 80° margin by a desk estimate: 0.011 °/s per count at 460 KIAS, roll
+   mode, 0.16-0.39 s delay) + feed-forward 0.26 x rudder command: **stable, bank ≤ 4.7° in the hold, ≤ 7.1° after**.
+**Result (2nd half of the full-rudder hold, 467 KIAS, 15 000 ft, 19 340 lb): β 2.06°, rudder -6.00°, aileron -2.19° ->
+β/δr 0.34, δa/δr 0.37** (prediction after C4: 0.34 / 0.43/1.17 = 0.37; CR-2144 0.32-0.42 / 0.27-0.47; before C4 0.34/0.43).
+Half rudder: 0.34 / 0.41. -> roll_stability 0.1 / aileron_effectiveness 1.17 (C4) regression complete for T3-E2.

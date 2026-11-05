@@ -110,7 +110,7 @@ def sideslip(name: str = "sideslip", rudder_s: float = 15) -> str:
     """T3-E/E2 closed-loop steady sideslip (tools/sideslip_test.py): returns β/δr and δa/δr (second half of the
     full-rudder phase). Targets CR-2144 Table III-9: β/δr 0.32-0.42, δa/δr 0.27-0.47."""
     path = csv_path(name)
-    rc, out = run(SIMPY, "tools/sideslip_test.py", path, rudder_s, 1.0, timeout=rudder_s + 90)
+    rc, out = run(SIMPY, "tools/sideslip_test.py", path, rudder_s, 1.0, timeout=rudder_s + 240)
     import csv
     try:
         rows = [r for r in csv.DictReader(open(path, encoding="utf-8")) if r["phase"] == "1"]
