@@ -267,7 +267,7 @@ ev("GEAR_UP")
 sm.exit()
 log.terminate()
 pos = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "mcp_f104", "sim_actions.py"),
-                      "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
+                      "position", "16500", "500", "263", "48.36", "11.9", "8800", "wl"],
                      capture_output=True, text=True, timeout=120)
 print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1])
 with open(out, "w", newline="", encoding="utf-8") as f:

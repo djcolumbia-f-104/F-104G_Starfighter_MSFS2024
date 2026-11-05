@@ -1,0 +1,55 @@
+# FM T.O. 1F-104G-1 Appendix Part 7 descent charts, digitized 2026-11-05 (tracer: grid lines detected, curve traced per
+# pixel row at 200 dpi; reading checked against the chart's own dashed example lines, +-1 NM). J79-GE-11A.
+# chart: A7-1R idle 300 KIAS flaps+gear up speed brakes IN (flight test, 14 400-16 000 lb, avg 5 600 ft/min)
+#        A7-2  85 % rpm 275 KIAS TAKEOFF flaps gear up speed brakes OUT (flight test, 16 000-25 000 lb, avg 6 500 ft/min,
+#              30 000 ft -> SL 5.1 min, 140 lb)
+#        A7-3  85 % rpm 300 KIAS flaps+gear up speed brakes IN (flight test, 15 300-16 000 lb, avg 2 000 ft/min,
+#              37 000 ft -> SL ~17.5 min, ~500 lb)
+# alt_kft = pressure altitude, dist_nm = nautical AIR miles to sea level (0/0 = chart origin)
+chart,alt_kft,dist_nm
+A7-1R,0,0
+A7-1R,2.5,2.36
+A7-1R,5,4.92
+A7-1R,7.5,7.44
+A7-1R,10,9.65
+A7-1R,12.5,12.71
+A7-1R,15,14.71
+A7-1R,17.5,18.22
+A7-1R,20,20.67
+A7-1R,22.5,24.08
+A7-1R,25,26.82
+A7-1R,27.5,30.49
+A7-1R,30,34.36
+A7-1R,32.5,37.52
+A7-1R,35,41.02
+A7-1R,37.5,45.86
+A7-1R,40,50.35
+A7-2,0,0
+A7-2,2.5,2.17
+A7-2,5,4.12
+A7-2,7.5,6.88
+A7-2,10,9.54
+A7-2,12.5,11.61
+A7-2,15,14.32
+A7-2,17.5,16.40
+A7-2,20,18.57
+A7-2,22.5,21.23
+A7-2,25,23.38
+A7-2,27.5,26.14
+A7-2,30,28.14
+A7-2,32.5,31.02
+A7-2,35,33.71
+A7-2,37.5,35.96
+A7-3,0,0
+A7-3,7.5,18.97
+A7-3,10,26.20
+A7-3,12.5,33.07
+A7-3,15,39.31
+A7-3,17.5,47.36
+A7-3,20,54.01
+A7-3,22.5,62.38
+A7-3,25,69.16
+A7-3,27.5,78.30
+A7-3,30,86.38
+A7-3,32.5,97.27
+A7-3,35,106.37

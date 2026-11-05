@@ -145,7 +145,7 @@ for i, frac in enumerate(STEPS):
           f"{abs(r[-1][6] - r[0][6]):.0f}° in {r[-1][0] - r[0][0]:.1f} s, IAS {r[0][3]:.0f}")
 print(f"{len(rows)} samples -> {out}")
 pos = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "mcp_f104", "sim_actions.py"),
-                      "position", "16500", "500", "263", "48.36", "11.9", "8000", "wl"],
+                      "position", "16500", "500", "263", "48.36", "11.9", "8800", "wl"],
                      capture_output=True, text=True, timeout=120)
 print("End: position routine ->", (pos.stdout.strip().splitlines() or ["no output"])[-1][:140])
 

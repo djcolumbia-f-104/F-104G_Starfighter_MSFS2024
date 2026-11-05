@@ -25,7 +25,7 @@ first = sys.argv[2] if len(sys.argv) > 2 else None
 plan = os.path.splitext(os.path.basename(plan_path))[0]
 date = datetime.date.today().isoformat()
 KEY = re.compile(r"Result|POST|peak|zeta|period|TOUCHDOWN|roll from|ABORT|Abort|FAIL|SELFTEST|on runway|equilibrium|after|"
-                 r"DESCENT|GLIDE|spiral|right:|left:|positioned")
+                 r"DESCENT|GLIDE|spiral|right:|left:|positioned|sim/FM|  N1 ")
 os.makedirs(os.path.join(ROOT, "build", "sorties"), exist_ok=True)
 
 steps = []

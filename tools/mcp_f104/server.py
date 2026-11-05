@@ -70,10 +70,11 @@ def sim_state() -> str:
 
 @mcp.tool()
 def position(altitude_ft: float = 16500, tas_kt: float = 520, heading: float = 270, lat: float = 48.25,
-             lon: float = 11.0, throttle: int = 8000, lateral: str = "wl") -> str:
+             lon: float = 11.0, throttle: int = 8800, lateral: str = "wl") -> str:
     """Reposition in the air with AP ALT hold (+ wing leveler 'wl' or heading 'hdg'), gear/flaps up; verifies the AP
     (toggle event!) before and after, waits 25 s for the pull-out and reports the lowest altitude.
-    tas_kt is TRUE airspeed (520 at 16 500 ft ≈ 420 KIAS). Throttle 0..16383 (11141 = military)."""
+    tas_kt is TRUE airspeed (520 at 16 500 ft ≈ 420 KIAS). Throttle 0..16383 (11141 = military); default 8 800 ≈ 93 % N1
+    (2026-11-05 EPP: part-power thrust reduced - 8 000 = 90.5 % would settle at ≈ 360 KIAS instead of ≈ 450-480)."""
     return run(SIMPY, "tools/mcp_f104/sim_actions.py", "position", altitude_ft, tas_kt, heading, lat, lon, throttle,
                lateral, timeout=90)[1].strip()
 

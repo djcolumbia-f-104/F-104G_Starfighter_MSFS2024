@@ -79,6 +79,60 @@ follows N1 in the flare), position/AP routine (throttle 8 000 = N1 ≈ 90 %: una
   other (both ≈ 1 500-2 000 lbf at 83 %).
 - One change per round; predictions for ALL configurations and the whole regression matrix before the build (lessons 15/16).
 
+## 8. Results A0/A1/A2 (2026-11-05, desk; tool `tools/epp_desk.py`, data `docs/data/fm_a7_descent.csv`)
+**A0 sources read:**
+- S11 J79-GE-2 MM: Fig. 6-35 performance test schedule - "75 % of Normal thrust" at nominal 6 950 rpm = **90.0 %**;
+  Fig. 6-39/40/41 minimum thrust at 59 °F / 29.92 inHg: Military 10 340, Normal 9 970, 75 % Normal 7 480 lbf -> static
+  thrust at 90 % rpm = **72.3 % of Military** (sim table M 0: 71.2 % ✓). Fig. 5-198 throttle schedule (-2): nozzle closes
+  68 -> 81 % rpm, then constant to Normal.
+- FM Fig. 1-30 re-read at 300 dpi (-11A): nozzle open up to 16° throttle (≈ 68.5 % rpm), closes linearly to the plateau
+  (indicated 2.4) at 36.4° = **≈ 83 % rpm**, constant to ≈ 62°, then closes to ≈ 0.5 at Military. **Correction of section
+  3 (S2): the nozzle is already on its closed plateau at 83-85 %** - the nozzle does NOT explain low thrust at 85 %.
+- **FM 3-41 says "speed brakes - as necessary"** (and "using speed brakes as required to maintain 260 KIAS"): the S2b D6
+  run (brakes in) was no clean contradiction; FM 3-41 only bounds net(83 %) to 1 460 (brakes in) .. ≈ 3 400 (brakes out).
+- **FM Appendix Part 7 (flight test, J79-GE-11A) - the decisive data:** A7-1 idle 300 KIAS clean (5 600 / 11 150 ft/min),
+  **A7-2 85 % 275 KIAS TAKEOFF flaps + speed brakes** (30 000 ft -> SL 29 NM, 5.1 min, 140 lb), **A7-3 85 % 300 KIAS
+  clean, brakes in** (37 000 ft -> SL 120 NM, ≈ 17.5 min, ≈ 500 lb, avg 2 000 ft/min), A7-4 (estimated) 85 % 300 KIAS
+  TAKEOFF flaps 3 500 / 8 500 ft/min. Curves digitized (grid detection + per-row trace, ±1 NM vs. the charts' example lines).
+**A1 (desk gate instead of a new sweep):** the engine formula reproduces every measured sim net thrust (D5 cruise A/B/C,
+endurance 5k/10k, approach, idle, Military) within +2..+6 % -> the formula is a valid model of the sim engine.
+**Finding (fit mode):** required net thrust from the validated drag (NASA polar + the sim's own flap/brake ΔCD) and the
+energy equation vs. the sim formula:
+| chart | sim / required net thrust | fuel lb/min sim / FM |
+|---|---|---|
+| A7-1 idle | 0.75-1.05 (idle OK) | - |
+| A7-2 85 % TO + brakes | 2.1-2.5 | 52 / 27.5 |
+| A7-3 85 % clean | 2.3-6.0 | 50 / 28.6 (with the required gross thrust: 30 ✓) |
+The deficit divided by q̄ (A_s = (T_sim - T_req)/q̄) **collapses onto ONE curve for A7-2 and A7-3** (different drag x3.5,
+weight, q̄): ≈ 8.2 ft² at N1c 84-85 -> ≈ 4 ft² at 90.6 -> 0 at ≈ 95; idle ≈ 0. Interpretation: part-power installation
+loss (inlet spillage / afterbody) ∝ q̄, not contained in the NASA polar (derived at max power, D-6398). Fuel flow (TSFC on
+gross) agrees with the reduced gross thrust (independent channel). Cross-checks: FM 2-7 approach at 16 100 lb / 175 KIAS
+needs only 85.8 % with the current table (FM 87-90 %) -> the current table is too strong there too; FM 3-33 SFO excess
++1 700..+2 160 lbf (A_s 6.5-9.4 at 84 %). Only FM 3-41 ("approximately 83 %") prefers a smaller A_s (≤ 5.3).
+**A2 candidate (one change: n1_and_mach_on_thrust_table rows 70-90):** Δmult = 0.148 M² A_s(N1c)/(1+0.2M²)^3.5
+(= q̄ x A_s, altitude independent), A_s knots 67:0, 70:0.5, 75:3, 80:5.5, 85:8, 90:4.4, 95:0 (70-80 [S] interpolation,
+85/90 [M] A7-2/A7-3), Δ held above M 0.85 (data limit), columns made monotonic in N1, M 0 column and rows ≥ 95 unchanged.
+**Predictions (epp_desk.py cand, before the build):**
+| test | now (formula) | predicted | acceptance |
+|---|---|---|---|
+| A7-3 85 % clean descent | sim/req 2.3-6.0 | 1.03-1.27 (≈ 1 700-2 000 ft/min) | 2 000 ft/min ± 20 % |
+| A7-2 85 % TO + brakes | 2.1-2.5 | 0.89-1.62 (mean 1.09) | 6 500 ft/min ± 20 % |
+| A7-1 idle descent | 0.88 | 1.07 (unchanged at low altitude) | 5 600 ft/min ± 15 % |
+| FM 2-7 approach N1 (16 100 lb, 175 KIAS) | 85.8 % | 89.0 % | 87-90 % |
+| approach N1 in landing_test (18 900 lb, 190 KIAS) | 89.5 % (measured) | 91.3 % | plausibility |
+| D5 cruise N1 A/B/C, E1 5k/10k | 83-85 / 81 % | 90.8 / 90.5 / 88.7 / 88.0 / 88.3 % | J79 cruise ≈ 88-92 % (plausibility) |
+| D5 FF ratio A/B/C/E1/E1 | 1.06/1.08/1.04/0.99/1.00 | 1.08/1.09/1.03/1.00/1.01 | ± 10 % |
+| SFO 84 % clean + brakes vs. idle glide (FM 3-33) | +1 690 lbf | -270 lbf | ± 500 lbf (≈ glide angle ± 1.5°) |
+| SFO 83 % TO + brakes vs. idle + RAT | +2 160 | +505 | ± 600 (RAT drag estimated) |
+| FM 3-41 83 % TO 260 KIAS brakes in | net 2 730 | 1 090 (≈ 2 300 ft/min) | 1 800-2 000 ft/min ± 25 % (FM "approximately") |
+| `position` 16 500 ft equilibrium at 90.5 % (throttle 8 000) | 475 KIAS (measured 445-480) | 360 KIAS | -> throttle 8 800 (≈ 93 %): 450 KIAS |
+| T3-D, B6, B5, D7, T3-F/H, AB (rows ≥ 95) | - | unchanged | regression S1a |
+| B4 idle glide | - | ≈ -1 % | unchanged |
+| F3 fmflare (82-83 % in the flare, M 0.25) | - | flare net ≈ -900 lbf -> more sink before the idle cut | TD sink < 400 ft/min, F3 ± 5 % |
+| H3 BLC f(N1) | - | approach N1 higher -> f = 1 unchanged | unchanged |
+Script adaptation in the same change set: `position` callers throttle 8 000 -> 8 800 (49 % -> 53.7 % lever = ≈ 93 % N1,
+mapping from the sortie logs: 49 % -> 90.5 %, 68 % -> 100 %).
+
 ## 7. Agenda for the next session (2026-11-05) - written 2026-11-04 evening
 Session start: watchdog (background), selftest; sim: EDDM 26L, runway_start. The validated state is in the sim (changes 1/1b
 reverted, S1a passed).
