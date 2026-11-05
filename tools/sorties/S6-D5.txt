@@ -1,0 +1,24 @@
+# S6-D5 (2026-11-05): D5 cruise fuel-flow re-fly after EPP (cruise N1 now ≈ 88-91 % instead of 81-85 %).
+# Points from docs/notes/test-cards/D5-fuel-flow.md (FM Fig. A6-1 DI 0) and FM A5-1 endurance (E1/E2: chart value given as
+# NMPP x δ at the run's δ, slope 0: E1 106 NM/1 000 lb at δ 0.832 -> 88.2; E2 119 at δ 0.688 -> 81.9).
+# Predictions (epp_desk.py report): N1 C 88.7 / A 90.8 / E2 88.3 / E1 88.0 %; FF/FM C 1.03, A 1.08, E2 1.01, E1 1.00 (± 10 %).
+# Order high -> low; refuel before each point; positioning with the proven routine (AP ALT + HDG), cruise_test then holds
+# the Mach with the throttle (≤ Military). Hazard: E1 at 5 000 ft MSL (≈ 3 500 ft AGL) - flown 2026-10-29 the same way.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+posC     | tools/mcp_f104/sim_actions.py position 29500 502 263 48.36 11.9 8800 hdg | positioned; AP on | 120
+cruC     | tools/cruise_test.py {csv} 29500 0.85 58.3 60000 -0.79 | sim/FM | 420
+refuel3  | tools/refuel.py | after | 60
+posA     | tools/mcp_f104/sim_actions.py position 11900 443 263 48.36 11.9 8800 hdg | positioned; AP on | 120
+cruA     | tools/cruise_test.py {csv} 11900 0.70 82.4 30000 -0.86 | sim/FM | 420
+refuel4  | tools/refuel.py | after | 60
+posE2    | tools/mcp_f104/sim_actions.py position 10000 355 263 48.36 11.9 8800 hdg | positioned; AP on | 120
+cruE2    | tools/cruise_test.py {csv} 10000 0.556 81.9 27100 0 | sim/FM | 420
+refuel5  | tools/refuel.py | after | 60
+posE1    | tools/mcp_f104/sim_actions.py position 5000 325 263 48.36 11.9 8800 hdg | positioned; AP on | 120
+cruE1    | tools/cruise_test.py {csv} 5000 0.50 88.2 22740 0 | sim/FM | 420
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120

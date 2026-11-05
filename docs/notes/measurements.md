@@ -1336,3 +1336,9 @@ Work package `docs/notes/workpackage-EPP-part-power-thrust.md` section 8 (source
   1 skip, roll from 165 KIAS **-4.1 %** ✓ (± 5 %).
 - Open (small): D5 cruise FF B +11 % (1 % outside; candidate TSFC 0.72 -> 0.70 after the other D5 points are re-flown);
   approach N1 at the FM upper edge; rows 70-80 [S] (no part-power data below 83 %).
+- **S6-D5 re-fly after EPP** (logs `flighttest_2026-11-05_S6-D5_*`, TSFC 0.72): cruise N1 C 89.7 / A 91.4 / E2 89.0 / E1 88.6 %
+  (was 85.4 / 83.8 / 81.5 / 80.9); FF/FM **C 1.07, A 1.08, E2 1.04, E1 1.03** (+ B 1.11 from S5-EPP) - all ± 10 % except
+  B; mean 1.066 (was ≈ 1.02): higher cruise N1 -> more ram drag inside the gross thrust. **Change: TSFC 0.72 -> 0.69**
+  (fuel only, no thrust effect; predicted C 1.03, B 1.06, A 1.03, E2 1.00, E1 0.99; static Military FF ≈ 4 600 lb/h,
+  known deviation; full-AB FF unaffected - AB TSFC only). Needs Build All + reload; verify with S6-D5 (cruise points).
+- **F3 extra landing** (`S6b-land_landing`, TSFC 0.72): TD 173 KIAS, -173 ft/min, roll from 165 KIAS **+0.9 %** ✓.

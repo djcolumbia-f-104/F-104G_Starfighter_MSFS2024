@@ -22,7 +22,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 root = sys.argv[1]
 ENG = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else os.path.join(root, "source", "cfg", "engines.f104.cfg")
 G, A0, S, P0 = 32.174, 1116.45, 196.1, 2116.2
-STATIC, INLET, TSFC = 10000.0, 5.0, 0.72
+STATIC, INLET, TSFC = 10000.0, 5.0, 0.69     # 0.72 until 2026-11-05 (D5 after EPP)
 DCD_TO_FLAPS = 0.013      # [M] B4 2026-10-29: TAKEOFF flap ΔCD after the drag scalar 0.42
 DCD_SB = 0.044            # [M] S11e: 0.042 (cfg) .. 0.046 (measured) at 52°
 

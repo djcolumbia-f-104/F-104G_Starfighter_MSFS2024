@@ -1,0 +1,5 @@
+# land for the TSFC build (2026-11-05)
+refuel   | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare | TOUCHDOWN | 600
+roll     | tools/roll_from_speed.py {csv:landing} 165 nochute | roll from | 60
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
