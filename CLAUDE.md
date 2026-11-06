@@ -9,8 +9,13 @@ Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (co
 ## >>> CONTINUE HERE (state 2026-11-06) <<<
 **2026-11-06: MSFS SU 7.2 (1.9.24.0, "drag calculations reverted to pre-SU7") -> regression R-SU72 PASSED, no effect**
 (card `docs/notes/test-cards/R-SU72-sim-update.md`, sorties S8-SU72a/b/c: T3-D, T3-A/F/G decel, D5 C, T3-J, SP, F3 all
-unchanged). New open item (pre-existing): SP step α/δ bimodal ≈ 1.0 / ≈ 0.75 at the same condition (T3-SP card). Sim
-PAUSED at 16 500 ft on the AP. Next unchanged: S3 bank-loop desk design (below).
+unchanged). **S9-ID identification sortie:** (1) SP α/δ "bimodal" = ≈ 0.05° small-signal dead zone above M ≈ 0.87
+(0.1/0.2/0.5° -> 0.55/0.75/0.91; M 0.85 -> 1.02), aero gain ≈ 1 (lesson 22). (2) roll plant at 210 KIAS TAKEOFF/gear down
+(`tools/roll_id_test.py`, card `docs/notes/test-cards/S3-bank-loop.md`): 5.3-8.4 °/s per 1 000 counts (progressive), τ 0.5 s;
+the landing PID 250/150/60 is stable at 6.3 Hz (8 recoveries from up to 48°) -> F6 problem = landing_test's 0.55 s pass.
+**NEXT: landing_test single fast loop (bank + aileron every pass, slow reads every n-th pass) -> desk check -> F3
+regression (cfg=land) -> F6 dry runs.** `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)
 **2026-11-05: work package EPP (part-power thrust) DONE and PASSED** (`docs/notes/workpackage-EPP-part-power-thrust.md`

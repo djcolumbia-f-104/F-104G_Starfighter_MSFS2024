@@ -1397,3 +1397,16 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   2026-11-05 S1a (M 0.857) 1.00. Trim step verified delivered exactly (10 Hz simlog, 3.08 -> 3.28°, elevator 0). ωn and ζ
   identical in both modes -> Mα/Mq agree, the moment per trim degree differs ≈ 25 %. Cmδ ≈ -1.9 in the T3-SP card rests on
   α/δ ≈ 1 -> uncertain until explained. To analyse at the desk (what differs between 11-04 S1a and 11-03 A / today).
+
+## 2026-11-06: S9-ID identification sortie - SP small-signal dead zone; roll plant at 210 KIAS TAKEOFF/gear down
+- **SP α/δ explained** (logs `flighttest_2026-11-06_S9-ID_pstep*`, `_S8-SU72c_pstep*`): at M 0.878-0.91 the response depends
+  on the step size - **0.1° -> 0.55, 0.2° -> 0.75, 0.5° -> 0.91/0.92** (up and down alike, trim delivered exactly by the
+  simlog) = gain k ≈ 1.02 with a ≈ 0.05° dead zone; at M 0.848 a 0.1° step gives **1.02/1.03** (no dead zone). The
+  "1.0" cases were all at M ≤ 0.86 (11-04 S1a probably too). ωn/ζ unaffected. -> Cmδ (k ≈ 1) in the T3-SP card stands;
+  **for the H1 pitch damper (trim channel): corrections < 0.1° are partly lost above M ≈ 0.87** (cause inside the sim,
+  unknown). Not an SU 7.2 effect (11-03 log shows the same).
+- **Roll plant** (`tools/roll_id_test.py` new, card S3-bank-loop.md; run 1 aborted correctly at 190 KIAS - throttle law
+  fixed): aileron SimVar linear 16.6° per full axis; rate per 1 000 counts 4.3 -> 6.3 °/s (progressive, template
+  aileron_scaling_table behind the SimVar); rate per degree δa 4.2 = desk 4.3 ✓; τ ≈ 0.5 s; slow bank-driven roll
+  acceleration. The landing PID 250/150/60 at 6.3 Hz recovered 8 times from 7.6-48° (±2° in 1.4-2.6 s, overshoot ≤ 10°)
+  -> F6 problem = the 0.55 s landing_test pass, not the gains. Desk model not usable for tuning (lesson 21).

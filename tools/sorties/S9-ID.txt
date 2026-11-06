@@ -1,0 +1,13 @@
+# S9-ID (2026-11-06): identification sortie, starts AIRBORNE (16 500 ft on the AP).
+# 1) roll response at 210 KIAS / TAKEOFF flaps / gear down (card docs/notes/test-cards/S3-bank-loop.md, tools/roll_id_test.py)
+# 2) SP alpha/delta bimodality (card T3-SP, R-SU72): trim steps of ±0.5° at the M ≈ 0.88 condition (trim0 ≈ 2.87°, gave
+#    0.75 with ±0.2°). Hypothesis "kink in the trim->moment mapping near trim ≈ 3°": +0.5 crosses it -> ≈ 0.85-0.95, -0.5
+#    stays below -> 0.75. Hypothesis "flight-condition (q̄/Mach) dependent": both 0.75.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+rollid   | tools/roll_id_test.py {csv} cfg=to ias=210 alt=12000 | POST OK | 420
+refuel2  | tools/refuel.py | after | 60
+pstepP5  | tools/pitch_step_test.py {csv} 0.5 4 | POST OK | 300
+refuel3  | tools/refuel.py | after | 60
+pstepM5  | tools/pitch_step_test.py {csv} -0.5 4 | POST OK | 300

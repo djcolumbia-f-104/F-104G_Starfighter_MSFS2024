@@ -19,7 +19,7 @@ Iy ≈ 63 000 slug ft² (58 611 empty + fuel + pilot), Cmq from CR-96008 (-8.03 
 | D | 35 000 ft / 1.38 / 726 | 7.36 | 0.115 | 0.76 | **-2.49** | -2.1 (F/C 7 M 1.2), -2.2 (CR-96008 cond. 5), -1.9 (F/C 8 M 1.5) | - |
 **Correction 2026-11-06 (card R-SU72):** a raw re-evaluation of the logs (mean α 1.5-3.5 s after the step) gives α/δ
 A 0.74, B 0.82, C 1.02, D 0.75; later runs at the same condition gave 1.0 (2026-11-04 S1a ≈ M 0.93) and 0.76
-(2026-11-06 M 0.93) -> α/δ is bimodal (≈ 1.0 / ≈ 0.75) with identical ωn/ζ; cause open. The Cmδ below assumed α/δ ≈ 1.
+(2026-11-06 M 0.93). **Explained (S9-ID):** above M ≈ 0.87 a ≈ 0.05° small-signal dead zone (steps 0.1/0.2/0.5° -> 0.55/0.75/0.91), none at M 0.85 (0.1° -> 1.02); true gain k ≈ 1.0 -> the Cmδ below stands. Pitch damper (H1) note: trim corrections < 0.1° are partly lost above M 0.87.
 Cmδ from α/δ ≈ -1.9 (sources -1.44 .. -1.98) ✓. Neutral point: sim ≈ 60 % MAC at all Mach; real ≈ 30 % (M 0.84) ->
 49 % (M 1.0) -> 61 % (M 1.36) (CR-96008). **Subsonic static stability 2.3x too high, supersonic ≈ 1.15x; damping ✓.**
 Logs `flighttest_2026-11-03_SP_A/B/C/D_*.csv`, `_H1_pstep02_fast.csv`.
