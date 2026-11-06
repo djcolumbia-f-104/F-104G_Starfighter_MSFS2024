@@ -1,0 +1,13 @@
+# S19g-F9 (2026-11-06): F9 12.5 kt again - rollout nose push +1 500 above 120 KIAS (xw) - preset F-104G_350_25Kts (12.5 kt surface).
+# Card docs/notes/test-cards/F9-crosswind.md. Starts ON THE RUNWAY.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits wind=350:25 | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+dry      | tools/landing_test.py {csv} 6 2.5 6000 nochute fmflare xw=12.5 | VIRTUAL TOUCHDOWN | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel3  | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare xw=12.5 | TOUCHDOWN | 600
+roll     | tools/roll_from_speed.py {csv:landing} 165 nochute | roll from | 60

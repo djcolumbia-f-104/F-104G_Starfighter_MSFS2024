@@ -1,0 +1,7 @@
+# S24-A3off (2026-11-06): A3 run 5 - heading-offset diagnosis (LAND flaps, 150 KIAS, ±3°, calm). Card A3-ground-steering.md.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+steer    | tools/taxi_steer_test.py {csv} speeds=150 steps=3 settle=4 hold=4 accel=ab flaps=land law=v3 mode=offset | samples | 300
+refuel2  | tools/refuel.py | after | 60

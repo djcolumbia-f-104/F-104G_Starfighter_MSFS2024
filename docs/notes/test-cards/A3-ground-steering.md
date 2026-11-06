@@ -54,3 +54,14 @@ the held pedal, hold 4 s, then stop. Prediction (S19d fit, ± 2x): B ≈ 1 250 /
 Hazards as runs 1/2 (abort 40 ft / 6° / IAS > target + 25 / nose lift / 9 000 ft); 160 KIAS with flaps UP and trim 2° is
 ≈ 20 kt below the liftoff speed (T3-D 178-182 with rotation; the nose stays down: elevator push above 1° pitch).
 GO 2026-11-06 (selftest wind=350:20 OK).
+
+## Run 5 (F9 12.5 kt divergence diagnosis, calm air) - plan
+LAND flaps, 150 KIAS, law v3, mode=offset: the heading reference is offset by +3° / -3° for 3 s (= a crabbed jet on the
+wheels, as after the F9 touchdown), then back to the centreline law. If the heading diverges beyond the offset (abort at 6°)
+or the pedal saturates -> ground physics with a crab angle; if it follows calmly -> the cause is in the touchdown transient
+(skip, nose-wheel contact). GO (calm, on the runway, abort criteria unchanged).
+- **Run 5 result (S24-A3off, calm, LAND flaps, 150 KIAS):** +3° offset reached and held with only ≈ ±500 counts pedal, no
+  divergence (the abort at -41 ft is the test design: 3° for 3 s at 250 ft/s ≈ 40 ft lateral) -> the ground physics with the
+  jet yawed is benign as long as the velocity follows the heading. The F9 divergence comes from the touchdown with a
+  velocity/heading mismatch (crab): tyre slip angles; the nose wheel (12.6 ft arm) outweighs the main gear (1.8 ft), more so
+  with the rollout push (+4 000) loading the nose wheel. 10 kt (TD heading 1.2°) passed, 12.5 kt (3.2°) diverged.

@@ -124,3 +124,7 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   wheel with the track before the nose touches (pedal ≈ crab x NWS gearing, only on the main wheels, rudder in the air rolls!);
   (c) check the MSFS nose-wheel steering/friction defaults (`min_available_steering_angle_pct`, high-speed friction
   scalars) - cfg change under change control. F9 remains passed up to 10 kt.
+- **A3 run 5 (calm, heading offset 3° at 150 KIAS, LAND flaps): benign** (≈ 500 counts hold it) -> the divergence needs the
+  touchdown mismatch (crab vs. track) + a loaded nose wheel. **Change (xw only, one variable):** rollout nose push +1 500
+  instead of +4 000 above 120 KIAS. Test: 12.5 kt again (S19g). Prediction: heading after the touchdown ≤ 5°, rollout within
+  ±30 ft; if it still diverges -> the decrab/wing-down route (reduce the crab at the touchdown).

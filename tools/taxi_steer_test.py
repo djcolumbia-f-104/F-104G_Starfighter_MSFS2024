@@ -35,6 +35,9 @@ LAW = opts.get("law", "new")
 # crosswind the held pedal = the weather-vane torque); the settle segment reports the mean pedal (torque B(V))
 SETTLE, HOLD = float(opts.get("settle", 6)), float(opts.get("hold", 6))
 ACCEL_AB, FLAPS_UP = opts.get("accel") == "ab", opts.get("flaps") == "up"
+# 2026-11-06 (F9 12.5 kt divergence diagnosis): mode=offset -> the step values are HEADING-REFERENCE OFFSETS in degrees,
+# flown closed loop for 3 s (a crabbed jet on the wheels), then back to the centreline law; flaps=land for the landing config
+OFFSET_MODE, FLAPS_LAND = opts.get("mode") == "offset", opts.get("flaps") == "land"
 DEG = 57.29578
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4
 FT_PER_DEG = 60 * 6076.12
@@ -81,6 +84,8 @@ if g("BRAKE_PARKING_POSITION") == 1:
     ev("PARKING_BRAKES")
 if FLAPS_UP:
     ev("FLAPS_UP")
+if FLAPS_LAND:
+    ev("FLAPS_DOWN")
 ev("THROTTLE1_SET", 16383 if ACCEL_AB else MIL)
 print(f"A3 steering test: speeds {SPEEDS} KIAS, steps {STEPS} counts, weight {g('TOTAL_WEIGHT'):.0f} lb, trim 2°")
 
@@ -90,7 +95,8 @@ plan = []                                   # (speed, kind, value, duration)
 for v in SPEEDS:
     plan.append((v, "settle", 0, SETTLE))
     for s in STEPS:
-        plan += [(v, "step", +s, 1.5), (v, "hold", 0, HOLD), (v, "step", -s, 1.5), (v, "hold", 0, HOLD)]
+        sd = 3.0 if OFFSET_MODE else 1.5
+        plan += [(v, "step", +s, sd), (v, "hold", 0, HOLD), (v, "step", -s, sd), (v, "hold", 0, HOLD)]
 plan.append((0, "stop", 0, 60.0))
 k, seg_t, phase = 0, None, "accel"
 t0 = prev_t = time.time()
@@ -133,6 +139,10 @@ while True:
     if phase == "accel":
         if ias >= SPEEDS[0] - 3:
             phase, seg_t = "plan", t
+    elif kind == "step" and OFFSET_MODE:
+        # closed loop on an offset heading reference (+ val = nose right of the runway, like a right crab)
+        e_o = wrap((HDG + val - clamp(0.04 * c, -5.0, 5.0)) - hdg)
+        rud = clamp(100.0 * st.get("xw", 0.0) - 700 * e_o + 300 * r - 50 * st["i_rud"], -12000, 12000)
     elif kind == "step":
         rud = st.get("rud_base", 0.0) + val                          # open loop on top of the held pedal
     if kind != "step":
