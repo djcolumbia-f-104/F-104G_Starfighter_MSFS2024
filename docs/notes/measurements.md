@@ -1474,3 +1474,6 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
   rising with IAS, PD x 1..2 above 110 KIAS, integral, rudder faded after liftoff, heading abort only below vr; build-ups
   S19l/l2/l3): S19m takeoff 178 kt, cross-track +21 ft at vr / +46 ft at liftoff ✓. S19k2 landing: TD 183 KIAS **CL -39 ft ✗**
   (±25), bank ±14° at 120-180 ft (crab target follows the wind gradient), rollout -41..-3 ft, roll -8.4 %. Card F9-crosswind.md.
+- **F9 25 kt with landing_test `trk`** (crab measured as heading - ground track; S19n/S19n3 dry, S19n2 real): TD 184 KIAS
+  **CL -4 ft** (S19k2 -39), bank ±9° in 50-300 ft (±14), -6.4..+2.4° below 50 ft; skip after the TD with 8-9° crab -> rollout
+  -30..+55 ft ✗. F9 25 kt not passed; desk design next (touchdown skip / partial decrab / track-based rollout).

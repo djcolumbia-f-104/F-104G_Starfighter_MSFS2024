@@ -239,3 +239,5 @@ mark the old row superseded and name the replacement log.
 | `S19l-F9_taxi`, `S19l2-F9_taxi`, `S19l3-F9_taxi`, 2026-11-06 | build-ups of the takeoff_test `xw` law at 25 kt (taxi to 165 KIAS); l2/l3 with cross-track `xt` | 19 010 lb | heading -2.8/-2.7/-2.15° at vr; xt +17/+14 ft at vr | **valid** |
 | `S19m-F9_*`, 2026-11-06 | F9 25 kt: takeoff with `xw` + dry run (virtual runway, 50 kt aloft) | 19 010 lb | liftoff 178 kt, xt +46 ft; dry TD CL -15 ft, bank +8.8° at 6 ft | **valid** |
 | `S19k2-F9_*`, 2026-11-06 | **F9 25 kt surface (FM limit), flown, NOT passed (CL)** | 19 009 lb | TD 183 KIAS CL -39 ft; bank ±14° at 120-180 ft; rollout -41..-3 ft; roll -8.4 % | **valid** |
+| `S19n-F9_*`, `S19n3-F9_dry*`, 2026-11-06 | F9 25 kt: takeoff `xw` (179 kt) + dry runs with landing_test `trk` | 19 010 lb | dry TD CL -6 / -14 ft; bank -8.9 / -6.9° at 10 ft | **valid** |
+| `S19n2-F9_*`, 2026-11-06 | **F9 25 kt real landing with `trk`: TD ✓, rollout ✗** | 19 008 lb | TD 184 KIAS CL -4 ft hdg 7.7°; skip; rollout -30..+55 ft; roll -10.4 % | **valid** |

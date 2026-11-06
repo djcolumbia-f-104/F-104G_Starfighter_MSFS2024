@@ -1,0 +1,6 @@
+# S19n3-F9 (2026-11-06): repeat trk dry run with the decrab pedal limited to 2 500; starts AIRBORNE at 16 500 ft on the AP.
+# label | command | expect | timeout s
+refuel2  | tools/refuel.py | after | 60
+dry      | tools/landing_test.py {csv} 6 2.5 6000 nochute fmflare xw=25 trk | VIRTUAL TOUCHDOWN | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel3  | tools/refuel.py | after | 60

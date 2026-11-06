@@ -193,3 +193,34 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   -39 ft, all to the downwind side); check with the S19i/j/k2 logs; then 25 kt again. Left crosswind (presets 170_..) after.
 - **Status F9 (right crosswind):** 5 / 10 / 12.5 / 15 kt PASSED, 20 kt PASSED marginal, 25 kt flown safely but CL -39 ft ✗.
   Crosswind takeoff: `takeoff_test.py ... xw` needed from ≈ 20 kt (PD law alone: abort at 25 kt).
+- **Desk analysis S19k2 + new landing_test option `trk` (2026-11-06):** true crab from the log (heading - track from Δcross/
+  Δalong over 2 s) = 13.4° at 680 ft -> 10.5° at 250 ft -> 8.2° at 110 ft -> 6.9° at 20 ft; the track error stayed within ±1-2°,
+  i.e. the wind-derived crab was good, but the localizer (heading target HDG + crab - 0.05 c) has no drift feedback: 1.5° track
+  error for 4 s = 35 ft (+5 -> +35 ft between 177 and 109 ft); below 55 ft the crab fade + decrab turned the track to -0.4..-1.0°
+  -> c -9 -> -39 ft at TD. **`trk`** (with xw=): crab measured = heading - ground track (VELOCITY_WORLD_X/Z, low-pass 1 s) ->
+  heading target HDG + crab_m - 0.05 c = a track loop (track -> HDG - 0.05 c, drift feedback built in); no crab fade (crab method
+  to the TD, gentle rudder decrab below 30 ft unchanged); bank target ±5° below 50 ft. Channel cross-check: CSV columns
+  crab_m (measured) vs. crab_w (wind-derived) must agree within ≈ 1° in the dry run (constant wind). Prediction real landing:
+  TD |CL| ≤ 15 ft, bank in 50-300 ft ≤ ±6°, TD heading ≈ 6-7° (crab kept), rollout as S19k2.
+  Hazards: (1) bad track read -> wrong crab -> guarded (|v| > 100 ft/s, jump > 30° rejected, clamp ±30°); (2) no fade = larger
+  crab at TD (≈ 7° vs 5-6°) -> the xw rollout law handled 8.7° in S19k2; (3) bank limit ±5° below 50 ft could leave drift
+  uncorrected -> go-around criteria unchanged. Build-up: takeoff xw + dry run (S19n), real landing S19n2 only if crab_m ≈ crab_w,
+  virtual TD |CL| ≤ 20 ft and bank below 50 ft ±5°.
+- **S19n (takeoff xw 179 kt ✓) + trk dry run:** channel cross-check crab_m - crab_w = 0.0 ± 0.1° above 50 ft ✓ (-1.9° below
+  30 ft = the decrab sideslip, as expected for a measured value); CL -8..+6 ft above 50 ft (S19m without trk -10..+4 / -22 at TD),
+  bank ±1.3° in 50-300 ft, virtual TD -6 ft; but bank -8.9° at 10 ft: the decrab rudder (13° crab aloft -> 4 550 counts) rolls
+  right (rudder rolling moment). -> pedal limit 2 500 with trk. **S19n3 dry repeat:** virtual TD 186 KIAS **CL -14 ft**, bank
+  -1.4..-2.0° down to 28 ft, then -6.9° at 10 ft (bank target clamp -5° + overshoot while the track loop corrects 7 ft of drift in
+  the flare). **GO for S19n2** (real landing): CL criterion met, bank exceeds ±5° by ≈ 2° only in the dry run's doubled wind.
+- **S19n2-F9 (25 kt, real landing with `trk`) - TD ✓, rollout ✗:** crab_m tracks crab_w within ≈ 0.3° above 50 ft (real wind
+  gradient: crab 13.2 -> 8.7 -> 6.6°); CL -11..+26 ft above 300 ft, -8..+14 ft in 50-300 ft, **-9..+2 ft below 50 ft**; bank
+  -7.1..+9.2° above 300 ft, -9.3..+7.4° in 50-300 ft (prediction ±6 ✗; S19k2 ±14), -6.4..+2.4° below 50 ft (limit ±5, ≈ 1.4°
+  over); **TD 184 KIAS -389 ft/min, pitch 1.9°, CL -4 ft** (S19k2 -39), heading 7.7°; then a skip (pitch 4.1°, bank -5.7°,
+  ≈ 3 s with no rollout rudder while airborne) with 8-9° crab -> +18 ft, the rollout law aligned the jet but it ran on to
+  **+55 ft** and overshot to -30 ft (rollout -30..+55, runway half-width ≈ 98 ft), heading ≤ 10.2°, pedal ≤ 8 600; roll from
+  165 KIAS -10.4 %. Debrief: `trk` fixed the air part (TD CL -39 -> -4 ft); keeping the full crab moves the problem to the
+  touchdown skip: every 25 kt landing skipped once (S19k2, S19n2), and a skip with 8° crab drives the jet sideways
+  ≈ 40 ft/s. **F9 25 kt = flown safely twice, NOT passed (rollout +55 ft).** Two failed attempts at this point -> no third flight
+  without a desk design (lesson 26 rule). Candidates: (a) a firmer touchdown / no skip (the general landing skip - flare sink
+  target, gear rebound; open since 2026-10-30), (b) partial decrab (≈ 50 %) with trk, so a skip with less crab drifts less,
+  (c) rollout law: track-based too (align the velocity, not the heading). Also the crosswind takeoff (`xw`) is done.

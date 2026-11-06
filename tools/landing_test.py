@@ -63,6 +63,13 @@ MINRUN = "minrun" in sys.argv[5:]
 # angle asin(crosswind/TAS) from the sim's wind at the aircraft (read in the slow group), crab removed with the rudder
 # between 30 and 5 ft AGL. Forces the FAST loop. Card docs/notes/test-cards/F9-crosswind.md.
 XW = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("xw=")), None)
+# 2026-11-06 (F9 25 kt, S19k2: TD CL -39 ft, bank ±14° in the wind gradient; desk check of the log: the wind-derived crab was
+# within ≈ 1° of the true crab, but the localizer had no drift feedback - track errors of 1-2° over 4 s gave ±35 ft - and the
+# crab fade 30 -> 5 ft turned the nose towards the runway by bank and drifted the jet ≈ 25 ft downwind): option `trk` (with
+# xw=) = crab MEASURED as heading - ground track (VELOCITY_WORLD_X/Z, low-pass 1 s) -> the localizer becomes a track loop
+# (drift feedback, no wind model), crab kept to the touchdown (FM 2-25 crab method; the gentle rudder decrab below 30 ft
+# stays), bank target ±5° below 50 ft AGL. Without `trk` the xw path is unchanged.
+TRK = XW is not None and "trk" in sys.argv[5:]
 TG_STOP = TG == "tg=stop"
 TG_HOLD, S_HOLD, THETA_T = 2000.0, -6600.0, 10.5     # nose-wheel hold (nose down), srot stick (takeoff_test [M]), target
 if CFG != "land":
@@ -143,9 +150,14 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt, ks_e=1.0, ks_a=1.0):
     res["cmd_e"] = cmd_e                                              # start value of the rollout ramp (bumpless)
     ev("AXIS_ELEVATOR_SET", int(cmd_e))
     # F9: crab into the wind (+ = right); removed between 30 and 5 ft AGL (decrab with the rudder, see the flare)
-    crab = res.get("crab", 0.0) * clamp((res.get("agl_now", 999.0) - 5.0) / 25.0, 0.0, 1.0)
-    hdg_tgt = HDG + crab - clamp(0.05 * c, -15, 15)
-    bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
+    if TRK and "crab_m" in res:
+        hdg_tgt = HDG + res["crab_m"] - clamp(0.05 * c, -15, 15)        # = track target HDG - 0.05 c (no crab fade)
+        blim = 5.0 if res.get("agl_now", 999.0) < 50 else 15.0
+        bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -blim, blim)
+    else:
+        crab = res.get("crab", 0.0) * clamp((res.get("agl_now", 999.0) - 5.0) / 25.0, 0.0, 1.0)
+        hdg_tgt = HDG + crab - clamp(0.05 * c, -15, 15)
+        bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
     e_b = bank - bank_tgt
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
     # limit ±8000 (landing 9: a gust rolled the jet -7 -> -22° in the flare with the ailerons at the ±4000 limit;
@@ -323,6 +335,17 @@ while time.time() - t0 < 600:
                     xc = wv * math.sin(math.radians(wd - HDG))        # + = from the right
                     res["xw_now"] = xc
                     res["crab"] = math.degrees(math.asin(clamp(xc / tas, -0.3, 0.3)))
+            if TRK:                                                   # measured crab = heading - ground track
+                vx, vz = g("VELOCITY_WORLD_X"), g("VELOCITY_WORLD_Z")
+                if math.hypot(vx, vz) > 100:                          # ft/s; a failed read gives 0 -> keep the last value
+                    cm = wrap(res["hdg"] - math.degrees(math.atan2(vx, vz)))
+                    t_c = time.time()
+                    if "crab_m" not in res or abs(cm) > 30:
+                        res["crab_m"] = clamp(cm, -30.0, 30.0) if "crab_m" not in res else res["crab_m"]
+                    else:
+                        a = 1.0 - math.exp(-max(t_c - res.get("crab_t", t_c), 0.0) / 1.0)
+                        res["crab_m"] += a * (cm - res["crab_m"])
+                    res["crab_t"] = t_c
         if phase == "rollout":                                       # xw rollout: heading every pass (yaw-rate damping)
             h_r = g("PLANE_HEADING_DEGREES_TRUE") * DEG
             res["hdg"] = h_r if h_r else res.get("hdg", HDG)
@@ -376,7 +399,10 @@ while time.time() - t0 < 600:
             # F9 decrab, step-1 version (gentle: -350 counts/°, bank ±0.7° below 50 ft at 5 kt). 2026-11-06 step 2 repeat: a
             # feed-forward of 2 640 counts per degree of crab rolled the jet to -16° at 13 ft (F-104 roll due to sideslip,
             # δa/δr 0.37) -> REVERTED; FM 2-25: strong crosswind = crab method to the touchdown (desk work: card F9)
-            ev("AXIS_RUDDER_SET", int(clamp(-350 * wrap(HDG - hdg), -8000, 8000)))
+            # trk (S19n dry, 13° crab aloft): the decrab rudder rolled the jet to -8.9° at 10 ft (rudder rolling moment L'δr)
+            # with the bank target clamped at ±5° -> pedal limit 2 500 with trk (the crab is kept to the TD anyway)
+            rl = 2500 if TRK else 8000
+            ev("AXIS_RUDDER_SET", int(clamp(-350 * wrap(HDG - hdg), -rl, rl)))
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
         # thrust/BLC loss, sink rose again) -> gain 40 towards 83 %
@@ -626,7 +652,8 @@ while time.time() - t0 < 600:
         if gc["t_pos"] is None and res["vs_f"] > 0:
             gc["t_pos"] = t
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
-                 round(theta, 1), round(path_err), round(vs_tgt), int(thr), round(hdg, 2), int(res.get("rud_cmd", 0))])
+                 round(theta, 1), round(path_err), round(vs_tgt), int(thr), round(hdg, 2), int(res.get("rud_cmd", 0)),
+                 round(res.get("crab_m", float("nan")), 2), round(res.get("crab", float("nan")), 2)])
     if FAST and phase in FASTPH:
         time.sleep(0.01)
     elif phase in AIR:
@@ -661,7 +688,7 @@ log.terminate()                                                     # simlog wri
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
     wr.writerow(["t", "phase", "along_ft", "cross_ft", "agl", "ias", "vs_fpm", "bank", "pitch", "path_err_ft",
-                 "vs_tgt", "throttle", "hdg_true", "rud_cmd"])
+                 "vs_tgt", "throttle", "hdg_true", "rud_cmd", "crab_m", "crab_w"])
     wr.writerows(rows)
 if res.get("ga_cmd"):
     gc = res["ga_cmd"]

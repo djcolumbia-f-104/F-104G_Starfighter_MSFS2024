@@ -1,0 +1,11 @@
+# S19n-F9 (2026-11-06): F9 25 kt: takeoff xw + dry run with the landing_test trk option (measured-crab track loop), part 1.
+# Card docs/notes/test-cards/F9-crosswind.md. Starts ON THE RUNWAY.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits wind=350:50 | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 xw | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+dry      | tools/landing_test.py {csv} 6 2.5 6000 nochute fmflare xw=25 trk | VIRTUAL TOUCHDOWN | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel3  | tools/refuel.py | after | 60
