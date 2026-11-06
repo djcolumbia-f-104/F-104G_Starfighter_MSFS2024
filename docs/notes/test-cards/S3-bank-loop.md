@@ -151,3 +151,18 @@ regression (cfg=land, unchanged gains -> expect the validated result), then F6 d
   -18 %; no FM reference), loop 4.4 Hz. Procedure ✓ (final ≥ 230, sink ≤ 2 000 ft/min, TD ≥ 190+); TD speed vs. the A8-2
   chart = script flare technique (82 % floor + 147 ft flare cannot bleed 35 kt) - open item if the no-flap TD speed is to
   be checked as a flight-model value.
+
+## Step 5: F3 (LAND flaps, no chute, FM flare) with the FAST loop - regression before FAST becomes the LAND default
+- Change vs. the validated F3: only the loop timing (5 Hz instead of 1.8 Hz; same gains, VS filter time constant kept;
+  flare gain x1.6 was tuned at 0.55 s). Reference (validated F3, same cfg): TD 172-176 KIAS, -170..-300 ft/min, 1 skip,
+  roll from 165 KIAS -4.1 / +0.9 / -3.7 % vs. FM A8-4.
+- Prediction: bank ≤ ±2° (was ±3-6° in LAND approaches at 1.8 Hz), TD 172-176 KIAS, sink -150..-350 ft/min, roll from 165
+  KIAS within ±5 % (unchanged: rollout runs the slow path).
+- Hazard: flare dynamics at the new rate (pitch loop) near the ground -> build-up dry run at +6 000 ft first (S14-F3fast);
+  tail-strike guard, go-around fixed (lesson 23). GO 2026-11-06.
+- **Result F3 with FAST (S14-F3fast, 19 009 lb):** dry (+6 000 ft): 5.2 Hz, virtual TD 173 KIAS -483 ft/min; real: 4.6 Hz,
+  **TD 173 KIAS, -349 ft/min**, pitch 3.9°, CL -1 ft, 1 skip, **roll from 165 KIAS 2 929 ft = -4.7 %** vs. FM A8-4 (± 5 % ✓,
+  most negative of the series -4.1 / +0.9 / -3.7 / -2.4 / -0.6 %); bank level ±1.6°, approach ±1.3°, flare ±0.8° = the
+  1.8 Hz reference (S1a 11-05: ±1.3 / ±1.3 / ±0.9°). **Decision: FAST is NOT made the LAND default** - no measurable benefit
+  at 175-190 KIAS (the slow loop is stable there), sink slightly firmer, roll at the edge of the tolerance; change control
+  keeps the validated LAND path. FAST stays the default for cfg=to|up (needed above ≈ 200 KIAS) and an option for land.

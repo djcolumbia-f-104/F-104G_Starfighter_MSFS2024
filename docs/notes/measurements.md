@@ -1421,3 +1421,5 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   final 237, TD 226 KIAS (Fig. A8-2 202: +12 %, script flare technique), +29 ft/min, pitch 5.2°, CL +4 ft, roll 4 594 ft.
   Dry runs found two go-around script faults for cfg=up (FLAPS_1 extended the flaps -> pitch-up 38° at the virtual-runway
   height; gear up at ≈ 271 KIAS) - fixed and re-flown (lesson 23).
+- **F3 with the FAST loop** (S14-F3fast): TD 173 KIAS -349 ft/min, roll from 165 KIAS -4.7 % (± 5 % ✓, edge), bank equal to
+  the 1.8 Hz reference -> FAST stays opt-in for cfg=land (no benefit there), default for cfg=to|up.
