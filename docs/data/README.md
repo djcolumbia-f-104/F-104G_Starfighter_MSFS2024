@@ -235,3 +235,7 @@ mark the old row superseded and name the replacement log.
 | `S19g-F9_*`, `S19h-F9_*` (+ `_simlog`), 2026-11-06 | F9 12.5 kt with a light rollout push (+1 500 above 120 KIAS / for 4 s) | 19 010 lb | rollout -12..+1 / -19..-4 ft ✓; roll -16.9 / -11.6 % (nose-load technique) | **valid** |
 | `S19i-F9_*` (+ `_simlog`), 2026-11-06 | **F9 15 kt surface PASSED** (preset 350/30) | 19 010 lb | TD CL -12 ft hdg 3.8°; rollout -18..-7 ft; roll -8 % | **valid** |
 | `S19j-F9_*` (+ `_simlog`), 2026-11-06 | **F9 20 kt surface PASSED (marginal)** (preset 350/40) | 19 010 lb | TD CL -24 ft hdg 5.3°; rollout -25..-7 ft; roll -12.3 % | **valid** |
+| `S19k-F9_takeoff*` (+ `_abort.png`), 2026-11-06 | F9 25 kt: takeoff with the PD heading law -> heading abort at 176 kt, stop beside 26L | 19 010 lb | heading -10.2° at the first liftoff | **valid** (failure case) |
+| `S19l-F9_taxi`, `S19l2-F9_taxi`, `S19l3-F9_taxi`, 2026-11-06 | build-ups of the takeoff_test `xw` law at 25 kt (taxi to 165 KIAS); l2/l3 with cross-track `xt` | 19 010 lb | heading -2.8/-2.7/-2.15° at vr; xt +17/+14 ft at vr | **valid** |
+| `S19m-F9_*`, 2026-11-06 | F9 25 kt: takeoff with `xw` + dry run (virtual runway, 50 kt aloft) | 19 010 lb | liftoff 178 kt, xt +46 ft; dry TD CL -15 ft, bank +8.8° at 6 ft | **valid** |
+| `S19k2-F9_*`, 2026-11-06 | **F9 25 kt surface (FM limit), flown, NOT passed (CL)** | 19 009 lb | TD 183 KIAS CL -39 ft; bank ±14° at 120-180 ft; rollout -41..-3 ft; roll -8.4 % | **valid** |

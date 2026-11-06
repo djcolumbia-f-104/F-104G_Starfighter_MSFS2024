@@ -7,6 +7,7 @@ Usage (with the Python of the simconnect-mcp venv):
   default (2026-10-31): stick-schedule rotation srot (stick ramps over 25 kt from vr to S_HOLD, see code)
   old: previous attitude ramp 3°/s + feed-forward 5000; qrot: EXPERIMENTAL pitch-rate rotation (failed 2026-10-30)
   taxi: rotation build-up without liftoff (with the selected law)
+  xw: crosswind ground-roll law (feed-forward on the measured crosswind + integral, 2026-11-06 F9 25 kt) + cross-track column
 Precondition: aircraft lined up on the runway, engine running, flaps TAKEOFF, trim 5°, parking brake set.
 Sequence: full afterburner against the parking brake -> at N1 >= 99 % (max. 12 s) release the brake -> rudder holds
 the runway heading -> from vr_kt the rotation law (default srot: stick schedule; rotate ~20 kt below liftoff speed, FM 6-5)
@@ -60,6 +61,14 @@ S_HOLD = next((float(a.split("=")[1]) for a in sys.argv[4:] if a.startswith("sho
 # 2.5° (brot: 4° - no liftoff possible: CL ≈ 1.0 needed at 168 kt, ≈ 0.5 available) or 165 kt (brot 168), then idle, hold the
 # nose at 0°, brake to a stop
 TAXI = "taxi" in sys.argv[4:]
+# 2026-11-06 (F9, S19k: 25 kt crosswind from the right -> the PD heading law weather-vaned to -10.2° at 176 kt, heading abort
+# at liftoff, the stop ended beside the runway; at 15/20 kt the error had already reached -4.6/-6.5° at liftoff): option `xw`
+# = crosswind ground-roll law: feed-forward on the measured crosswind (weather-vane torque fitted on the S19h/i/j/k takeoff
+# rolls: ≈ 70 counts per kt up to 110 KIAS, rising ≈ 1.6 counts/kt per KIAS above - the 5° takeoff trim unloads the nose
+# wheel) + integral (as the landing rollout law v3) + rudder faded to 0 within 1 s after the first liftoff (no rudder in the
+# air: roll due to sideslip, lesson 26); heading abort only below vr (a stop from 175 kt left the runway). Without `xw` the
+# validated PD law is unchanged.
+XW = "xw" in sys.argv[4:]
 TAXI_THETA, TAXI_IAS = (4.5, 172.0) if BROT else (2.5, 165.0)   # brot: CL ≈ 0.55 available vs 0.97 needed
 DEG = 57.29578
 FULL = 16383
@@ -132,6 +141,23 @@ RWY_HDG = 263.4
 if abs(wrap(s0["hdg"] - RWY_HDG)) > 2.0:
     sys.exit(f"Aircraft heading {s0['hdg']:.1f}° not aligned with runway 26L ({RWY_HDG}°) - aborted (run runway_start again)")
 hdg0 = RWY_HDG
+xw_kt = 0.0
+if XW:
+    import math
+    w_v, w_d = aq.get("AMBIENT_WIND_VELOCITY") or 0.0, aq.get("AMBIENT_WIND_DIRECTION") or 0.0
+    xw_kt = w_v * math.sin(math.radians(w_d - RWY_HDG))         # + = from the right (landing_test convention)
+    print(f"xw law: wind {w_d:.0f}°/{w_v:.1f} kt -> crosswind {xw_kt:+.1f} kt (+ = from the right)")
+
+
+def xtrack():
+    """Cross-track from the 26L centreline (ft, + = right; landing_test.py frame) - xw mode only, every 4th pass."""
+    lat, lon = aq.get("PLANE_LATITUDE"), aq.get("PLANE_LONGITUDE")
+    if not lat or not lon:
+        return None
+    h = math.radians(RWY_HDG)
+    n = (lat - 48.34472097713059) * 364567.2
+    e = (lon - 11.803858844132039) * 364567.2 * math.cos(math.radians(48.34472097713059))
+    return e * math.cos(h) - n * math.sin(h)
 # speed brakes out on the ground = drag chute emulation (spoiler_limit 65° > air limit) -> must be in for takeoff
 ev_sb = Event(b"SPOILERS_OFF", sm)
 ev_sb()
@@ -160,6 +186,8 @@ KP_TH, KD_TH = 800.0, 200.0              # counts per ° and per °/s (positive 
 # open: redesign the rotation as a pitch-rate command (≈ 2°/s) instead of attitude + feed-forward
 FF_TH = 5000.0
 LIM_RUD, LIM_PULL, LIM_PUSH = 8000, 12000, 3000
+if XW:
+    LIM_RUD = 12000                      # as the landing xw rollout (pedal up to 47 % used at 12.5 kt)
 KP_B, KD_B = 250.0, 150.0                # aileron on bank (landing_test.py; +axis increases raw bank)
 THETA_CLIMB = 15.0                       # [S] climb-out attitude
 ap_on = False                            # AP only at the end (1 500 ft), not in the climb-out (trim-based, too slow)
@@ -171,12 +199,36 @@ gear_up = flaps_up = False
 aborted = ""
 
 
+def xw_ff(ias):
+    """Weather-vane feed-forward [counts], + = nose left (wind from the right)."""
+    # v2 (S19l/S19l2 taxi build-ups: v1 = min(150, 70 + 1.6 x (IAS-110)) still let the error grow above 115 KIAS, -2.7° at
+    # vr; the nose-wheel steering is reduced to ≈ 20 % of the commanded angle above ≈ 20 kt, slow-taxi probe 2026-11-06)
+    per_kt = min(200.0, 70.0 + 2.5 * max(0.0, ias - 110.0)) if ias > 30 else 70.0 * ias / 30.0
+    return per_kt * xw_kt
+
+
+def xw_rudder(s, err_h, r, dt):
+    """Crosswind ground-roll law (option xw): ff + PD (as the validated law) + integral; faded to 0 in 1 s in the air."""
+    if s["gnd"] or res["first_air"] is None:
+        res["xw_air"] = None
+        res["xw_i"] = max(-40.0, min(40.0, res.get("xw_i", 0.0) + err_h * dt))
+        kg = 1.0 + max(0.0, min(1.0, (s["ias"] - 110.0) / 50.0))      # v2: PD x 1 .. 2 from 110 to 160 KIAS (weak steering)
+        res["xw_last"] = xw_ff(s["ias"]) + kg * (-KP_HDG * err_h + KD_HDG * r) - 50.0 * res["xw_i"]
+        return res["xw_last"]
+    if res.get("xw_air") is None:
+        res["xw_air"] = s["t"]
+    return res.get("xw_last", 0.0) * max(0.0, 1.0 - (s["t"] - res["xw_air"]) / 1.0)
+
+
 def report_and_post():
     """Results + postconditions (test process step 6, tools/post.py) - called by every normal end path (2026-11-04: the
     position-routine end exited before the postcondition block)."""
     lo, fa = res["liftoff"], res["first_air"]
     print(aborted or "done", "->", out)
     print(f"Vr reached after {res['vr_t']} s; max. pitch on the ground {res['theta_max_gnd']:.1f}° (tail at 12.3°)")
+    if XW:
+        print(f"xw: cross-track at the last ground fix {res.get('xt_gnd', float('nan')):+.0f} ft, max |xt| "
+              f"{res.get('xt_max', float('nan')):.0f} ft (logged until the end of the run)")
     if fa:
         print(f"Result: first liftoff at {fa['ias']:.0f} kt IAS, pitch {fa['theta']:.1f}°, after {fa['dist']:.0f} ft")
     if lo:
@@ -188,12 +240,21 @@ air_since = None
 dist = 0.0
 with open(out, "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
-    w.writerow(["t", "ias", "gnd", "theta", "theta_cmd", "hdg_err", "agl", "dist_ft", "gs", "cmd_elev", "cmd_rud"])
+    w.writerow(["t", "ias", "gnd", "theta", "theta_cmd", "hdg_err", "agl", "dist_ft", "gs", "cmd_elev", "cmd_rud", "xt"])
+    n_pass, xt = 0, ""
     while True:
         s = state(full=not prev["gnd"] or res["liftoff"] is not None)
         dt = max(s["t"] - prev["t"], 0.02)
         err_h = wrap(hdg0 - s["hdg"])
         r = wrap(s["hdg"] - prev["hdg"]) / dt
+        n_pass += 1
+        if XW and n_pass % 4 == 0:
+            v = xtrack()
+            if v is not None:
+                xt = round(v)
+                res["xt_max"] = max(res.get("xt_max", 0), abs(v))
+                if res["first_air"] is None:
+                    res["xt_gnd"] = v
         q = (s["theta"] - prev["theta"]) / dt
         if s["ias"] >= vr and res["vr_t"] is None:
             res["vr_t"] = s["t"] - t0
@@ -205,7 +266,10 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             theta_cmd = min(THETA_CLIMB if res["liftoff"] else theta_target, theta_cmd + (2.0 if res["liftoff"] else 3.0) * dt)
             if s["gnd"]:
                 theta_cmd = min(theta_cmd, 11.0)       # tail touches at 12.3°
-        cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
+        if XW:
+            cmd_rud = xw_rudder(s, err_h, r, dt)
+        else:
+            cmd_rud = -(KP_HDG * err_h - KD_HDG * r) if res["liftoff"] is None or s["agl"] < 50 else 0.0
         cmd_rud = max(-LIM_RUD, min(LIM_RUD, cmd_rud))
         cmd_elev = 0.0
         if res["vr_t"] is not None and BROT and not res.get("srot_done"):
@@ -340,14 +404,14 @@ with open(out, "w", newline="", encoding="utf-8") as f:
             print(f"Flaps up at {s['ias']:.0f} KIAS, {s['agl']:.0f} ft")
         w.writerow([round(s["t"] - t0, 2), round(s["ias"], 1), int(s["gnd"]), round(s["theta"], 2),
                     round(theta_cmd, 2), round(err_h, 2), round(s["agl"]), round(dist), round(s["gs"], 1),
-                    int(cmd_elev), int(cmd_rud)])
+                    int(cmd_elev), int(cmd_rud), xt])
         f.flush()
         prev = s
-        if res["liftoff"] is None and s["gnd"] and abs(err_h) > 10:
+        if res["liftoff"] is None and s["gnd"] and abs(err_h) > 10 and not (XW and res["vr_t"] is not None):
             aborted = f"Abort: heading deviation {err_h:.1f}°"
         elif res["liftoff"] is None and s["t"] - t0 > 90:
             aborted = "Abort: 90 s without liftoff"
-        if aborted and (TAXI and "taxi" in aborted or "uncommanded" in aborted):
+        if aborted and (TAXI and "taxi" in aborted or "uncommanded" in aborted or XW and "heading" in aborted):
             # gentle stop: idle, nose down over 3 s, wheel brakes once the nose is down, heading hold by rudder
             ev["THROTTLE1_SET"](0)
             t_s = time.time()
@@ -357,12 +421,13 @@ with open(out, "w", newline="", encoding="utf-8") as f:
                 # 2026-10-30 incident: a 0 -> push ramp left the 5° nose-up takeoff trim in charge at ≈ 170 kt -> airborne, 28°.
                 # Hold the attitude at 0° actively (push as needed, up to the full nose-down stop)
                 axis("AXIS_ELEVATOR_SET", max(0.0, min(16383.0, 3000.0 + 2500.0 * st["theta"])))
-                axis("AXIS_RUDDER_SET", max(-LIM_RUD, min(LIM_RUD, -KP_HDG * eh)))
+                rs = xw_rudder(dict(st, gnd=True), eh, 0.0, 0.05) if XW else -KP_HDG * eh
+                axis("AXIS_RUDDER_SET", max(-LIM_RUD, min(LIM_RUD, rs)))
                 if st["theta"] < 1.0 and time.time() - t_s > 1.0:
                     ev["AXIS_LEFT_BRAKE_SET"](16383) if ev.get("AXIS_LEFT_BRAKE_SET") else None
                     ev["AXIS_RIGHT_BRAKE_SET"](16383) if ev.get("AXIS_RIGHT_BRAKE_SET") else None
                 w.writerow([round(st["t"] - t0, 2), round(st["ias"], 1), int(st["gnd"]), round(st["theta"], 2), 0, round(eh, 2),
-                            0, 0, round(st["gs"], 1), 0, 0])
+                            0, 0, round(st["gs"], 1), 0, 0, ""])
                 if st["gs"] < 3 or time.time() - t_s > 60:
                     break
                 time.sleep(0.05)

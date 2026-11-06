@@ -1,0 +1,6 @@
+# S19l3-F9 (2026-11-06): xw law v2 (steeper feed-forward, PD x1..2 above 110 KIAS) high-speed taxi build-up at 25 kt.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits wind=350:50 | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+taxi     | tools/takeoff_test.py {csv} 157 10.5 taxi xw | POST OK | 300

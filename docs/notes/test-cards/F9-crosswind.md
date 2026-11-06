@@ -148,3 +148,48 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   wind drops); TD 181 KIAS -412 ft/min **CL -24 ft** (limit ±25), heading 5.3°; **rollout -25..-7 ft**, heading ≤ 6.7°, pedal
   ≤ 5 800; roll from 165 KIAS -12.3 % (informational). Improvement candidate: integral on the cross-track in the localizer
   loop / less crab fade near the ground.
+- **25 kt surface (S19k-F9 + S19k2-F9, preset 350/50, xw=25, FM limit) - plan:** prediction from the 15/20 kt trend: crab ≈ 12.5°,
+  TD CL ≈ -30 ft (downwind drift), heading ≈ 6-7°, pedal ≈ 7 000. Hazards as 20 kt + takeoff in 25 kt (takeoff_test heading law,
+  20 kt flown with 176 kt liftoff on the centreline). Split sortie: S19k = takeoff + dry run; the real landing (S19k2) only if the
+  dry run is clean (virtual TD |CL| ≤ 30 ft, bank below 50 ft within ±5°). **GO** (selftest ALL OK, 25.0 kt from 350° at the
+  aircraft, fuel 3 826 lb).
+- **25 kt S19k - NOT passed (takeoff):** the PD heading law (700/400, no feed-forward, no integral) weather-vaned the jet to
+  -10.2° at 176 kt (just after the first liftoff, touch-back) -> heading abort (idle + parking brake at 176 kt) -> the jet
+  turned into the wind and stopped beside 26L on concrete, undamaged (screenshot ..._S19k-F9_takeoff_abort.png). Warning sign
+  missed: the takeoff heading error at liftoff was already -4.6° (15 kt) and -6.5° (20 kt) - a passed step close to a script
+  limit was not extrapolated (lesson 29). Torque fit on the S19h/i/j/k takeoff rolls (heading rate x 1 000 counts/(°/s) +
+  pedal): ≈ 55-75 counts per kt up to 110 KIAS, 95 at 130, ≈ 135-140 at 150-170 (5° takeoff trim unloads the nose wheel;
+  above 160 KIAS the rotation removes the nose-wheel steering). **Fix: takeoff_test option `xw`** - feed-forward
+  min(150, 70 + 1.6 x (IAS-110)) counts/kt x measured crosswind + the PD law + integral 50 counts/°s (±40 °s), rudder
+  limit 12 000, rudder faded to 0 in 1 s after the first liftoff, heading abort only below vr and then the gentle stop with
+  the same law. Default path unchanged. Desk replay (crude model, not for tuning): PD 4.7° (flight 10°), xw 0.7°.
+  **Build-up:** `takeoff_test.py ... taxi xw` (srot rotation from vr to pitch 2.5° / 165 KIAS, then idle stop) at 25 kt.
+  Prediction: heading error ≤ 2° over the whole roll and the stop. GO after a clean runway_start (jet back on 26L).
+- **xw takeoff law build-ups (25 kt, taxi to 165 KIAS / pitch 2.5°, then idle stop):** S19l (v1): heading -2.8° at vr,
+  -4.3° at 169; S19l2 (v1 + new cross-track column `xt` from lat/lon, every 4th pass): **xt +17 ft at vr, +27 ft at 164 KIAS**
+  (upwind side, the nose turns into the wind); S19l3 (v2: feed-forward min(200, 70 + 2.5 x (IAS-110)) counts/kt, PD x 1..2 from
+  110 to 160 KIAS): -2.15° at vr, xt +14 / +22 ft, pedal 9 400 at 164 KIAS - doubling the pedal above 140 KIAS buys little.
+  **Slow-taxi probe (2026-11-06):** GEAR STEER ANGLE PCT at pedal 8 000 (49 %) = 22 % at 17 kt, 9.8 % from ≈ 21 kt on
+  -> the sim reduces the nose-wheel steering to ≈ 20 % of the commanded angle above ≈ 20 kt (max_speed_full_steering /
+  max_speed_decreasing_steering / min_available_steering_angle_pct are NOT set in our cfg = engine defaults; real F-104:
+  hydraulic steering, no speed schedule in the FM). Open item (needs a source for the F-104 steering + regression F2/F3/F9/A3).
+  Prediction for the real takeoff with `xw`: xt ≈ +30..+50 ft at liftoff (rotation without steering), no heading abort.
+- **S19m-F9 (25 kt, part 1) - takeoff with `xw` PASSED:** liftoff 178 kt after 2 792 ft (FM-normal), heading -2.15° at vr,
+  **xt +21 ft at vr, +46 ft at liftoff** (prediction +30..+50 ✓), pedal up to 12 000 during the rotation, after the liftoff the
+  jet weather-vaned to -19° (crab for the 50 kt wind aloft) - no abort, climb-out and AP handover normal. **Dry run** (virtual
+  runway +6 000 ft, wind there 50 kt): crab 12.6-13.1°, CL -10..+4 ft above 50 ft, virtual TD 185 KIAS -493 ft/min **CL -15 ft**;
+  bank while the crab is faded below 25 ft up to **+8.8° at 6 ft** (my dry-run criterion ±5° NOT met). Reason: aloft the wind
+  does not drop, so the fade removes 13° crab instead of ≈ 7° near the real ground (20 kt: dry +7.0°, real landing ±2.7°).
+  **GO for the real landing (S19k2)** with this documented exception; abort/go-around criteria in landing_test unchanged.
+- **S19k2-F9 (25 kt surface = FM limit, real landing) - flown, landed on the runway, NOT passed (CL):** approach crab 10.3-14.1°
+  above 300 ft, 5.8-11.8° in 50-300 ft (the wind drops 50 -> 25 kt through the boundary layer); **bank -14.4° at 182 ft /
+  +13.1° at 120 ft** (15 kt: -6.9/+5.2, 20 kt: -3.3/+5.3) = the crab target follows the falling wind and the localizer loop
+  chases it; below 50 ft bank -5.0..+3.9° (limit ±5, edge), CL -39..-12 ft; **TD 183 KIAS -306 ft/min, pitch 2.7°, CL -39 ft**
+  (limit ±25 ✗), 1 skip; rollout -41..-3 ft (runway half-width ≈ 98 ft), heading ≤ 8.7°, pedal ≤ 6 350; roll from 165 KIAS
+  -8.4 % (informational). Debrief: the dry run (constant 50 kt aloft) cannot show the wind-gradient part (crab target
+  falling 14 -> 7° between 300 and 50 ft) - that was the cause of the bank swings, not the fade below 30 ft.
+  **Next (desk, lesson 26 rule: no re-fly after a failed point without a design):** crab target from a low-pass filtered
+  / rate-limited wind (≤ 1°/s), cross-track integral in the localizer loop for the downwind drift (15/20/25 kt: TD CL -12/-24/
+  -39 ft, all to the downwind side); check with the S19i/j/k2 logs; then 25 kt again. Left crosswind (presets 170_..) after.
+- **Status F9 (right crosswind):** 5 / 10 / 12.5 / 15 kt PASSED, 20 kt PASSED marginal, 25 kt flown safely but CL -39 ft ✗.
+  Crosswind takeoff: `takeoff_test.py ... xw` needed from ≈ 20 kt (PD law alone: abort at 25 kt).

@@ -1,0 +1,6 @@
+# S19l2-F9 (2026-11-06): build-up for the takeoff_test xw law: high-speed taxi to 165 KIAS / pitch 2.5° at 25 kt crosswind. Repeat with cross-track logging.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits wind=350:50 | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+taxi     | tools/takeoff_test.py {csv} 157 10.5 taxi xw | POST OK | 300

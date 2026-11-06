@@ -1,0 +1,6 @@
+# S19k2-F9 (2026-11-06): F9 25 kt surface, part 2: real landing after the S19k dry run was evaluated.
+# Starts AIRBORNE at 16 500 ft on the AP (end of S19k).
+# label | command | expect | timeout s
+refuel3  | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare xw=25 | TOUCHDOWN | 600
+roll     | tools/roll_from_speed.py {csv:landing} 165 nochute | roll from | 60

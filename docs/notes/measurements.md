@@ -1466,3 +1466,11 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
   push (A3 run 5: a 3° heading offset on the wheels in calm air is benign) -> xw rollout push +1 500 for 4 s after the
   touchdown -> rollout -19..-4 ft, heading ≤ 3.6°; roll from 165 KIAS -11.6 % (technique: nose load vs. braked main gear).
   Open: the validated F3 pair "+4 000 push + toe_brakes_scale 0.82" may be compensating (FM: only "lower the nose").
+- **F9 15 kt PASSED** (S19i: TD CL -12 ft, rollout -18..-7 ft), **20 kt PASSED marginal** (S19j: TD CL -24 ft, rollout -25..-7 ft).
+- **F9 25 kt (FM limit, preset 350/50)**: S19k takeoff with the validated PD heading law weather-vaned to -10.2° at 176 kt ->
+  heading abort at the first liftoff, stop beside 26L (761 ft right, undamaged; at 15/20 kt the error at liftoff had already
+  been -4.6/-6.5° - lesson 29). Slow-taxi probe: the sim nose-wheel steering drops to ≈ 20 % of the commanded angle above
+  ≈ 20 kt (steering params not set in our cfg = defaults). New `takeoff_test.py ... xw` (feed-forward on the measured crosswind
+  rising with IAS, PD x 1..2 above 110 KIAS, integral, rudder faded after liftoff, heading abort only below vr; build-ups
+  S19l/l2/l3): S19m takeoff 178 kt, cross-track +21 ft at vr / +46 ft at liftoff ✓. S19k2 landing: TD 183 KIAS **CL -39 ft ✗**
+  (±25), bank ±14° at 120-180 ft (crab target follows the wind gradient), rollout -41..-3 ft, roll -8.4 %. Card F9-crosswind.md.

@@ -21,7 +21,7 @@ question), but writes the go/no-go line into the card before risky points.
 | 4 Go/no-go | Claude runs the checks; one line "GO: ..." / "NO-GO: ..." | card |
 | 5 Execute | build-up first; abort criteria in the script; **PAUSE_ON before any desk work longer than ≈ 1 min**, `sim_state` between long steps; no unbounded tool calls while airborne | logs in docs/data |
 | 6 Postconditions | `tools/post.py` (air: AP on, level, fuel ≥ 1 500, gear/flaps up, damper default; ground: stopped, idle) - flight scripts print POST OK/FAIL at the end | POST OK, else fix before the next test |
-| 7 Debrief (at once) | prediction vs. measurement, every anomaly (also small ones), surprises - 5 lines | card: Debrief |
+| 7 Debrief (at once) | prediction vs. measurement, every anomaly (also small ones), surprises - 5 lines; **margin to EVERY script limit / abort criterion, extrapolated to the next build-up step** (lesson 29) | card: Debrief |
 | 8 Lessons learned | each lesson -> where it is **enforced** (assert, selftest/probe item, postcondition, skill step) | `docs/notes/lessons-learned.md` |
 | 9 Commit | card, data, measurements.md, data index, register | git |
 A lesson only counts as learned when a check or a script enforces it.
