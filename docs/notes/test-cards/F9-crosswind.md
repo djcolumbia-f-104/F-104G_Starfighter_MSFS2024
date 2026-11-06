@@ -114,3 +114,13 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   gear station against CR-2144 Fig. III-2 / the FM three-view; test: taxi run at 150-170 KIAS with a commanded heading offset
   (step 4-5°) in calm air to see whether the heading diverges; possible cfg question (main-gear x, nose-wheel steering /
   ground friction parameters) under change control (T3-D, F2/F3 regression). Until then: F9 passed up to 10 kt.
+- **Desk check of the hypothesis:** the main-gear station x = -0.3 ft was MEASURED on the CR-2144 three-view (F-104A, scale
+  checked with two references, docs/flight-model-values.md) -> the short main-gear-to-CG distance (≈ 1.8 ft) is most likely
+  real (the F-104 rotates very easily about the main gear). Geometry is probably not the error. More likely technique:
+  after the skip the pedal is 0, so the nose wheel lands pointing along the body while the jet moves along the runway with
+  3-4° crab -> nose-wheel side force on a 12.6 ft arm turns the jet further out (wheelbarrowing), the speed-reduced NWS cannot
+  stop it. Options (desk, model first): (a) combined method per FM 2-25 - partial decrab with wing-down (bank into wind)
+  so the remaining crab at the touchdown is ≤ 1-1.5° without the large rudder-induced roll (lesson 26); (b) align the nose
+  wheel with the track before the nose touches (pedal ≈ crab x NWS gearing, only on the main wheels, rudder in the air rolls!);
+  (c) check the MSFS nose-wheel steering/friction defaults (`min_available_steering_angle_pct`, high-speed friction
+  scalars) - cfg change under change control. F9 remains passed up to 10 kt.
