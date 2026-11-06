@@ -1433,3 +1433,7 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
 - **F4 minimum-run landing** (card F4-minimum-run.md; landing_test `minrun`): TD 168 KIAS (target 140 +5/1 000 lb = 159.5;
   pred. 163-167), -533 ft/min, pitch 4.0°, 1 557 ft past the threshold, chute; stop 4 778 ft past the threshold vs. F2 (chute)
   6 709-7 527 ft (-29..-37 %). Roll metrics from 150/165 KIAS (-7.0 / +5.3 %) not clean (chute V² drag / TD transient).
+- **F9 crosswind step 1** (card F9-crosswind.md; weather presets `tools/make_wpr.py` from pete's template; landing_test `xw=`,
+  selftest `wind=`): preset 350°/10 kt gives 5 kt at the runway (Debug Weather: surface boundary layer, ≈ 10 kt at 2 km).
+  Crosswind takeoff 178 kt; landing TD 174 KIAS, centreline -3 ft, bank ±0.7° below 50 ft, crab removed by the rudder (β 1.9°
+  at TD); roll from 165 KIAS -5.2 %.

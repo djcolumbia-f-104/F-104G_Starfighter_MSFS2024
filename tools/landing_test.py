@@ -58,6 +58,11 @@ TG = next((a for a in sys.argv[5:] if a == "tg" or a.startswith("tg=")), None)
 # (Fig. A8-2 note) unless vtd= is given, speed brakes OUT from the flare ("use the speed brakes to aid in controlling
 # touchdown point and speed"), drag chute as usual. Card docs/notes/test-cards/F4-minimum-run.md.
 MINRUN = "minrun" in sys.argv[5:]
+# 2026-11-06 (F9, FM 2-25/2-28 crosswind): `xw=<kt>` = expected surface crosswind: approach and touchdown speed +5 kt per
+# 10 kt (FM 2-28 note, LAND flaps); crab method (FM 2-25: "in strong crosswinds the crab method"): heading target + crab
+# angle asin(crosswind/TAS) from the sim's wind at the aircraft (read in the slow group), crab removed with the rudder
+# between 30 and 5 ft AGL. Forces the FAST loop. Card docs/notes/test-cards/F9-crosswind.md.
+XW = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("xw=")), None)
 TG_STOP = TG == "tg=stop"
 TG_HOLD, S_HOLD, THETA_T = 2000.0, -6600.0, 10.5     # nose-wheel hold (nose down), srot stick (takeoff_test [M]), target
 if CFG != "land":
@@ -68,7 +73,7 @@ if CFG != "land":
 # pass reads only altitude, bank and pitch (+ one of three groups of the slow values in turn) and updates elevator and
 # ailerons -> ≈ 4 Hz uniform. Default for cfg=to|up; option `fast` for cfg=land (the validated LAND path is unchanged
 # without it). Same gains; the VS filter keeps its time constant (coefficient from dt).
-FAST = CFG != "land" or "fast" in sys.argv[5:] or TG is not None
+FAST = CFG != "land" or "fast" in sys.argv[5:] or TG is not None or XW is not None
 AIR = ("level", "approach", "flare", "go-around")
 FASTPH = AIR + ("tg",)
 DEG = 57.29578
@@ -135,7 +140,9 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt, ks_e=1.0, ks_a=1.0):
         cmd_e = clamp(cmd_e + res["tg_off"] * max(0.0, 1.0 - (time.time() - res["tg_xfer"]) / 5.0), -12000, 6000)
     res["cmd_e"] = cmd_e                                              # start value of the rollout ramp (bumpless)
     ev("AXIS_ELEVATOR_SET", int(cmd_e))
-    hdg_tgt = HDG - clamp(0.05 * c, -15, 15)
+    # F9: crab into the wind (+ = right); removed between 30 and 5 ft AGL (decrab with the rudder, see the flare)
+    crab = res.get("crab", 0.0) * clamp((res.get("agl_now", 999.0) - 5.0) / 25.0, 0.0, 1.0)
+    hdg_tgt = HDG + crab - clamp(0.05 * c, -15, 15)
     bank_tgt = -clamp(2.0 * wrap(hdg_tgt - hdg), -15, 15)
     e_b = bank - bank_tgt
     res["integ_b"] = clamp(res["integ_b"] + e_b * dt, -30.0, 30.0)
@@ -157,6 +164,7 @@ def go_around(reason):
     (landing 6: early FLAPS_1 -> crash). The AP takes over only when clean at ≥ 260 KIAS (cleanup)."""
     ev("THROTTLE1_SET", 16383)
     ev("SPOILERS_OFF")
+    ev("AXIS_RUDDER_SET", 0)                                          # F9: decrab rudder off
     print(f"GO-AROUND: {reason}")
     return "go-around"
 
@@ -190,7 +198,9 @@ if fuel < 1500 or n1 < 60:                                           # idling on
     sys.exit(f"ABORT: fuel {fuel:.0f} lb, N1 {n1:.0f} % - reload the flight / refuel before the landing test")
 V_FM = {"land": (175, 155), "to": (195, 165), "up": (230, 190)}[CFG]   # Fig. 2-7 / FM 3-32 / FM 3-36 at 16 100 lb
 v_app = V_FM[0] + 5 * (w / 1000 - 16.1)                               # final approach, +5 kt per 1 000 lb
+v_app += 0.5 * (XW or 0.0)                                            # F9: +5 kt per 10 kt crosswind
 v_td = VTD if VTD else V_FM[1] + 5 * (w / 1000 - 16.1)               # touchdown
+v_td += 0.5 * (XW or 0.0) if not VTD else 0.0
 if MINRUN and not VTD:
     v_td = 140.0 + 5 * (w / 1000 - 15.1)
 start_ft = start_nm * 6076.12
@@ -304,11 +314,19 @@ while time.time() - t0 < 600:
             h_r = g("PLANE_HEADING_DEGREES_TRUE") * DEG
             res["hdg"] = h_r if h_r else res.get("hdg", HDG)
             res["gs"], res["gear"] = g("GROUND_VELOCITY"), g("GEAR_TOTAL_PCT_EXTENDED")
+            res["n_wind"] = res.get("n_wind", 0) + 1
+            if XW is not None and res["n_wind"] % 2 == 1:             # F9: crab angle from the sim's wind (every 2nd)
+                wd, wv, tas = g("AMBIENT_WIND_DIRECTION"), g("AMBIENT_WIND_VELOCITY"), g("AIRSPEED_TRUE")
+                if tas and tas > 100:
+                    xc = wv * math.sin(math.radians(wd - HDG))        # + = from the right
+                    res["xw_now"] = xc
+                    res["crab"] = math.degrees(math.asin(clamp(xc / tas, -0.3, 0.3)))
         hdg, gs_kt = res["hdg"], res["gs"]
         res["last_ias"] = res["ias"] = ias
         if HIGH:
             agl = alt - field_elev
             gnd = agl < 5
+        res["agl_now"] = agl                                          # F9: decrab height for fly()
         vs = (alt - res.get("prev_alt", alt)) / dt * 60
         res["prev_alt"] = alt
         a_f = 1.0 - 0.5 ** (dt / 0.55)                               # = the 0.5/0.5 filter of the 0.55 s pass
@@ -349,6 +367,10 @@ while time.time() - t0 < 600:
         # FM flare (82 % N1 floor, H3): x2.2 ballooned (pitch -0.4 -> 8.3 -> -3°, back up to 29 ft, TD 519-1 017 ft/min in
         # dry H3_dry2/3, with and without BLC loss) -> x1.6 for the FM flare
         fly(vs_tgt, (1.6 if FM_FLARE else 2.2) if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
+        if XW is not None and phase == "flare" and agl < 30:
+            # F9 decrab (FM 2-25 crab method): align the nose with the runway with the rudder in the last 30 ft (half the
+            # validated rollout gain, + axis = nose left); the bank loop keeps the wings level/track
+            ev("AXIS_RUDDER_SET", int(clamp(-350 * wrap(HDG - hdg), -8000, 8000)))
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
         # thrust/BLC loss, sink rose again) -> gain 40 towards 83 %
@@ -506,6 +528,10 @@ while time.time() - t0 < 600:
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
         ev("AXIS_RUDDER_SET", int(clamp(-700 * wrap(HDG - hdg) - 3 * c, -8000, 8000)))
+        if XW is not None and ias > 80:
+            # F9 step 1 (2026-11-06): a skip after the touchdown rolled the jet to -7° with the ailerons at 0 -> with a
+            # crosswind the ailerons keep the wings level on the rollout (P+D of the validated bank loop, no I term)
+            ev("AXIS_AILERONS_SET", int(clamp(-(KP_B * bank + KD_B * p), -8000, 8000)))
         if nose_down or res.get("braking"):
             res["braking"] = True
             ev("AXIS_LEFT_BRAKE_SET", 16383)                          # FM A8-3/A8-4: hard braking to the stop
@@ -561,7 +587,7 @@ while time.time() - t0 < 600:
         if gc["t_pos"] is None and res["vs_f"] > 0:
             gc["t_pos"] = t
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
-                 round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
+                 round(theta, 1), round(path_err), round(vs_tgt), int(thr), round(hdg, 2)])
     if FAST and phase in FASTPH:
         time.sleep(0.01)
     elif phase in AIR:
@@ -596,7 +622,7 @@ log.terminate()                                                     # simlog wri
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
     wr.writerow(["t", "phase", "along_ft", "cross_ft", "agl", "ias", "vs_fpm", "bank", "pitch", "path_err_ft",
-                 "vs_tgt", "throttle"])
+                 "vs_tgt", "throttle", "hdg_true"])
     wr.writerows(rows)
 if res.get("ga_cmd"):
     gc = res["ga_cmd"]

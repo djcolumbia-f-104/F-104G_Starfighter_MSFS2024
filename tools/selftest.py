@@ -58,7 +58,16 @@ off, gain = lvar("L:F104_SAS_YAW_OFF"), lvar("L:F104_SAS_YAW_GAIN")
 check((off or 0) == 0 and (gain or 0) == 0, "yaw damper switch default (ON, gain 1)", f"OFF {off}, GAIN {gain}")
 wind, qnh, oat, alt = g("AMBIENT_WIND_VELOCITY"), g("SEA_LEVEL_PRESSURE"), g("AMBIENT_TEMPERATURE"), g("PLANE_ALTITUDE")
 isa = 15.0 - 1.98 * (alt or 0) / 1000.0
-check(wind is not None and wind < 3, "wind < 3 kt", f"{wind:.1f} kt" if wind is not None else "no value")
+# 2026-11-06 (F9): `wind=<dir>:<kt>` = a crosswind weather preset (tools/make_wpr.py) is expected instead of calm air; the
+# sim reduces the ground wind (preset 350/10 -> 5 kt at the runway, 10 kt at 2 km) -> accept 30 % .. 100 % + 3 kt, ± 30°
+WEXP = next(([float(v) for v in a.split("=")[1].split(":")] for a in sys.argv[1:] if a.startswith("wind=")), None)
+wdir = g("AMBIENT_WIND_DIRECTION")
+if WEXP:
+    ddir = abs(((wdir or 0) - WEXP[0] + 180) % 360 - 180)
+    check(wind is not None and 0.3 * WEXP[1] <= wind <= WEXP[1] + 3 and ddir <= 30,
+          f"wind preset {WEXP[0]:.0f}°/{WEXP[1]:.0f} kt", f"{wdir:.0f}° / {wind:.1f} kt at the aircraft")
+else:
+    check(wind is not None and wind < 3, "wind < 3 kt", f"{wind:.1f} kt" if wind is not None else "no value")
 check(qnh is not None and abs(qnh - 1013.25) <= 1, "QNH 1013.25 ± 1", f"{qnh:.2f}" if qnh is not None else "no value")
 check(oat is not None and abs(oat - isa) <= 5, "OAT within ± 5 °C of ISA", f"{oat:.1f} °C (ISA {isa:.1f})"
       if oat is not None else "no value")
