@@ -20,8 +20,10 @@ the FM Fig. A8-2 MINIMUM 180 at 19 000 lb - my 181 "target" was wrong; -302 ft/m
 pitch 5.2°, roll 4 594 ft). Go-around fixes in landing_test (lesson 23: FLAPS_1 only for land, trim relief at the elevator
 clamp, pitch warning, gear up > 245 KIAS, cfg=up Military). `refuel.py [lb]` optional amount. Jet stopped on 26L at idle,
 refuelled to 4 080 lb. **F3 with `fast`** (S14-F3fast): TD 173 KIAS, roll -4.7 % (✓, edge), bank = 1.8 Hz reference ->
-FAST stays OPT-IN for LAND (no benefit), default for to|up. **NEXT:** other S3 variants (F4 minimum run, F7 touch-and-go,
-F8 go-around from the flare); no-flap flare technique only if the A8-2 TD speed is to be matched. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+FAST stays OPT-IN for LAND (no benefit), default for to|up. **F8 go-around from the flare PASSED** (`ga=50`: loss 13 ft,
+lowest 36 ft AGL, climb after 2.1 s; card F8-go-around-flare.md). selftest waits for the next watchdog line (lesson 24).
+**NEXT:** F7 touch-and-go (FM 2-28: idle, TAKEOFF flaps, Military, trim, normal takeoff technique - new ground law, desk +
+build-up per phase); F4 minimum run (TD 140 kt -> α ≈ 11° at our weights = tail-strike margin, desk first). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

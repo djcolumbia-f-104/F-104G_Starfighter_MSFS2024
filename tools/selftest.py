@@ -74,9 +74,26 @@ check(age is not None and age < 120, "watchdog alive (log < 120 s)", f"log age {
       "no log - start tools/watchdog.py")
 # 2026-11-04: a watchdog on a dead connection kept logging stale values -> its last fuel must match the sim
 wd_fuel = None
-if age is not None:
+
+
+def last_ok():
     oks = [ln for ln in open(log, encoding="utf-8").read().splitlines() if " ok: fuel " in ln]
-    wd_fuel = float(oks[-1].split("fuel ")[1].split(" lb")[0]) if oks else None
+    return (oks[-1], float(oks[-1].split("fuel ")[1].split(" lb")[0])) if oks else (None, None)
+
+
+if age is not None:
+    line, wd_fuel = last_ok()
+    # 2026-11-05 + 2026-11-06: a refuel between two watchdog status lines (one per minute) looked like a stale watchdog
+    # -> on a mismatch wait for the NEXT status line (≤ 75 s) and compare it with a fresh sim reading
+    if wd_fuel is not None and abs(wd_fuel - fuel_now) >= 100:
+        t_w = time.time()
+        while time.time() - t_w < 75 and last_ok()[0] == line:
+            time.sleep(2)
+        line2, wd_fuel = last_ok()
+        if line2 != line:
+            sm2 = SimConnect()
+            fuel_now = AircraftRequests(sm2, _time=0).get("FUEL_TOTAL_QUANTITY_WEIGHT") or 0
+            sm2.exit()
 check(wd_fuel is not None and abs(wd_fuel - fuel_now) < 100, "watchdog sees the live sim (fuel ± 100 lb)",
       f"watchdog {wd_fuel} lb, sim {fuel_now:.0f} lb")
 if "nounits" not in sys.argv[1:]:

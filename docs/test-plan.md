@@ -105,7 +105,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | F5 | No-flap landing | flat final ≥ 230 KIAS, TD ≥ 190 KIAS | FM 3-36 | ◑ 2026-11-06 (S13-F5, 17 429 lb, vtd=202): procedure ✓ - final 237, TD 226 KIAS (Fig. A8-2 202: +12 %, script flare cannot bleed the speed), +29 ft/min, pitch 5.2°, CL +4 ft, roll 4 594 ft; TD speed vs. A8-2 open |
 | F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ✓ 2026-11-06 (S11-F6): final 210, TD 197 KIAS (Fig. A8-2 min. 180) -302 ft/min, pitch 6.8°, centreline -1 ft, bank ≤ ±1.7°, roll 3 760 ft (no FM reference); landing_test FAST loop 4.5-5.2 Hz |
 | F7 | Touch-and-go | idle, flaps TAKEOFF, military | FM 2-28 | ○ |
-| F8 | Go-around from the flare | FM 2-29 procedure | Fig. 6-8 climb, height loss ≤ 100 ft | ○ |
+| F8 | Go-around from the flare | FM 2-29 procedure | Fig. 6-8 climb, height loss ≤ 100 ft | ✓ 2026-11-06 (S15b-F8, `ga=50`): commanded at 49 ft / 187 KIAS / -525 ft/min, loss 13 ft (lowest 36 ft AGL), climb after 2.1 s, FM sequence ✓ |
 | F9 | Crosswind landing | 15-25 kt crosswind | FM 2-25 (max 25 kt) | ○ |
 
 ### Phase G - Engine and emergencies

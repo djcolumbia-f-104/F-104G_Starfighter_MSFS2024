@@ -46,6 +46,9 @@ FM_FLARE = "fmflare" in sys.argv[5:]       # FM 2-25 flare power (82-83 % rpm, i
 # Fig. 2-7; vtd=<kt> overrides the touchdown speed (no-flap at sim weights: alpha vs. the 12.3 deg tail-strike angle)
 CFG = next((a.split("=")[1] for a in sys.argv[5:] if a.startswith("cfg=")), "land")
 VTD = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("vtd=")), None)
+# 2026-11-06 (F8, FM 2-29): ga=<ft> = go-around commanded in the flare when AGL falls below <ft> (height loss and time to
+# a positive climb are reported); the go-around itself is the validated hand-flown FM 2-29 procedure
+GA_FT = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("ga=")), None)
 if CFG != "land":
     FM_FLARE = True       # F6 dry 1: the idle cut in the flare bled 213 -> 192 KIAS and the sink rose to -926 ft/min ->
                           # FM 2-25 technique (82 % floor, idle at the touchdown) for the landing variants
@@ -362,6 +365,9 @@ while time.time() - t0 < 600:
                or (phase != "flare" and ias < v_app - 25)
                or (agl < 400 and path_err < -300) or res.get("gear_go")
                or (agl < 60 and theta > 11.0))                         # tail strike at 12.3 deg pitch (CR-2144, AP-5)
+        if GA_FT and phase == "flare" and agl < GA_FT and not gnd:
+            res["ga_cmd"] = dict(t=t, agl=agl, ias=ias, vs=res["vs_f"], min_agl=agl, t_min=t, t_pos=None)
+            phase = go_around(f"F8 commanded at {agl:.0f} ft AGL, {ias:.0f} KIAS, sink {res['vs_f']:.0f} ft/min")
         if bad and not gnd:
             phase = go_around(f"AGL {agl:.0f}, {ias:.0f} KIAS, cross-track {c:.0f} ft, bank {bank:.0f}°, "
                               f"pitch {theta:.0f}°, path error {path_err:+.0f} ft")
@@ -456,6 +462,12 @@ while time.time() - t0 < 600:
             ev("FLAPS_UP")
         if res.get("ga_clean") and agl > 1500 and g("TRAILING_EDGE_FLAPS_LEFT_ANGLE") * DEG < 1:
             break
+    if res.get("ga_cmd") and phase == "go-around":                   # F8: height loss after the commanded go-around
+        gc = res["ga_cmd"]
+        if agl < gc["min_agl"]:
+            gc["min_agl"], gc["t_min"], gc["ias_min"] = agl, t, ias
+        if gc["t_pos"] is None and res["vs_f"] > 0:
+            gc["t_pos"] = t
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
                  round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
     if FAST and phase in AIR:
@@ -494,6 +506,12 @@ with open(out, "w", newline="", encoding="utf-8") as f:
     wr.writerow(["t", "phase", "along_ft", "cross_ft", "agl", "ias", "vs_fpm", "bank", "pitch", "path_err_ft",
                  "vs_tgt", "throttle"])
     wr.writerows(rows)
+if res.get("ga_cmd"):
+    gc = res["ga_cmd"]
+    print(f"F8 GO-AROUND: commanded at {gc['agl']:.0f} ft AGL / {gc['ias']:.0f} KIAS / {gc['vs']:.0f} ft/min; lowest "
+          f"{gc['min_agl']:.0f} ft AGL after {gc['t_min'] - gc['t']:.1f} s (height loss {gc['agl'] - gc['min_agl']:.0f} ft, "
+          f"{gc.get('ias_min', gc['ias']):.0f} KIAS); positive climb after "
+          f"{(gc['t_pos'] - gc['t']) if gc['t_pos'] else float('nan'):.1f} s")
 print(f"{len(rows)} samples ({len(rows) / max(rows[-1][0], 1):.1f} Hz main loop, {res.get('n_fast', 0) / max(rows[-1][0], 1):.1f} Hz extra bank updates) -> {out}" if rows else "no samples")
 if "td" in res:
     print(f"Result: touchdown {res['td']['ias']:.0f} KIAS (FM normal {v_td:.0f}-{v_td + 5:.0f}), "
