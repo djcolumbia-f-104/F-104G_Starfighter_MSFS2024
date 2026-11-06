@@ -1441,3 +1441,9 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   decrab left 2.2° at TD and the rollout drifted to +66 ft; a stronger decrab (feed-forward) rolled the jet to -16° at 13 ft
   and the skip + rollout rudder caused a lateral excursion to +87 ft. F9 flights stopped; desk design of the crab method next
   (lesson 26). Validated rollout rudder law has a wrong-sign centreline term (-3 x c; harmless in calm air, fix with F3).
+
+## 2026-11-06: A4/H4 control travel limits (desk) - documented deviation
+FM 1-67/6-3: aileron ±20° gear down / ±9.75° gear up, rudder ±20° / ±6°, switched by the gear, irreversible hydraulics. Sim:
+20° x elasticity(q̄) (formula confirmed by roll_id 16.6° at 210 KIAS and T3-E2 6.0° at 460 KIAS) -> gear-up values only
+above ≈ 280 KIAS; below that 1.3-2x aileron and 1.6-3.3x rudder (gear up), gear-down approach 0.77-1.0x. No change now;
+gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.md).

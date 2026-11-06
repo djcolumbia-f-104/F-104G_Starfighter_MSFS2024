@@ -45,7 +45,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | A1 | Engine idle | stabilised idle on the ground | 67 ± 1 %, EGT 320-420 °C, FF 700-1 600 lb/h (FM 2-13) | ◐ idle EGT 470 °C (AP-7) |
 | A2 | Engine military / static thrust (T3-C) | parking brake, burst to military | 100 ± 1 %, EGT 590 ± 10 °C, idle->mil ≤ 10 s, FF Fig. 2-5 ±500 lb/h; thrust per NASA | ✓ thrust/EGT; ○ accel time, Fig. 2-5 |
 | A3 | Taxi, steering, brakes | low/high speed taxi, brake stop | anti-skid < 10 kt inop; turning radius Fig. 2-4 | ○ |
-| A4 | Control limits | full deflections gear up/down | rudder ±20° gear down / ±6° gear up, ailerons ±20° / ±9.75° (FM 6-3) | ○ (check cfg) |
+| A4 | Control limits | full deflections gear up/down | rudder ±20° gear down / ±6° gear up, ailerons ±20° / ±9.75° (FM 6-3) | ◑ 2026-11-06 desk (card A4-H4-control-limits.md): sim limits = 20° x elasticity(q̄) - FM gear-up values only above ≈ 280 KIAS; below 1.3-2x aileron / 1.6-3.3x rudder; gear-switched limiter -> cockpit phase (AP-9) |
 | A5 | Drag chute deceleration | high-speed taxi, chute at ≤ 180 KIAS | ground roll Fig. A8-3 vs. A8-4 (chute -12 %) | ○ (with F5) |
 
 ### Phase B - Basic aerodynamics, subsonic
@@ -124,7 +124,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | H2 | APC stick shaker / kicker (AoA + pitch rate) | FM 6-5/6-6, Fig. 6-3, kicker inop with LAND flaps / gear down | ◐ 2026-10-31 native SPS: shaker 0 / -1.5 / -2.8 %, kicker clean +1 %, TAKEOFF -6 %; leaky limiter (no hold), single α, no gear/LAND inhibit (card H2-apc.md); **2026-10-31 SPS DISABLED: makes the MSFS AP diverge after a full sim restart (A/B) - reopened**; **◐ 2026-11-01 own APC in the WASM module (v6): shaker 185/154 KIAS, kicker 200-204 clean / 170 TAKEOFF, LAND inhibited, AP unaffected (card H2-apc.md)** |
 | H3 | BLC lift vs. engine rpm | FM 1-74, 2-24 (effective > 80 %) | ◔ 2026-10-31 analysis: ΔCL_BLC ≈ 0.135, f(N1) 0.3 at idle .. 1 at ≥ 83 %, via settable TE flap percent (ground test ✓); predicted F3 +9.6 -> +2 %, float after the idle cut gone (card H3-blc-rpm.md); **◐ 2026-10-31 driver tools/blc_driver.py built and flown: F3 -0.1 %, FM sink after power cut reproduced, fmflare technique**; 2026-11-01 regression B6/B7/T3-L ✓, WASM module prototype built (systems-module.md) |
 | H5 | Drag chute with own system logic (MSFS ground spoiler drag has no measurable effect, 2026-10-29) | FM A8-3 vs. A8-4 (-12 %) | ✓ 2026-10-31: spoiler_limit 65° + drag_coef_spoilers 0.12 -> F2 +0.1 % vs. A8-3, coast 5.23 ft/s² as predicted, B5 unchanged |
-| H4 | Rudder/aileron limiters with gear | FM 6-3 | ○ (A4) |
+| H4 | Rudder/aileron limiters with gear | FM 6-3 | ◑ see A4 (no gear switching in the sim; fix in AP-9 via input events) |
 
 ## 4. Iteration order (next sessions)
 
