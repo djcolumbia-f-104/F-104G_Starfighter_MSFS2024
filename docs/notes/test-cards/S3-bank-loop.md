@@ -64,3 +64,27 @@ the landing_test pass of 0.55 s. Fix = landing_test lateral loop at ≥ 5 Hz (ba
 reads every n-th pass), not new gains. The dry 3/4 "inner fast loop" (extra P+D bank updates between slow passes, I term
 in the slow pass) is not that design and failed. Next: implement the single fast loop, desk-check it line by line, F3
 regression (cfg=land, unchanged gains -> expect the validated result), then F6 dry runs.
+
+## Step 2: landing_test FAST loop (2026-11-06) - analysis, prediction, go/no-go
+- Change (tools/landing_test.py): `FAST` (default for cfg=to|up, option `fast` for land): every airborne pass reads
+  altitude, bank, pitch and updates elevator + ailerons; the slow values in three groups in turn (lat/lon, AGL/IAS/on-ground,
+  heading/GS/gear); AGL and along-track dead-reckoned between their reads; VS filter coefficient 1 - 0.5^(dt/0.55) (same
+  time constant as the 0.5/0.5 filter of the 0.55 s pass); gear-not-down counter only on real reads. Same gains.
+  cfg=land without `fast`: the old reads moved verbatim into slow_read() -> behaviour unchanged (no F3 regression needed
+  for the code move; F3 with `fast` later, before FAST becomes the LAND default).
+- Loop estimate: 3 reads + 1 group (1-3 reads) + 2-3 events ≈ 0.2-0.25 s -> ≈ 4-5 Hz (roll_id: 4 reads + 3 events 0.16 s).
+- Prediction F6 dry (cfg=to, virtual runway +6 000 ft): pass ≈ 0.22 s; level/approach bank within ±3° (no 5 s limit cycle;
+  dry 1 ±5°, dry 2-4 ±25-31°); VS tracking as dry 1; flare/virtual TD at FM speeds (TD ≈ 181 KIAS at 19 000 lb).
+- Hazard: new loop timing also for the pitch loop (flare gains were tuned at 0.55 s) -> dry run only (virtual runway
+  +6 000 ft ≈ 6 000 ft AGL at the virtual TD); script aborts unchanged (|bank| > 35°, pitch, speed -> go-around); after
+  the run the sortie repositions to 16 500 ft.
+- GO 2026-11-06: syntax checked, diff reviewed line by line, at altitude only.
+- **Result F6 dry 5** (`flighttest_2026-11-06_S10-F6dry_dry5.csv`, 19 008 lb, sortie S10-F6dry, POST OK): main loop
+  **5.2 Hz** (pred. 4-5); bank level ±0.5-0.7°, approach ±0.8-0.9°, flare -0.6..+1.2°, go-around -1.6..+0.7° (dry 1 at
+  0.55 s: ±1.8 / -6.3..+4.5 / -6.3..+8.1 / **-43..+49°**) ✓ far inside the ±3° prediction; VS tracking unchanged (median
+  error approach 74 vs 80 ft/min); centreline +1 ft at the virtual TD. **Bank-loop problem solved by the loop rate.**
+- Anomaly (open, desk next): virtual TD **197 KIAS** / -456 ft/min / pitch 7.4° vs. predicted ≈ 181 KIAS (FM: TD ≥ 165 +5
+  per 1 000 lb = 179.5; final 210) - flare from 148 ft at 212 KIAS, the speed target ramps to 182.5 KIAS but the FM_FLARE
+  82 % N1 floor (a BLC technique) holds the thrust; with TAKEOFF flaps (less drag than LAND) the jet cannot bleed the
+  speed. F6 dry 1 with the idle cut: 213 -> 192 KIAS and -926 ft/min. To decide at the desk: thrust law in the flare for
+  BLC-off landings (FM 3-32 text), then dry 6, then the real F6.

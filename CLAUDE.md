@@ -13,8 +13,10 @@ unchanged). **S9-ID identification sortie:** (1) SP α/δ "bimodal" = ≈ 0.05°
 (0.1/0.2/0.5° -> 0.55/0.75/0.91; M 0.85 -> 1.02), aero gain ≈ 1 (lesson 22). (2) roll plant at 210 KIAS TAKEOFF/gear down
 (`tools/roll_id_test.py`, card `docs/notes/test-cards/S3-bank-loop.md`): 5.3-8.4 °/s per 1 000 counts (progressive), τ 0.5 s;
 the landing PID 250/150/60 is stable at 6.3 Hz (8 recoveries from up to 48°) -> F6 problem = landing_test's 0.55 s pass.
-**NEXT: landing_test single fast loop (bank + aileron every pass, slow reads every n-th pass) -> desk check -> F3
-regression (cfg=land) -> F6 dry runs.** `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+**DONE: landing_test FAST loop** (default cfg=to|up, option `fast` for land; LAND path unchanged): F6 dry 5 at 5.2 Hz, bank
+≤ ±1.6° in all phases (was up to ±49°) ✓. **NEXT (desk): F6 flare thrust law** - virtual TD 197 KIAS vs ≈ 181 (82 % N1
+floor is a BLC technique, TAKEOFF flaps cannot bleed the speed; idle cut gave -926 ft/min in dry 1) -> FM 3-32 text,
+dry 6, real F6; later F3 with `fast` before it becomes the LAND default, then F5. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

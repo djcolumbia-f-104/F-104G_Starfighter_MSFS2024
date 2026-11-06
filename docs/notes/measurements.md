@@ -1410,3 +1410,6 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   aileron_scaling_table behind the SimVar); rate per degree δa 4.2 = desk 4.3 ✓; τ ≈ 0.5 s; slow bank-driven roll
   acceleration. The landing PID 250/150/60 at 6.3 Hz recovered 8 times from 7.6-48° (±2° in 1.4-2.6 s, overshoot ≤ 10°)
   -> F6 problem = the 0.55 s landing_test pass, not the gains. Desk model not usable for tuning (lesson 21).
+- **landing_test FAST loop** (card S3-bank-loop.md step 2; default for cfg=to|up, option `fast` for land; cfg=land path
+  unchanged): F6 dry 5 (cfg=to, virtual runway +6 000 ft): 5.2 Hz, bank within ±1.6° in every phase (dry 1 at 0.55 s:
+  up to ±49° in the go-around) ✓; virtual TD 197 KIAS (pred. ≈ 181) - flare thrust law (82 % floor) open.

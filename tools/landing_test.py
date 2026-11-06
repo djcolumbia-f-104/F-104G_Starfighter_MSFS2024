@@ -49,6 +49,13 @@ VTD = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("vtd=")
 if CFG != "land":
     FM_FLARE = True       # F6 dry 1: the idle cut in the flare bled 213 -> 192 KIAS and the sink rose to -926 ft/min ->
                           # FM 2-25 technique (82 % floor, idle at the touchdown) for the landing variants
+# 2026-11-06 (S9-ID, card S3-bank-loop.md): the bank PID 250/150/60 is stable at 6.3 Hz at 210 KIAS / TAKEOFF / gear down
+# (8 recoveries from up to 48°) but limit-cycles with this script's 0.55 s pass (≈ 12 reads). FAST loop: every airborne
+# pass reads only altitude, bank and pitch (+ one of three groups of the slow values in turn) and updates elevator and
+# ailerons -> ≈ 4 Hz uniform. Default for cfg=to|up; option `fast` for cfg=land (the validated LAND path is unchanged
+# without it). Same gains; the VS filter keeps its time constant (coefficient from dt).
+FAST = CFG != "land" or "fast" in sys.argv[5:]
+AIR = ("level", "approach", "flare", "go-around")
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
@@ -194,16 +201,9 @@ print(f"cfg {CFG}: weight {w:.0f} lb -> final approach {v_app:.0f} KIAS, touchdo
 log = subprocess.Popen([sys.executable, "-I", os.path.join(os.path.dirname(__file__), "simlog.py"),
                         out.replace(".csv", "_simlog.csv"), "400", "3"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
-phase = "level"
-thr = 9500.0
-res = {"integ": 0.0, "integ_b": 0.0}
-roll = 0.0
-t0 = prev_t = time.time()
-rows = []
-while time.time() - t0 < 600:
-    t = time.time()
-    dt = max(t - prev_t, 0.05)
-    prev_t = t
+def slow_read(dt):
+    """The validated full read of every pass (cfg=land, rollout; ≈ 12 reads, 0.55 s pass) - unchanged code, moved here
+    2026-11-06 when the FAST pass was added."""
     lat, lon = g("PLANE_LATITUDE"), g("PLANE_LONGITUDE")
     if abs(lat) < 1.6:                                               # library may return radians
         lat, lon = lat * DEG, lon * DEG
@@ -231,6 +231,68 @@ while time.time() - t0 < 600:
     p = (bank - res.get("prev_bank", bank)) / dt
     res["prev_theta"], res["prev_bank"] = theta, bank
     gs_kt = g("GROUND_VELOCITY")
+    return s, c, agl, ias, gnd, alt, bank, theta, hdg, vs, q, p, gs_kt
+
+
+phase = "level"
+thr = 9500.0
+res = {"integ": 0.0, "integ_b": 0.0}
+roll = 0.0
+t0 = prev_t = time.time()
+rows = []
+while time.time() - t0 < 600:
+    t = time.time()
+    dt = max(t - prev_t, 0.05)
+    prev_t = t
+    if FAST and phase in AIR:
+        # fast pass (see FAST above): altitude, bank, pitch every pass; slow groups in turn (each ≈ every 3rd pass)
+        kk = res.get("n_pass", 0) % 3
+        res["n_pass"] = res.get("n_pass", 0) + 1
+        alt, bank = g("PLANE_ALTITUDE"), g("PLANE_BANK_DEGREES") * DEG
+        theta = -g("PLANE_PITCH_DEGREES") * DEG
+        if alt == 0 and "prev_alt" in res:                           # failed read (returns 0): keep the last value
+            alt = res["prev_alt"]
+        if bank == 0 and abs(res.get("prev_bank", 0)) > 1:           # failed read: no false rate spike
+            bank = res["prev_bank"]
+        if theta == 0 and abs(res.get("prev_theta", 0)) > 1:
+            theta = res["prev_theta"]
+        if kk == 0 or "s" not in res:
+            lat, lon = g("PLANE_LATITUDE"), g("PLANE_LONGITUDE")
+            if abs(lat) < 1.6:
+                lat, lon = lat * DEG, lon * DEG
+            s, c = track(lat, lon)
+            # failed read (lat/lon 0) -> jump of millions of ft: keep the last good fix and its time
+            if not ("s" in res and (abs(s - res["s"]) > 2000 or abs(c - res["c"]) > 2000)):
+                res["s"], res["c"], res["t_s"] = s, c, t
+        # along-track dead-reckoned with the ground speed between the position reads (0.7 s ≈ 300 ft ≈ 13 ft of glide path)
+        s = res["s"] + res.get("gs", 0.0) * 1.68781 * (t - res["t_s"])
+        c = res["c"]
+        if kk == 1 or "agl_raw" not in res:
+            res["agl_raw"], res["alt_at_agl"] = g("PLANE_ALT_ABOVE_GROUND"), alt
+            ias_r = g("AIRSPEED_INDICATED")
+            res["ias_raw"] = ias_r if ias_r else res.get("ias_raw", 0.0)
+            res["gnd_raw"] = g("SIM_ON_GROUND") == 1
+        agl = res["agl_raw"] + (alt - res["alt_at_agl"])            # dead-reckoned between the AGL reads
+        ias, gnd = res["ias_raw"], res["gnd_raw"]
+        res["gear_fresh"] = kk == 2 or "hdg" not in res
+        if res["gear_fresh"]:
+            h_r = g("PLANE_HEADING_DEGREES_TRUE") * DEG
+            res["hdg"] = h_r if h_r else res.get("hdg", HDG)
+            res["gs"], res["gear"] = g("GROUND_VELOCITY"), g("GEAR_TOTAL_PCT_EXTENDED")
+        hdg, gs_kt = res["hdg"], res["gs"]
+        res["last_ias"] = res["ias"] = ias
+        if HIGH:
+            agl = alt - field_elev
+            gnd = agl < 5
+        vs = (alt - res.get("prev_alt", alt)) / dt * 60
+        res["prev_alt"] = alt
+        a_f = 1.0 - 0.5 ** (dt / 0.55)                               # = the 0.5/0.5 filter of the 0.55 s pass
+        res["vs_f"] = (1.0 - a_f) * res.get("vs_f", vs) + a_f * vs
+        q = (theta - res.get("prev_theta", theta)) / dt
+        p = (bank - res.get("prev_bank", bank)) / dt
+        res["prev_theta"], res["prev_bank"] = theta, bank
+    else:
+        s, c, agl, ias, gnd, alt, bank, theta, hdg, vs, q, p, gs_kt = slow_read(dt)
     path_alt = field_elev + (AIM_FT - s) * math.tan(glide)
     path_err = alt - path_alt                                        # + = above the glide path
     vs_tgt = 0.0
@@ -284,7 +346,11 @@ while time.time() - t0 < 600:
                 thr = max(thr, res["thr_floor"])
         ev("THROTTLE1_SET", int(thr))
         # 2026-10-31: a single failed read (returns 0) triggered a go-around with the gear 100 % down -> 3 reads in a row
-        res["gear_bad"] = res.get("gear_bad", 0) + 1 if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 else 0
+        if not FAST:
+            res["gear_bad"] = res.get("gear_bad", 0) + 1 if s > -12000 and g("GEAR_TOTAL_PCT_EXTENDED") < 0.99 else 0
+        elif res.get("gear_fresh"):                                  # FAST: count only real reads (cached value otherwise)
+            res["gear_bad"] = res.get("gear_bad", 0) + 1 if s > -12000 and res["gear"] < 0.99 else 0
+        res.setdefault("gear_bad", 0)
         if res["gear_bad"] >= 3 and not res.get("gear_go"):
             res["gear_go"] = True                                    # gear not down 2 NM out -> go around
             print(f"GEAR NOT DOWN ({g('GEAR_TOTAL_PCT_EXTENDED'):.2f}) at {s:.0f} ft")
@@ -372,7 +438,9 @@ while time.time() - t0 < 600:
             break
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
                  round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
-    if phase in ("level", "approach", "flare", "go-around"):
+    if FAST and phase in AIR:
+        time.sleep(0.01)
+    elif phase in AIR:
         lat_fast()
     else:
         time.sleep(0.05)
