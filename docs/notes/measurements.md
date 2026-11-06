@@ -1462,3 +1462,7 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
 - **F9 12.5 kt surface (S19f, preset 350/25) NOT passed:** air ✓ (crab 6.4°, TD CL -20 ft), but on the wheels after the skip
   the jet yaw-diverged to 8° (+55 ft) although the rudder was at -8.8° (nose left, 47 % pedal) - 6-7x the taxi weather-vane
   torque. Hypothesis: main gear only ≈ 1.8 ft behind the CG (cfg x -0.3 ft) -> nose-wheel side force from the crab dominates.
+- **F9 12.5 kt PASSED** (S19h; S19g): cause of the S19f divergence = crabbed touchdown + nose wheel loaded by the +4 000 rollout
+  push (A3 run 5: a 3° heading offset on the wheels in calm air is benign) -> xw rollout push +1 500 for 4 s after the
+  touchdown -> rollout -19..-4 ft, heading ≤ 3.6°; roll from 165 KIAS -11.6 % (technique: nose load vs. braked main gear).
+  Open: the validated F3 pair "+4 000 push + toe_brakes_scale 0.82" may be compensating (FM: only "lower the nose").

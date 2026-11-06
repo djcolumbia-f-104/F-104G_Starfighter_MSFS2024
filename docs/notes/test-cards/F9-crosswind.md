@@ -128,3 +128,15 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   touchdown mismatch (crab vs. track) + a loaded nose wheel. **Change (xw only, one variable):** rollout nose push +1 500
   instead of +4 000 above 120 KIAS. Test: 12.5 kt again (S19g). Prediction: heading after the touchdown ≤ 5°, rollout within
   ±30 ft; if it still diverges -> the decrab/wing-down route (reduce the crab at the touchdown).
+- **S19g (12.5 kt, push +1 500 above 120 KIAS):** TD 178 KIAS CL -9 ft heading 3.0°; **rollout -12..+1 ft**, heading
+  -0.7..+3.2°, pedal ≤ 2 400 (S19f: +55 ft, 7 600) -> hypothesis confirmed (loaded nose wheel after a crabbed touchdown).
+  Side effect: roll from 165 KIAS -16.9 % (more weight on the braked main gear).
+- **S19h (12.5 kt, +1 500 only for 4 s after the touchdown, then the validated +4 000) - lateral PASSED:** TD 178 KIAS CL -19 ft
+  heading 3.6°, below 50 ft bank ±2.8°; **rollout -19..-4 ft**, heading -0.7..+3.6°, pedal ≤ 3 800; roll from 165 KIAS -11.6 %
+  (the 165 KIAS point lies inside the light-push window; fast-path reading -2..-3 %).
+  The ground roll in a crosswind is technique-dependent (nose-wheel load vs. braked main gear) and the FM charts have no
+  crosswind correction -> informational for F9. **Open question for F2/F3 (change control):** FM 2-25 says only "Nosewheel -
+  Lower"; the validated pair "+4 000 push + toe_brakes_scale 0.82" may be compensating - with a lighter, more realistic nose
+  load the brake scale would have to be lower. To check with a dedicated F3 series (push 1 500 vs. 4 000) before any change.
+- **Status F9:** right crosswind passed up to 12.5 kt surface (5 / 10 / 12.5). Next: 15 / 20 / 25 kt (presets 350_30/40/50),
+  then the left side (170_..).

@@ -528,8 +528,15 @@ while time.time() - t0 < 600:
         # 2026-11-06 (F9 12.5 kt, A3 run 5): after a crabbed touchdown the loaded nose wheel (12.6 ft ahead of the CG; main gear
         # only ≈ 1.8 ft behind) turned the jet further out of the track ("wheelbarrowing") - the +4 000 push loads it more ->
         # with a crosswind only +1 500 above 120 KIAS (nose wheel still on the ground, FM 2-25), the validated +4 000 below
-        push_tgt = 1500.0 if (XW is not None and ias > 120) else 4000.0
-        ev("AXIS_ELEVATOR_SET", int(c0 + (push_tgt - c0) * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
+        # S19g (12.5 kt, +1 500 above 120 KIAS): rollout ±12 ft ✓ but roll from 165 KIAS -16.9 % (more weight on the braked
+        # main gear; the validated toe_brakes_scale goes with the +4 000 push) -> light push only in the first 4 s after the
+        # touchdown (crab mismatch decays), then ramp to the validated +4 000 within 2 s
+        if XW is not None:
+            el_td = t - res["t_td"]
+            push = c0 + (1500.0 - c0) * clamp(el_td / 3.0, 0.0, 1.0) if el_td < 4.0 else 1500.0 + 2500.0 * clamp((el_td - 4.0) / 2.0, 0.0, 1.0)
+            ev("AXIS_ELEVATOR_SET", int(push))
+        else:
+            ev("AXIS_ELEVATOR_SET", int(c0 + (4000 - c0) * clamp((t - res["t_td"]) / 3.0, 0.0, 1.0)))
         nose_down = theta < 1.0 and t - res["t_td"] > 1.0                # FM: brakes after the nose wheel is down
         # FM 2-25: deploy the chute as soon as the nose wheel is on the ground (all three gear down). 2026-10-31 (H3_F2a): the
         # old "1 s after the first touch" deployed it during a hop -> only on the ground with the nose down (pitch < 1°)
