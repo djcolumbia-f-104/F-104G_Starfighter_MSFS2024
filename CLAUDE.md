@@ -24,7 +24,7 @@ FAST stays OPT-IN for LAND (no benefit), default for to|up. **F8 go-around from 
 lowest 36 ft AGL, climb after 2.1 s; card F8-go-around-flare.md). selftest waits for the next watchdog line (lesson 24).
 **F7 touch-and-go PASSED** (`tg`, card F7-touch-and-go.md: liftoff 182 KIAS 4 279 ft after TD, ground pitch ≤ 8.1°);
 the first T&G exposed a go-around-law problem at 380-450 KIAS (pitch/roll oscillation, bank -42° at 1 500 ft AGL) -> go-around
-gains scaled with (v_app/IAS)² / v_app/IAS + AGL failed-read guard (lesson 25). Jet at 16 500 ft on the AP.
+gains scaled with (v_app/IAS)² / v_app/IAS + AGL failed-read guard (lesson 25). Sim PAUSED at 16 500 ft on the AP.
 **NEXT:** F4 minimum run (TD 140 kt -> α ≈ 11° at our weights = tail-strike margin, desk first: light weight, LAND flaps,
 speed brakes), F9 crosswind (weather set), no-flap flare technique (A8-2 TD speed). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
