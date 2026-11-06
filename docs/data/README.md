@@ -233,3 +233,4 @@ mark the old row superseded and name the replacement log.
 | `S19f-F9_takeoff/dry/landing` (+ `_simlog`), 2026-11-06 | F9 12.5 kt surface (preset 350/25, law v3) | 19 180 lb | air ✓ (CL -20 ft, hdg 3.2° at TD); rollout yaw divergence to 8°, +55 ft despite 47 % pedal | valid (ground-divergence evidence) |
 | `S24-A3off_steer`, 2026-11-06 | A3 run 5: heading offset ±3° on the wheels, LAND flaps, 150 KIAS, calm | 19 010 lb | benign (≈ 500 counts hold 3°); abort -41 ft = test design | **valid** |
 | `S19g-F9_*`, `S19h-F9_*` (+ `_simlog`), 2026-11-06 | F9 12.5 kt with a light rollout push (+1 500 above 120 KIAS / for 4 s) | 19 010 lb | rollout -12..+1 / -19..-4 ft ✓; roll -16.9 / -11.6 % (nose-load technique) | **valid** |
+| `S19i-F9_*` (+ `_simlog`), 2026-11-06 | **F9 15 kt surface PASSED** (preset 350/30) | 19 010 lb | TD CL -12 ft hdg 3.8°; rollout -18..-7 ft; roll -8 % | **valid** |

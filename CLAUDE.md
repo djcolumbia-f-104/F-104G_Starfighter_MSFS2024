@@ -45,8 +45,7 @@ F9 12.5 kt ✗: after a crabbed touchdown the jet yaw-diverges on the wheels (8�
 main gear only ≈ 1.8 ft behind the CG (cfg x -0.3 ft; old open note) -> nose-wheel side force dominates ("wheelbarrowing").
 Cause found (A3 run 5 + S19g): crabbed touchdown + the +4 000 rollout push loading the nose wheel -> xw rollout: +1 500 for
 4 s after the touchdown, then +4 000 -> **F9 12.5 kt PASSED** (rollout -19..-4 ft). Open F2/F3 question: is "+4 000 push +
-toe_brakes_scale 0.82" a compensating pair (FM: only "lower the nose")? **NEXT:** F9 15/20/25 kt (presets 350_30/40/50) and
-left (170_..); then F9 15/20/25 kt and left crosswind (presets 350/170_30/40/50 need a sim restart to appear); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+toe_brakes_scale 0.82" a compensating pair (FM: only "lower the nose")? F9 15 kt ✓ (S19i). **NEXT:** F9 20/25 kt (presets 350_40/50) and left (170_..); then F9 15/20/25 kt and left crosswind (presets 350/170_30/40/50 need a sim restart to appear); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)
