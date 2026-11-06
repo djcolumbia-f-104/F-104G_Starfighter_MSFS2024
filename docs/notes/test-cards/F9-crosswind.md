@@ -76,3 +76,18 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
 - **Next (desk):** identify the weather-vane torque vs. speed from the S19b/S19c/S19d rollouts (recorded rudder + heading,
   model from A3), then a feed-forward ≈ 2 640 counts x atan(crosswind / V) [deg] (faded below ≈ 100 KIAS where the nose-wheel
   steering dominates) + the A3 feedback; check in the model with the identified torque; then step 2 again.
+- **Desk 2026-11-06 (after S19d):** SDK pages (docs/sdk-ref/flight_model.cfg.md): ground steering is reduced with speed by
+  `max_speed_full_steering` / `max_speed_decreasing_steering` / `min_available_steering_angle_pct` (not set in our cfg ->
+  defaults; community: floor default raised 0.2 -> 0.5 in SU12); lateral tyre friction at speed by
+  `ground_high_speed_steeringwheel_static_friction_scalar` / `..._otherwheel_...` (SDK: "how much the aircraft will move into
+  the crosswind when rolling at higher speeds", default 1); the crosswind on the ground is blended in between
+  `ground_crosswind_effect_zero_speed` (5 ft/s) and `..._max_speed` (80 ft/s) (depends on the ground-rudder assistance).
+  Community: MSFS weather-vaning on the ground is widely considered exaggerated and tunable with these parameters; surface
+  wind ≈ 1/2 of the reported wind (= our preset measurement). No F-104-specific rollout data online (FM 2-25 stays the source).
+  Fit on the S19d rollout (rudder command reconstructed from the A3 law): weather-vane torque ≈ 1 250 counts at 100 KIAS ∝ V
+  (≈ 2 100 at 170) for 10 kt, steering gain ≈ 0.5 x the A3 value at 150-170 KIAS (K ∝ V does not hold), rms 1.8° - weak
+  (one run); S19b steady state (P law, heading +1.2°) gives ≈ 700 counts at ≈ 120 KIAS (within 2x).
+- **Next:** identification at the condition (lesson 27): A3 taxi test in the crosswind preset 350/20 at 100 / 140 / 160 KIAS
+  (steady pedal = weather-vane torque B(V); small steps = K(V)); then the rollout law = feed-forward B(V, crosswind) + A3
+  feedback with K(V) from the test; model check; F9 step 2. Cfg route (min_available_steering_angle_pct, friction scalars)
+  only if the FM-conform behaviour cannot be reached by the law - it touches validated ground behaviour (T3-D, F2/F3).
