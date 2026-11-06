@@ -1,0 +1,8 @@
+# S18b-F4 (2026-11-06): real minimum-run landing (FM 2-28) with chute, after the S18-F4 dry run (TD 168 KIAS, pitch 4.8°,
+# -607 ft/min at the virtual runway). Starts airborne.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 fmflare minrun | TOUCHDOWN | 600
+roll150  | tools/roll_from_speed.py {csv:landing} 150 chute | roll from | 60
+roll165  | tools/roll_from_speed.py {csv:landing} 165 chute | roll from | 60

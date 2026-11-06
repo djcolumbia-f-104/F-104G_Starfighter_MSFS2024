@@ -54,6 +54,10 @@ GA_FT = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("ga="
 # -> at 35 ft AGL the go-around climb law (F8). `tg=stop` = build-up: the same ground run without rotation, abort at
 # 170 KIAS / 7 000 ft past the threshold to a full stop. Card docs/notes/test-cards/F7-touch-and-go.md.
 TG = next((a for a in sys.argv[5:] if a == "tg" or a.startswith("tg=")), None)
+# 2026-11-06 (F4, FM 2-28 minimum-run landing): `minrun` = touchdown target 140 KIAS +5 kt per 1 000 lb above 15 100 lb
+# (Fig. A8-2 note) unless vtd= is given, speed brakes OUT from the flare ("use the speed brakes to aid in controlling
+# touchdown point and speed"), drag chute as usual. Card docs/notes/test-cards/F4-minimum-run.md.
+MINRUN = "minrun" in sys.argv[5:]
 TG_STOP = TG == "tg=stop"
 TG_HOLD, S_HOLD, THETA_T = 2000.0, -6600.0, 10.5     # nose-wheel hold (nose down), srot stick (takeoff_test [M]), target
 if CFG != "land":
@@ -187,6 +191,8 @@ if fuel < 1500 or n1 < 60:                                           # idling on
 V_FM = {"land": (175, 155), "to": (195, 165), "up": (230, 190)}[CFG]   # Fig. 2-7 / FM 3-32 / FM 3-36 at 16 100 lb
 v_app = V_FM[0] + 5 * (w / 1000 - 16.1)                               # final approach, +5 kt per 1 000 lb
 v_td = VTD if VTD else V_FM[1] + 5 * (w / 1000 - 16.1)               # touchdown
+if MINRUN and not VTD:
+    v_td = 140.0 + 5 * (w / 1000 - 15.1)
 start_ft = start_nm * 6076.12
 lat_s = LAT0 - start_ft * U[1] / FT_PER_DEG
 lon_s = LON0 - start_ft * U[0] / (FT_PER_DEG * math.cos(math.radians(LAT0)))
@@ -329,6 +335,9 @@ while time.time() - t0 < 600:
             if agl < (120 if CFG == "land" else 150):            # F6 dry 1: flare from 112 ft could not stop the sink
                 phase = "flare"
                 res["vs0"] = res["vs_f"]
+                if MINRUN:
+                    ev("SPOILERS_ON")                                 # FM 2-28: speed brakes for TD point/speed
+                    print("minimum run: speed brakes OUT")
                 print(f"flare at {agl:.0f} ft AGL, {ias:.0f} KIAS, {s:.0f} ft from the threshold, path error {path_err:+.0f} ft, "
                       f"sink {res['vs_f']:.0f} ft/min")
         if phase == "flare":

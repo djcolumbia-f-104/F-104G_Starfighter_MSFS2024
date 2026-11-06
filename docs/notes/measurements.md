@@ -1430,3 +1430,6 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   MILITARY at 162 KIAS, srot from 165, liftoff 182 KIAS 4 279 ft after the touchdown, ground pitch ≤ 8.1°, climb-out calm.
   The first T&G (S16b, liftoff 180 ✓) showed a pitch/roll oscillation of the go-around law at 380-450 KIAS (bank -42° at
   1 500 ft AGL) -> go-around gain scaling with IAS (lesson 25), verified S17-GAscale (F8 dry: loss 12 ft unchanged, calm).
+- **F4 minimum-run landing** (card F4-minimum-run.md; landing_test `minrun`): TD 168 KIAS (target 140 +5/1 000 lb = 159.5;
+  pred. 163-167), -533 ft/min, pitch 4.0°, 1 557 ft past the threshold, chute; stop 4 778 ft past the threshold vs. F2 (chute)
+  6 709-7 527 ft (-29..-37 %). Roll metrics from 150/165 KIAS (-7.0 / +5.3 %) not clean (chute V² drag / TD transient).

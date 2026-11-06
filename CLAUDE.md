@@ -25,8 +25,10 @@ lowest 36 ft AGL, climb after 2.1 s; card F8-go-around-flare.md). selftest waits
 **F7 touch-and-go PASSED** (`tg`, card F7-touch-and-go.md: liftoff 182 KIAS 4 279 ft after TD, ground pitch ≤ 8.1°);
 the first T&G exposed a go-around-law problem at 380-450 KIAS (pitch/roll oscillation, bank -42° at 1 500 ft AGL) -> go-around
 gains scaled with (v_app/IAS)² / v_app/IAS + AGL failed-read guard (lesson 25). Sim PAUSED at 16 500 ft on the AP.
-**NEXT:** F4 minimum run (TD 140 kt -> α ≈ 11° at our weights = tail-strike margin, desk first: light weight, LAND flaps,
-speed brakes), F9 crosswind (weather set), no-flap flare technique (A8-2 TD speed). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+**F4 minimum run flown** (`minrun`, card F4-minimum-run.md: TD 168 KIAS at 1 557 ft, stop 4 778 ft past the threshold = -29..-37 %
+vs. F2; TD target 159.5 not reached - script flare limit as F5; the α ≈ 11° worry was wrong: LAND-flap CL gives α ≈ 6-7°).
+Jet stopped on 26L, refuelled. **NEXT:** F9 crosswind (needs a weather preset with 15-25 kt crosswind - pete), flare
+technique for F4/F5 TD speeds (earlier speed bleed on short final), remaining test-plan items (A3/A4, B9, E2, G1/G2). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)
