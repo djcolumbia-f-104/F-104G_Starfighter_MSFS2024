@@ -34,3 +34,25 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   Anomaly: during the skip after the touchdown bank -7° (simlog) - the rollout keeps the ailerons at 0 -> for xw the rollout
   now holds the wings level with the ailerons (P+D, > 80 KIAS); wind read only every 2nd slow group; heading logged
   (`hdg_true` column) to verify the decrab directly.
+- **Step 2 attempt 1 (S19b-F9, preset 350/20 = 10.0 kt surface, xw=10):** engine found shut down after the weather change
+  (fuel lever 0) -> restarted with the SimConnect event ENGINE_AUTO_START (light-off at 20 % after ≈ 20 s = FM). Takeoff 180 kt.
+  Crab 5.1-5.2° on the approach (pred. 5.5) ✓, centreline ±6-7 ft, TD 178 KIAS (pred. 177) -422 ft/min, CL -6 ft, roll -3.6 % ✓.
+  **Not passed:** (a) decrab incomplete - heading still +2.2° (dry +4.8°) at the touchdown: -350 counts/° gave ≈ 7 % rudder,
+  ≈ 55 % needed (full rudder ≈ 18° at 190 KIAS, β/δr 0.34 -> β max ≈ 6°); (b) **rollout drifted to +66 ft right of the
+  centreline** (half-width 74 ft): weather-vaning held the heading +1.2° (P-only law) and the validated rollout law's -3 x c
+  term has the wrong sign (harmless in calm air). Fix (xw only; validated path unchanged and the sign error documented):
+  decrab feed-forward 2 640 counts per degree of crab (40 -> 15 ft) + P 700/°; rollout PI on a centreline-steering heading.
+- **Sim hang during the step 2 repeat (first try):** MSFS stopped responding in the dry run's level segment (12:21, ≈ 7 000 ft
+  above the virtual runway, nothing special commanded; session report memory ≈ 16-17 GB after a long session with many
+  set_pos jumps and weather changes). Sortie stopped; pete restarted the sim. The watchdog hung in its reconnect - the
+  selftest caught it ("watchdog alive" FAIL) -> restarted.
+- **Step 2 repeat (S19c-F9, decrab feed-forward + rollout PI) - NOT passed, F9 flights STOPPED (lesson 26):** approach as
+  attempt 1 (crab ≈ 5°); the decrab feed-forward rolled the jet to **-9..-16° bank at 4-21 ft** (dry: -16°), heading still
+  +1.2..1.5° at the touchdown, TD 178 KIAS -419 ft/min **CL +23 ft**; post-touchdown skip with the rollout rudder active ->
+  bank -8.8/-11.7° in the air, **lateral excursion to +87 ft** (beyond the 74 ft runway half-width = runway excursion),
+  then the PI overshot to -5.8° / -21 ft; roll -6.2 %. Cause: F-104 roll due to sideslip (FM 6-2; δa/δr 0.37 in T3-E2) -
+  every rudder input in the air (decrab, skip) rolls the jet; FM 2-25 recommends the CRAB method for strong crosswinds
+  exactly for this. Reverted to the step-1 decrab; no rollout rudder while airborne (skip).
+- **Next (desk):** crab-to-touchdown design: keep the crab (no rudder decrab) or decrab only below ≈ 5 ft; on the ground align
+  with the rudder/nosewheel steering only with all gear on the ground; identify the ground-steering response first
+  (taxi test at 60-120 kt with a heading step) and model the skip; then step 2 again at 10 kt; until then F9 = step 1 only.

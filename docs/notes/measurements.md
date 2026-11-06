@@ -1437,3 +1437,7 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   selftest `wind=`): preset 350°/10 kt gives 5 kt at the runway (Debug Weather: surface boundary layer, ≈ 10 kt at 2 km).
   Crosswind takeoff 178 kt; landing TD 174 KIAS, centreline -3 ft, bank ±0.7° below 50 ft, crab removed by the rudder (β 1.9°
   at TD); roll from 165 KIAS -5.2 %.
+- **F9 step 2 (10 kt surface crosswind) NOT passed** (S19b/S19c): approach crab 5° and TD CL ±6-23 ft OK, but a weak rudder
+  decrab left 2.2° at TD and the rollout drifted to +66 ft; a stronger decrab (feed-forward) rolled the jet to -16° at 13 ft
+  and the skip + rollout rudder caused a lateral excursion to +87 ft. F9 flights stopped; desk design of the crab method next
+  (lesson 26). Validated rollout rudder law has a wrong-sign centreline term (-3 x c; harmless in calm air, fix with F3).

@@ -27,8 +27,13 @@ the first T&G exposed a go-around-law problem at 380-450 KIAS (pitch/roll oscill
 gains scaled with (v_app/IAS)² / v_app/IAS + AGL failed-read guard (lesson 25). Sim PAUSED at 16 500 ft on the AP.
 **F4 minimum run flown** (`minrun`, card F4-minimum-run.md: TD 168 KIAS at 1 557 ft, stop 4 778 ft past the threshold = -29..-37 %
 vs. F2; TD target 159.5 not reached - script flare limit as F5; the α ≈ 11° worry was wrong: LAND-flap CL gives α ≈ 6-7°).
-Jet stopped on 26L, refuelled. **NEXT:** F9 crosswind (needs a weather preset with 15-25 kt crosswind - pete), flare
-technique for F4/F5 TD speeds (earlier speed bleed on short final), remaining test-plan items (A3/A4, B9, E2, G1/G2). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+Jet stopped on 26L, refuelled. **F9 crosswind:** weather presets from pete's template (`tools/make_wpr.py`, presets
+F-104G_350/170_10..25Kts + F-104G_Calm_ISA in %APPDATA%\...\Weather\Presets; surface wind ≈ 0.5 x preset), selftest
+`wind=<dir>:<kt>`, landing_test `xw=`; step 1 (5 kt) ✓ CL -3 ft; step 2 (10 kt) ✗ twice - rudder decrab/skip rudder roll
+the F-104 (roll due to sideslip) -> runway excursion +87 ft; F9 flights STOPPED (lesson 26), next = desk design of the crab
+method (card F9-crosswind.md). MSFS hung once (long session) - selftest caught the hung watchdog. ENGINE_AUTO_START event
+restarts a shut-down engine (light-off 20 % / 20 s). **Weather: switch back to F-104G_Calm_ISA for all other tests.**
+**NEXT:** F9 desk design; flare technique for F4/F5 TD speeds; remaining test-plan items (A3/A4, B9, E2, G1/G2). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

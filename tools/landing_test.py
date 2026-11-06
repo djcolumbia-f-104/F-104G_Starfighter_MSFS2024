@@ -368,8 +368,9 @@ while time.time() - t0 < 600:
         # dry H3_dry2/3, with and without BLC loss) -> x1.6 for the FM flare
         fly(vs_tgt, (1.6 if FM_FLARE else 2.2) if phase == "flare" else 1.0, bank, p, q, hdg, c, dt)
         if XW is not None and phase == "flare" and agl < 30:
-            # F9 decrab (FM 2-25 crab method): align the nose with the runway with the rudder in the last 30 ft (half the
-            # validated rollout gain, + axis = nose left); the bank loop keeps the wings level/track
+            # F9 decrab, step-1 version (gentle: -350 counts/°, bank ±0.7° below 50 ft at 5 kt). 2026-11-06 step 2 repeat: a
+            # feed-forward of 2 640 counts per degree of crab rolled the jet to -16° at 13 ft (F-104 roll due to sideslip,
+            # δa/δr 0.37) -> REVERTED; FM 2-25: strong crosswind = crab method to the touchdown (desk work: card F9)
             ev("AXIS_RUDDER_SET", int(clamp(-350 * wrap(HDG - hdg), -8000, 8000)))
         # speed: PI throttle with feed-forward on the approach speed; FM 2-25 in the flare: below 100 ft SMOOTHLY to
         # 82-83 % rpm, idle at touchdown (dry run 10: gain 300 towards 80 % cut the throttle to near idle in 3 s ->
@@ -527,7 +528,21 @@ while time.time() - t0 < 600:
             ev("SPOILERS_ON")                                         # = drag chute (ground spoiler drag, cfg)
             res["chute"] = ias
             print(f"drag chute at {ias:.0f} KIAS (limit 180 MB-7G / 205 BS-4000)")
-        ev("AXIS_RUDDER_SET", int(clamp(-700 * wrap(HDG - hdg) - 3 * c, -8000, 8000)))
+        if XW is None:
+            # validated law (F2/F3). NOTE 2026-11-06 (F9 step 2): the -3 x c term has the WRONG sign (c > 0 = right of the
+            # centreline needs nose LEFT = + axis); harmless in calm air (c ±2 ft) - fix only with an F3 regression
+            ev("AXIS_RUDDER_SET", int(clamp(-700 * wrap(HDG - hdg) - 3 * c, -8000, 8000)))
+        elif not gnd:
+            # F9 step 2 repeat: the rollout rudder acting during the post-touchdown skip rolled the jet to -11.7° (sideslip in
+            # the air) -> no rudder while airborne in the rollout phase
+            ev("AXIS_RUDDER_SET", 0)
+        else:
+            # F9 step 2: weather-vaning held the heading 1.2° into the wind (P only) and with the wrong-sign c term the jet
+            # drifted to +66 ft -> PI on a heading that steers back to the centreline (0.1°/ft, ±5°), + axis = nose left.
+            # NOT yet flown in this form (step 2 repeat: overshoot to -5.8° / -21 ft after the skip) - desk work first
+            e_r = wrap((HDG - clamp(0.1 * c, -5.0, 5.0)) - hdg)
+            res["i_rud"] = clamp(res.get("i_rud", 0.0) + e_r * dt, -20.0, 20.0)
+            ev("AXIS_RUDDER_SET", int(clamp(-700 * e_r - 100 * res["i_rud"], -12000, 12000)))
         if XW is not None and ias > 80:
             # F9 step 1 (2026-11-06): a skip after the touchdown rolled the jet to -7° with the ailerons at 0 -> with a
             # crosswind the ailerons keep the wings level on the rollout (P+D of the validated bank loop, no I term)
