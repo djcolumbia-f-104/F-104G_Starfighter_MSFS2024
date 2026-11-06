@@ -56,3 +56,13 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
 - **Next (desk):** crab-to-touchdown design: keep the crab (no rudder decrab) or decrab only below ≈ 5 ft; on the ground align
   with the rudder/nosewheel steering only with all gear on the ground; identify the ground-steering response first
   (taxi test at 60-120 kt with a heading step) and model the skip; then step 2 again at 10 kt; until then F9 = step 1 only.
+- **Ground-steering work (A3, card A3-ground-steering.md):** plant identified (≈ 1.8°/s per 1 000 counts x IAS/100, lag
+  0.6 s, dead time 0.45 s), the F9 PI oscillates on the ground, designed law (kp 700 / kd 300 x min(1, 100/IAS), ki 50,
+  0.04°/ft) PASSED A3 run 2 (no oscillation, |c| ≤ 7.5 ft after 800-count steps) -> landing_test xw rollout uses it with the
+  fast pass (heading every pass); still: no rudder while airborne, gentle step-1 decrab below 30 ft.
+- **Regression F3 with xw=0 (S21-F3xw0, calm):** TD 173 KIAS -134 ft/min CL +1 ft; **rollout centreline ±1 ft, heading
+  ±0.09°, bank ±0.8°** (4.0 Hz) ✓; roll from 165 KIAS -6.6 % - all FAST-path landings today read short (-4.7 / -5.2 / -6.2 /
+  -6.6 % vs. slow path -0.6..-4.1 %): IAS is read only every 3rd fast pass (165 KIAS crossing found up to 0.7 s late ≈ 3 %) and
+  the nose-down/brake check runs more often -> a measurement/timing artefact of the fast path, not a flight-model change; the
+  F2/F3 distance references stay with the slow (validated) path.
+- **Next:** F9 step 2 again (preset F-104G_350_20Kts, xw=10): crab to the touchdown with the gentle decrab, new rollout law.

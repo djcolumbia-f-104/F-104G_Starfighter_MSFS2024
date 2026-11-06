@@ -26,6 +26,10 @@ out = sys.argv[1]
 opts = dict(a.split("=", 1) for a in sys.argv[2:] if "=" in a)
 SPEEDS = [float(v) for v in opts.get("speeds", "80,120").split(",")]
 STEPS = [float(v) for v in opts.get("steps", "400,800").split(",")]
+# law=pi: the F9 rollout PI (run 1, oscillated); law=new (default since run 2): desk design on the run-1 model fit
+# (yaw rate ≈ 1.8°/s per 1 000 counts x IAS/100, lag 0.6 s, dead time 0.45 s): kp 700 / kd 300 (yaw-rate damping) x
+# min(1, 100/IAS), ki 50 (weather-vaning), centreline 0.04°/ft
+LAW = opts.get("law", "new")
 DEG = 57.29578
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4
 FT_PER_DEG = 60 * 6076.12
@@ -101,8 +105,15 @@ while True:
     st["air"] = 0 if gnd else st["air"] + 1
     e_r = wrap((HDG - clamp(0.1 * c, -5.0, 5.0)) - hdg)
     # closed-loop centreline law (F9 rollout law, correct sign): + axis = nose left
+    if LAW != "pi":
+        e_r = wrap((HDG - clamp(0.04 * c, -5.0, 5.0)) - hdg)     # integrate the error of the law in use
     st["i_rud"] = clamp(st["i_rud"] + e_r * dt, -20.0, 20.0)
-    rud = clamp(-700 * e_r - 100 * st["i_rud"], -12000, 12000)
+    if LAW == "pi":
+        rud = clamp(-700 * e_r - 100 * st["i_rud"], -12000, 12000)
+    else:
+        ks = min(1.0, 100.0 / max(ias, 30.0))
+        # r = d(hdg)/dt (+ = nose right); + counts = nose left -> damping adds + counts for + r
+        rud = clamp(-ks * 700 * e_r + ks * 300 * r - 50 * st["i_rud"], -12000, 12000)
     v_tgt, kind, val, dur = plan[k] if phase != "accel" else (SPEEDS[0], "accel", 0, 0)
     if phase == "accel":
         if ias >= SPEEDS[0] - 3:
@@ -129,8 +140,10 @@ while True:
             break
     else:
         tgt = v_tgt if phase == "plan" else SPEEDS[0] + 5
-        st["th_i"] = clamp(st["th_i"] + 20.0 * (tgt - ias) * dt, 3000.0, MIL)
-        ev("THROTTLE1_SET", int(clamp(st["th_i"] + 300.0 * (tgt - ias), 0, MIL)))
+        st["th_i"] = clamp(st["th_i"] + 60.0 * (tgt - ias) * dt, 0.0, MIL)
+        # run 1: the speed overshot to 110 KIAS (target 80) -> stronger PI, idle when 4 kt fast
+        thr = 0 if ias > tgt + 4 else clamp(st["th_i"] + 600.0 * (tgt - ias), 0, MIL)
+        ev("THROTTLE1_SET", int(thr))
     ev("AXIS_RUDDER_SET", int(rud))
     ev("AXIS_AILERONS_SET", int(clamp(-(250.0 * bank), -6000, 6000)))
     ev("AXIS_ELEVATOR_SET", 2000 if theta > 1.0 else 0)              # keep the nose wheel down

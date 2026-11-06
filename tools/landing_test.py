@@ -76,6 +76,8 @@ if CFG != "land":
 FAST = CFG != "land" or "fast" in sys.argv[5:] or TG is not None or XW is not None
 AIR = ("level", "approach", "flare", "go-around")
 FASTPH = AIR + ("tg",)
+if XW is not None:          # A3 run 2 (2026-11-06): the rollout centreline law needs the fast pass (0.55 s oscillates > 140 KIAS)
+    FASTPH = FASTPH + ("rollout",)
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
@@ -321,6 +323,9 @@ while time.time() - t0 < 600:
                     xc = wv * math.sin(math.radians(wd - HDG))        # + = from the right
                     res["xw_now"] = xc
                     res["crab"] = math.degrees(math.asin(clamp(xc / tas, -0.3, 0.3)))
+        if phase == "rollout":                                       # xw rollout: heading every pass (yaw-rate damping)
+            h_r = g("PLANE_HEADING_DEGREES_TRUE") * DEG
+            res["hdg"] = h_r if h_r else res.get("hdg", HDG)
         hdg, gs_kt = res["hdg"], res["gs"]
         res["last_ias"] = res["ias"] = ias
         if HIGH:
@@ -536,13 +541,17 @@ while time.time() - t0 < 600:
             # F9 step 2 repeat: the rollout rudder acting during the post-touchdown skip rolled the jet to -11.7° (sideslip in
             # the air) -> no rudder while airborne in the rollout phase
             ev("AXIS_RUDDER_SET", 0)
+            res["prev_hdg_r"] = hdg                                   # no yaw-rate spike after the skip
         else:
-            # F9 step 2: weather-vaning held the heading 1.2° into the wind (P only) and with the wrong-sign c term the jet
-            # drifted to +66 ft -> PI on a heading that steers back to the centreline (0.1°/ft, ±5°), + axis = nose left.
-            # NOT yet flown in this form (step 2 repeat: overshoot to -5.8° / -21 ft after the skip) - desk work first
-            e_r = wrap((HDG - clamp(0.1 * c, -5.0, 5.0)) - hdg)
+            # A3-designed centreline law (card A3-ground-steering.md, run 2 ✓: no oscillation, |c| ≤ 7.5 ft after 800-count
+            # steps; the F9 PI oscillated): kp 700 / kd 300 (yaw-rate damping) x min(1, 100/IAS), ki 50 (weather-vaning),
+            # centreline 0.04°/ft; + axis = nose left; r = d(heading)/dt (+ = nose right); fast pass (heading every pass)
+            e_r = wrap((HDG - clamp(0.04 * c, -5.0, 5.0)) - hdg)
+            r_y = wrap(hdg - res.get("prev_hdg_r", hdg)) / dt
+            res["prev_hdg_r"] = hdg
             res["i_rud"] = clamp(res.get("i_rud", 0.0) + e_r * dt, -20.0, 20.0)
-            ev("AXIS_RUDDER_SET", int(clamp(-700 * e_r - 100 * res["i_rud"], -12000, 12000)))
+            ks = min(1.0, 100.0 / max(ias, 30.0))
+            ev("AXIS_RUDDER_SET", int(clamp(-ks * 700 * e_r + ks * 300 * r_y - 50 * res["i_rud"], -12000, 12000)))
         if XW is not None and ias > 80:
             # F9 step 1 (2026-11-06): a skip after the touchdown rolled the jet to -7° with the ailerons at 0 -> with a
             # crosswind the ailerons keep the wings level on the rollout (P+D of the validated bank loop, no I term)

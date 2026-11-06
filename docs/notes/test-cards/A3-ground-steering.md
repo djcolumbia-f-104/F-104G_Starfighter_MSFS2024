@@ -29,3 +29,20 @@ law); nose lift (trim set to 2°, pitch > 2.5° -> abort); runway length (stop b
   stable loop) -> per lesson 21 not used for tuning. Next: fit the lag/delay (and tyre side-force dynamics) to this run's
   closed-loop data until the model oscillates like the flight, then design (yaw-rate damping, weaker centreline loop, slow I
   for weather-vaning), then A3 run 2 (closed loop only, 80 KIAS first), then F9 step 2.
+
+## Run 2: designed law (desk, 2026-11-06)
+- Model fit on run 1 (recorded command -> heading, `fit_ground` in the session scratch, method in this card): first order,
+  **yaw rate = 1.8°/s per 1 000 counts x IAS/100, lag τ 0.60 s, dead time 0.45 s**, rms 0.89° over 20 s (heading ±4°).
+  Closed-loop validation: the run-1 PI law in the model oscillates with ±3.1° / ±8.1 ft (flight ±1-4° / ±5-10 ft ✓), period
+  5.6 s (flight ≈ 4 s - model slightly slow; design with margin).
+- Design: **kp 700 / kd 300 (yaw-rate damping) x min(1, 100/IAS), ki 50 (unscaled, weather-vaning), centreline 0.04°/ft**;
+  model 80-175 KIAS: no oscillation, also with K x1.5 or dead time 0.6 s; weather-vane torque (840 counts) -> max 14-32 ft,
+  end 1-4 ft; 2° crab at the touchdown -> ≤ 4 ft. (The validated P-only law drifts 148 ft with that torque; the F9 PI oscillates.)
+- Prediction run 2 (law=new, steps 400/800): 400 at 80 KIAS -> |heading| ≤ 0.6°, |c| ≤ 3 ft; at 120 ≤ 1° / ≈ 5 ft; 800 ≈ 2x;
+  no residual oscillation. Pass -> law into landing_test (xw rollout) -> F9 step 2.
+- **Run 2 result (S20b-A3, law=new):** no oscillation; 400-count steps -> heading ±1.1-1.3°, |c| ≤ 4.4 ft; 800 -> ±2.4°,
+  |c| ≤ 7.5 ft, settled at ≈ 3 ft (run 1: 7.9° / -31 ft, abort); calm segments 78-132 KIAS within 0.3°. Step amplitudes ≈ 2x the
+  prediction (the jet keeps yawing ≈ 1 s after the step - dead time underestimated); core criteria met -> **A3 law PASSED**.
+  Aborted at 130 KIAS (speed overshoot in the 120 KIAS acceleration: J79 spool-down) -> 120 KIAS steps incomplete (one 400
+  step at 111 KIAS: 0.18°); stop at 9 554 ft. Model at the 0.55 s slow pass: oscillation ±0.6-0.9° above 140 KIAS -> in
+  landing_test (xw) the rollout uses the fast pass with the heading read every pass.

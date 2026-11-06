@@ -1450,3 +1450,7 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
 - **A3 ground steering (S20-A3)**: rudder-pedal steps 400/800 counts at 78-110 KIAS -> yaw rate ≈ 1.8°/s per 1 000 counts
   (MSFS reduces the nose-wheel steering strongly with speed); the F9 PI rollout law (700/100, 0.1°/ft) oscillates on the ground
   (±1-4°, ±5-10 ft, ≈ 3 s; 7.9° / -31 ft after the 800 step -> abort 7.1°). Simple model does not reproduce it (lesson 21).
+- **A3 run 2 + F3 xw=0** (cards A3-ground-steering.md, F9-crosswind.md): model fit on A3 run 1 (1.8°/s per 1 000 counts x
+  IAS/100, lag 0.6 s, dead time 0.45 s; reproduces the run-1 oscillation amplitude), designed rollout law (kp 700 / kd 300 x
+  min(1, 100/IAS), ki 50, 0.04°/ft) -> run 2 no oscillation, |c| ≤ 7.5 ft; F3 calm with xw=0: rollout ±1 ft / ±0.09°; roll from
+  165 KIAS -6.6 % (fast-path IAS read every 3rd pass -> short-reading artefact, all fast-path landings -4.7..-6.6 %).
