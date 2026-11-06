@@ -1,0 +1,9 @@
+# S8-SU72b (2026-11-06): regression after MSFS Sim Update 7.2, part b (only if part a is unchanged): Dutch roll, short
+# period, F3 landing. Starts airborne after S8-SU72a (16 500 ft, AP on). Card docs/notes/test-cards/R-SU72-sim-update.md.
+# label | command | expect | timeout s
+refuel1  | tools/refuel.py | after | 60
+doublet  | tools/doublet_test.py {csv} 25 | POST OK | 180
+pstep    | tools/pitch_step_test.py {csv} 0.2 4 | POST OK | 300
+refuel2  | tools/refuel.py | after | 60
+landing  | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare | TOUCHDOWN | 600
+roll     | tools/roll_from_speed.py {csv:landing} 165 nochute | roll from | 60

@@ -1,0 +1,15 @@
+# S8-SU72a (2026-11-06): regression after MSFS Sim Update 7.2 (drag code reverted to pre-SU7), part a: takeoff + drag/lift/trim
+# + cruise. Card docs/notes/test-cards/R-SU72-sim-update.md. Part b (doublet, SP step, landing) only if part a is unchanged.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60
+pos16a   | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+decel    | tools/decel_test.py {csv} 16500 600 | analyse_drag window | 400
+pos16b   | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel3  | tools/refuel.py | after | 60
+posC     | tools/mcp_f104/sim_actions.py position 29500 502 263 48.36 11.9 8800 hdg | positioned; AP on | 120
+cruC     | tools/cruise_test.py {csv} 29500 0.85 58.3 60000 -0.79 | sim/FM | 420
+pos16c   | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120

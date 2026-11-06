@@ -6,7 +6,13 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-05) <<<
+## >>> CONTINUE HERE (state 2026-11-06) <<<
+**2026-11-06: MSFS SU 7.2 (1.9.24.0, "drag calculations reverted to pre-SU7") -> regression R-SU72 PASSED, no effect**
+(card `docs/notes/test-cards/R-SU72-sim-update.md`, sorties S8-SU72a/b/c: T3-D, T3-A/F/G decel, D5 C, T3-J, SP, F3 all
+unchanged). New open item (pre-existing): SP step α/δ bimodal ≈ 1.0 / ≈ 0.75 at the same condition (T3-SP card). Sim
+PAUSED at 16 500 ft on the AP. Next unchanged: S3 bank-loop desk design (below).
+
+## Previous block (state 2026-11-05)
 **2026-11-05: work package EPP (part-power thrust) DONE and PASSED** (`docs/notes/workpackage-EPP-part-power-thrust.md`
 section 8, measurements.md 2026-11-05): FM Appendix A7 flight-test descents digitized (`docs/data/fm_a7_descent.csv`),
 `tools/epp_desk.py` (fit / cand / flight modes); thrust table rows 70-90 reduced by q̄ x A_s(N1c) (old table kept as

@@ -1,0 +1,9 @@
+# S8-SU72c (2026-11-06): diagnosis of the SP step alpha/delta drop after SU 7.2 (1.01 -> 0.75 with omega_n and the T3-G
+# trim gradient unchanged). This plan only brings the jet up (takeoff -> position); the step itself is flown by hand
+# afterwards with a 10 Hz simlog (real ELEVATOR_TRIM_POSITION / ELEVATOR_DEFLECTION) running in parallel.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py | after | 60

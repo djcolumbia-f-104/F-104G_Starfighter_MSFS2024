@@ -1384,3 +1384,16 @@ light (FM: fuel < 3 000 lb) and/or with a higher touchdown speed (vtd); F6 at 18
   the roll response at 210 KIAS / TAKEOFF flaps / gear down from a high-rate log (aileron step in the level segment of a
   dry run), design the bank loop (crossover, margin with the measured 0.55 s loop) at the desk, then fly dry runs.
   landing_test cfg=land is back to the validated behaviour (only the tail-strike guard is new; LAND landings fly 2-4°).
+
+## 2026-11-06: regression after MSFS Sim Update 7.2 (1.9.24.0, "drag calculations reverted to pre-SU7") - PASSED
+Card `docs/notes/test-cards/R-SU72-sim-update.md`; cfg/module unchanged (v7.2), selftest ALL OK (24 unit pairs, ISA calm).
+Sorties S8-SU72a/b/c (logs `flighttest_2026-11-06_S8-SU72*`): takeoff 178/179 kt ✓; decel 16 500 ft T3-F 0.99/1.05/1.08/1.05
+(mean 1.05) ✓, T3-A largest band -0.030 ✓ (same scatter), T3-G -0.02° + 1.08 α ✓ identical; D5 C N1 89.6 %, FF/FM 1.03 ✓;
+T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 KIAS / M 0.860: ωn 6.72/6.85, ζ 0.17, α/δ
+1.00/1.01 ✓ identical; F3 TD 172 KIAS, roll from 165 KIAS -3.7 % ✓. **The SU 7.2 drag revert does not affect this model.**
+- **New open item (not caused by the update): SP α/δ is bimodal.** M 0.882/0.884/0.931 gave 0.75-0.77, M 0.860 1.00;
+  the same raw evaluation (mean α 1.5-3.5 s after the step minus the last second before) of the old logs: 2026-11-03 A
+  (M 0.94) **0.74** (card said "(1.0)" from the old fit), B 0.82, C 1.02, D 0.75; 2026-11-04 S1a (≈ M 0.93) 1.01;
+  2026-11-05 S1a (M 0.857) 1.00. Trim step verified delivered exactly (10 Hz simlog, 3.08 -> 3.28°, elevator 0). ωn and ζ
+  identical in both modes -> Mα/Mq agree, the moment per trim degree differs ≈ 25 %. Cmδ ≈ -1.9 in the T3-SP card rests on
+  α/δ ≈ 1 -> uncertain until explained. To analyse at the desk (what differs between 11-04 S1a and 11-03 A / today).
