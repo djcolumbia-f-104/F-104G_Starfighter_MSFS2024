@@ -337,6 +337,9 @@ while time.time() - t0 < 600:
                         16383.0 if phase == "level" else 11141.0)
             if phase == "flare" and ias > spd_tgt + 3 and not FM_FLARE:  # dry run 19: PI only went to ≈ 5 300 -> idle while fast
                 thr = 0.0
+            # 2026-11-06 (F6 dry 5, cfg=to): virtual TD 197 KIAS with this floor. FM Fig. A8-2 gives only a MINIMUM
+            # touchdown speed for TAKEOFF flaps (180 KIAS at 19 000 lb); even the idle cut of dry 1 bled only 213 -> 192 in the
+            # flare -> 197 is FM-conform and kept (no change: the PI alone would stay at ≈ 91 % N1 at -10 kt)
             if phase == "flare" and FM_FLARE:
                 # 2026-10-31 (H3, rpm-dependent BLC via tools/blc_driver.py): the idle cut in the flare dropped the BLC lift
                 # -> TD sink 1 125 ft/min at 10.6° pitch (dry H3_dry1) = FM 2-25 "abrupt thrust reduction -> rapid increase

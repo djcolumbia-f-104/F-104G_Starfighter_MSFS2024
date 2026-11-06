@@ -88,3 +88,25 @@ regression (cfg=land, unchanged gains -> expect the validated result), then F6 d
   82 % N1 floor (a BLC technique) holds the thrust; with TAKEOFF flaps (less drag than LAND) the jet cannot bleed the
   speed. F6 dry 1 with the idle cut: 213 -> 192 KIAS and -926 ft/min. To decide at the desk: thrust law in the flare for
   BLC-off landings (FM 3-32 text), then dry 6, then the real F6.
+- **Re-assessment of the "anomaly" (desk, 2026-11-06):** FM 3-32 (PDF 202) BLC malfunction: final ≥ 195, "touch down at
+  165 KIAS minimum" (16 100 lb); FM Fig. A8-2 (PDF 549, flight test; reading calibrated on the A8-2 sample problem: LAND
+  final 170 / TD 150-155 at 15 100 lb ✓) TAKEOFF flaps at 19 000 lb: final ≈ 210, **minimum** TD ≈ 180 KIAS. My prediction
+  used the minimum as the target. Physically 180 is not reachable in the flare from a 210 final (dry 1 idle cut: 213 -> 192;
+  a PI without the floor would stay at ≈ 91 % N1). Dry 5 (197 KIAS, -456 ft/min, pitch 7.4° = 5° below the tail-strike
+  attitude) is FM-conform -> **flare law unchanged** (a trial edit removing the 82 % floor for cfg=to|up was reverted before
+  flying).
+
+## Step 3: real F6 landing (sortie S11-F6) - hazards, go/no-go
+- Prediction: TD 195-198 KIAS, sink 300-500 ft/min, pitch ≈ 7.5°, centreline ±5 ft, bank ≤ ±2°; ground roll without chute
+  ≈ (197/170)² x 3 150 ≈ 4 200 ft (no FM reference for TAKEOFF-flap landings; recorded only); TD ≈ 2 300 ft past the
+  threshold -> stop ≈ 6 500 ft of 13 100 ft (26L).
+- Hazards: (1) first REAL touchdown with the FAST loop: on-ground read only every 3rd pass (≤ 0.6 s late, the validated
+  slow pass was ≤ 0.55 s) -> the flare loop may keep pulling briefly on the ground -> hop; minimised by the tail-strike guard
+  (pitch > 11° below 60 ft -> go-around) and the validated rollout (slow path); recovery = go-around (flown cleanly in dry 5).
+  (2) TD ≈ 197 KIAS above the chute limit (180) -> `nochute`, hard braking as in F3. (3) Weather: selftest (calm, ISA).
+- Build-up done: dry 5 covered level, approach, flare and go-around with the FAST loop (lesson 14).
+- **GO 2026-11-06**: selftest in the sortie, refuel before the landing.
+- **Result F6 (S11-F6, `flighttest_2026-11-06_S11-F6_f6.csv`) - PASSED:** 19 008 lb, final 210 KIAS, flare at 148 ft (213 KIAS,
+  -939 ft/min), **TD 197 KIAS** (FM min. 180 ✓), **-302 ft/min**, pitch 6.8° (tail strike 12.3°), 2 359 ft past the threshold,
+  centreline -1 ft; bank level ±1.1°, approach ±1.3°, flare ±1.7°; 1 skip of 1-2 ft (≈ 1 s, as in F3); ground roll 3 760 ft
+  from the final touchdown at 196 KIAS (pred. ≈ 4 200, -10 %; no FM reference); loop 4.5 Hz. All predictions met.

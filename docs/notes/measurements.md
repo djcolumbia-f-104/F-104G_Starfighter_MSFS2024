@@ -1413,3 +1413,7 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
 - **landing_test FAST loop** (card S3-bank-loop.md step 2; default for cfg=to|up, option `fast` for land; cfg=land path
   unchanged): F6 dry 5 (cfg=to, virtual runway +6 000 ft): 5.2 Hz, bank within ±1.6° in every phase (dry 1 at 0.55 s:
   up to ±49° in the go-around) ✓; virtual TD 197 KIAS (pred. ≈ 181) - flare thrust law (82 % floor) open.
+- **F6 BLC-malfunction landing PASSED** (S11-F6, cfg=to, nochute, FAST loop 4.5 Hz): TD 197 KIAS (FM Fig. A8-2 minimum 180 at
+  19 000 lb; flight-test chart read on its sample problem), -302 ft/min, pitch 6.8°, centreline -1 ft, bank ≤ ±1.7°, 1 skip
+  1-2 ft, ground roll 3 760 ft (no FM reference). The dry-5 "anomaly" (197 vs. 181) was a wrong prediction (minimum taken
+  as target); flare law unchanged.
