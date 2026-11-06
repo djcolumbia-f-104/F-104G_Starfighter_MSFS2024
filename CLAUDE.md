@@ -36,8 +36,10 @@ restarts a shut-down engine (light-off 20 % / 20 s). **Weather: switch back to F
 **A4/H4** documented deviation (card A4-H4-control-limits.md: sim limits follow q̄, FM limits follow the gear; fix in AP-9
 via input events). **A3** (`tools/taxi_steer_test.py`, card A3-ground-steering.md): steering ≈ 1.8°/s per 1 000 counts at
 80-110 KIAS; the F9 PI rollout law oscillates on the ground (= the F9 step-2 overshoot); simple model does not reproduce it.
-**NEXT:** fit the ground-steering model to the S20-A3 closed-loop data (lag/delay/tyres) -> design the rollout law -> A3 run 2
-(closed loop, 80 KIAS) -> F9 step 2 with the crab method (no rudder in the air); flare technique for F4/F5; B9, E2, G1/G2. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+A3 law (yaw-rate damping, model fit on run 1) ✓ run 2 and in the xw rollout (F3 xw=0 ±1 ft). F9 step 2 third try: air ✓,
+rollout weather-vaned to +9.3° / +101 ft at 170 KIAS (torque ≈ 50 % pedal, design assumed 840 counts; lesson 27).
+**NEXT:** identify the weather-vane torque vs. speed from S19b/c/d rollouts -> crosswind feed-forward -> model check ->
+F9 step 2; flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

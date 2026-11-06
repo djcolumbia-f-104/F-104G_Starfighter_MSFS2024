@@ -227,3 +227,4 @@ mark the old row superseded and name the replacement log.
 | `S20-A3_steer`, 2026-11-06 | **A3 ground steering** steps 400/800 counts at 78-110 KIAS + closed-loop PI centreline law (calm) | 19 180 lb | ≈ 1.8°/s per 1 000 counts; PI law oscillates (±4°, abort 7.1°) | **valid** |
 | `S20b-A3_steer`, 2026-11-06 | A3 run 2: designed centreline law (law=new), steps 400/800 at 78-111 KIAS | 19 180 lb | no oscillation, |c| ≤ 7.5 ft; abort at 130 KIAS (speed overshoot) | **valid** |
 | `S21-F3xw0_takeoff/landing` (+ `_simlog`), 2026-11-06 | F3 calm with xw=0 (new crosswind path incl. A3 rollout law) | 19 180 lb | TD 173 KIAS CL +1 ft; rollout ±1 ft / ±0.09°; roll -6.6 % (fast-path artefact) | **valid** |
+| `S19d-F9_takeoff/dry/landing` (+ `_simlog`), 2026-11-06 | F9 step 2 third try (crab to TD, A3 rollout law), 10 kt surface | 19 180 lb | air ✓ (CL -4 ft at TD); rollout weather-vaning to +9.3°, excursion +101 ft | valid (weather-vane identification data) |

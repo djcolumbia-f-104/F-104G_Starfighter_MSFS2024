@@ -66,3 +66,13 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   the nose-down/brake check runs more often -> a measurement/timing artefact of the fast path, not a flight-model change; the
   F2/F3 distance references stay with the slow (validated) path.
 - **Next:** F9 step 2 again (preset F-104G_350_20Kts, xw=10): crab to the touchdown with the gentle decrab, new rollout law.
+- **Step 2 third try (S19d-F9, preset 350/20, crab to TD + A3 rollout law) - NOT passed (rollout):** air phase good - below
+  50 ft bank ±1.5°, CL -4..+1 ft, TD 177 KIAS -402 ft/min CL -4 ft, heading +2.4° at TD (crab), skip ≈ 1.5 s without rudder ✓;
+  roll from 165 KIAS -0.5 %. **Rollout:** once on the wheels at ≈ 170 KIAS the jet yawed INTO the wind +2.3 -> +9.3° in 2.5 s and
+  ran to **+101 ft** (runway excursion), then the law brought it back (end +25 ft at 70 KIAS, heading -3°).
+  Cause: weather-vaning on the wheels at high speed - 10 kt crosswind at 170 KIAS = β ≈ 3.3° ≈ 10° rudder equivalent
+  (β/δr 0.34) ≈ 50 % pedal; the design assumed a constant 840 counts (taken from attempt 1 at lower speed) and the 100/IAS
+  gain scaling lowers the loop gain exactly where the torque is largest (lesson 27).
+- **Next (desk):** identify the weather-vane torque vs. speed from the S19b/S19c/S19d rollouts (recorded rudder + heading,
+  model from A3), then a feed-forward ≈ 2 640 counts x atan(crosswind / V) [deg] (faded below ≈ 100 KIAS where the nose-wheel
+  steering dominates) + the A3 feedback; check in the model with the identified torque; then step 2 again.

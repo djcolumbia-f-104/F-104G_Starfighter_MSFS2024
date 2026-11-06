@@ -1454,3 +1454,5 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
   IAS/100, lag 0.6 s, dead time 0.45 s; reproduces the run-1 oscillation amplitude), designed rollout law (kp 700 / kd 300 x
   min(1, 100/IAS), ki 50, 0.04°/ft) -> run 2 no oscillation, |c| ≤ 7.5 ft; F3 calm with xw=0: rollout ±1 ft / ±0.09°; roll from
   165 KIAS -6.6 % (fast-path IAS read every 3rd pass -> short-reading artefact, all fast-path landings -4.7..-6.6 %).
+- **F9 step 2 third try** (S19d): air phase ✓ (crab to TD, CL -4 ft, bank ±1.5° below 50 ft), roll -0.5 %; rollout
+  weather-vaned at ≈ 170 KIAS (+9.3°, excursion +101 ft) - torque ≈ 50 % pedal vs. the 840 counts assumed (lesson 27).
