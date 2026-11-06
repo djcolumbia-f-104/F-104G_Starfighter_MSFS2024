@@ -91,3 +91,14 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   (steady pedal = weather-vane torque B(V); small steps = K(V)); then the rollout law = feed-forward B(V, crosswind) + A3
   feedback with K(V) from the test; model check; F9 step 2. Cfg route (min_available_steering_angle_pct, friction scalars)
   only if the FM-conform behaviour cannot be reached by the law - it touches validated ground behaviour (T3-D, F2/F3).
+- **Crosswind identification on the runway (A3 run 3, preset 350/20, flaps UP, steps added to the held pedal):** steady
+  pedal (weather-vane torque) +950 counts at 105 KIAS, +950..1 040 at 143, +920..1 135 at 162 -> **≈ 100 counts per kt of
+  crosswind, ≈ constant over 100-160 KIAS**; steering gain ≈ 0.6-1.5 (mean ≈ 1)°/s per 1 000 counts, ≈ constant (A3 calm
+  with TAKEOFF flaps at 100 KIAS: 1.8) -> the 100/IAS scaling halved the loop gain at high speed for nothing.
+  **Law v3:** feed-forward 100 counts x crosswind at the aircraft (sign from the wind direction) + kp 700 / kd 300 / ki 50,
+  0.04°/ft, no speed scaling; A3 run 4 at 160 KIAS: acceleration phase centreline -3..+2.5 ft (A3 law 0..+17 ft) ✓.
+- **Step 2 fourth try (S19e-F9) - PASSED:** approach crab 4.9°, CL ±5 ft; below 50 ft bank ±2.2°, CL -9..-5 ft; TD 177 KIAS
+  -63 ft/min, **CL -8 ft, heading 1.2°**; **rollout -12..+14 ft**, heading -0.9..+2.5°, bank ±1.8° (pedal 2 400-3 100 just
+  after the touchdown, ≈ 1 000 later); roll from 165 KIAS -2.5 % ✓. Dry: virtual TD 179 KIAS CL -6 ft.
+- Presets for the next steps (surface ≈ 0.5 x preset): F-104G_350/170_30/40/50Kts written (15/20/25 kt surface).
+- **Next:** step 3 (preset 350_30 = 15 kt surface, xw=15), then 20, 25 kt (FM limit), and the left crosswind (170_..).

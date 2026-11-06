@@ -46,3 +46,11 @@ law); nose lift (trim set to 2°, pitch > 2.5° -> abort); runway length (stop b
   Aborted at 130 KIAS (speed overshoot in the 120 KIAS acceleration: J79 spool-down) -> 120 KIAS steps incomplete (one 400
   step at 111 KIAS: 0.18°); stop at 9 554 ft. Model at the 0.55 s slow pass: oscillation ±0.6-0.9° above 140 KIAS -> in
   landing_test (xw) the rollout uses the fast pass with the heading read every pass.
+
+## Run 3 (crosswind identification, preset 350/20 = 10 kt surface from the right) - plan
+One speed per run (runway length): 100, then 140, then 160 KIAS; Maximum to 20 kt below the target, anticipating throttle
+(run 2 overshoot), flaps UP (less lift at 160 KIAS), settle 8 s (mean pedal = weather-vane torque B(V)), steps ±400 added to
+the held pedal, hold 4 s, then stop. Prediction (S19d fit, ± 2x): B ≈ 1 250 / 1 750 / 2 000 counts (≈ 8 / 11 / 12 % pedal).
+Hazards as runs 1/2 (abort 40 ft / 6° / IAS > target + 25 / nose lift / 9 000 ft); 160 KIAS with flaps UP and trim 2° is
+≈ 20 kt below the liftoff speed (T3-D 178-182 with rotation; the nose stays down: elevator push above 1° pitch).
+GO 2026-11-06 (selftest wind=350:20 OK).

@@ -106,7 +106,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 | F6 | BLC failure landing | TAKEOFF flaps, final ≥ 195, TD ≥ 165 KIAS | FM 3-32 | ✓ 2026-11-06 (S11-F6): final 210, TD 197 KIAS (Fig. A8-2 min. 180) -302 ft/min, pitch 6.8°, centreline -1 ft, bank ≤ ±1.7°, roll 3 760 ft (no FM reference); landing_test FAST loop 4.5-5.2 Hz |
 | F7 | Touch-and-go | idle, flaps TAKEOFF, military | FM 2-28 | ✓ 2026-11-06 (S16c-F7, `tg`): TD 173, MILITARY at 162 KIAS, srot from 165, liftoff 182 KIAS at 6 521 ft (4 279 ft after TD), max ground pitch 8.1°; build-up `tg=stop` S16-F7a |
 | F8 | Go-around from the flare | FM 2-29 procedure | Fig. 6-8 climb, height loss ≤ 100 ft | ✓ 2026-11-06 (S15b-F8, `ga=50`): commanded at 49 ft / 187 KIAS / -525 ft/min, loss 13 ft (lowest 36 ft AGL), climb after 2.1 s, FM sequence ✓ |
-| F9 | Crosswind landing | 15-25 kt crosswind | FM 2-25 (max 25 kt) | ◔ 2026-11-06: 5 kt ✓ (CL -3 ft); 10 kt ✗ (decrab rolled the jet to -16°, rollout excursion to +87 ft; crab-to-touchdown design next, card F9-crosswind.md); presets tools/make_wpr.py (surface wind ≈ 0.5 x preset) |
+| F9 | Crosswind landing | 15-25 kt crosswind | FM 2-25 (max 25 kt) | ◑ 2026-11-06: 5 kt ✓ (CL -3 ft); 10 kt ✓ on the 4th try (crab to TD, CL -8 ft, rollout ±14 ft; rollout law v3 from a crosswind taxi identification - card F9-crosswind.md); 15-25 kt and left crosswind open; presets tools/make_wpr.py (surface ≈ 0.5 x preset) |
 
 ### Phase G - Engine and emergencies
 

@@ -1456,3 +1456,6 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
   165 KIAS -6.6 % (fast-path IAS read every 3rd pass -> short-reading artefact, all fast-path landings -4.7..-6.6 %).
 - **F9 step 2 third try** (S19d): air phase ✓ (crab to TD, CL -4 ft, bank ±1.5° below 50 ft), roll -0.5 %; rollout
   weather-vaned at ≈ 170 KIAS (+9.3°, excursion +101 ft) - torque ≈ 50 % pedal vs. the 840 counts assumed (lesson 27).
+- **F9 step 2 (10 kt surface crosswind) PASSED** (S19e, 4th try): rollout law v3 from a crosswind taxi identification (A3 run 3:
+  weather-vane torque ≈ 100 counts per kt, const. 100-160 KIAS; steering ≈ 1°/s per 1 000 counts): TD 177 KIAS CL -8 ft heading
+  1.2°, rollout -12..+14 ft, bank ±1.8°, roll from 165 KIAS -2.5 %.

@@ -30,6 +30,11 @@ STEPS = [float(v) for v in opts.get("steps", "400,800").split(",")]
 # (yaw rate ≈ 1.8°/s per 1 000 counts x IAS/100, lag 0.6 s, dead time 0.45 s): kp 700 / kd 300 (yaw-rate damping) x
 # min(1, 100/IAS), ki 50 (weather-vaning), centreline 0.04°/ft
 LAW = opts.get("law", "new")
+# 2026-11-06 crosswind identification (card F9 / A3): settle=<s> hold=<s> (segment lengths), accel=ab (Maximum until 20 kt
+# below the target), flaps=up (less lift at 160 KIAS); the steps are ADDED to the pedal held at the step start (in a
+# crosswind the held pedal = the weather-vane torque); the settle segment reports the mean pedal (torque B(V))
+SETTLE, HOLD = float(opts.get("settle", 6)), float(opts.get("hold", 6))
+ACCEL_AB, FLAPS_UP = opts.get("accel") == "ab", opts.get("flaps") == "up"
 DEG = 57.29578
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4
 FT_PER_DEG = 60 * 6076.12
@@ -74,16 +79,18 @@ ev("SPOILERS_OFF")
 ev("AXIS_ELEVATOR_SET", 0)
 if g("BRAKE_PARKING_POSITION") == 1:
     ev("PARKING_BRAKES")
-ev("THROTTLE1_SET", MIL)
+if FLAPS_UP:
+    ev("FLAPS_UP")
+ev("THROTTLE1_SET", 16383 if ACCEL_AB else MIL)
 print(f"A3 steering test: speeds {SPEEDS} KIAS, steps {STEPS} counts, weight {g('TOTAL_WEIGHT'):.0f} lb, trim 2°")
 
 rows, steps_out, reason = [], [], "done"
 st = {"i_rud": 0.0, "th_i": 6000.0, "air": 0}
 plan = []                                   # (speed, kind, value, duration)
 for v in SPEEDS:
-    plan.append((v, "settle", 0, 6.0))
+    plan.append((v, "settle", 0, SETTLE))
     for s in STEPS:
-        plan += [(v, "step", +s, 1.5), (v, "hold", 0, 6.0), (v, "step", -s, 1.5), (v, "hold", 0, 6.0)]
+        plan += [(v, "step", +s, 1.5), (v, "hold", 0, HOLD), (v, "step", -s, 1.5), (v, "hold", 0, HOLD)]
 plan.append((0, "stop", 0, 60.0))
 k, seg_t, phase = 0, None, "accel"
 t0 = prev_t = time.time()
@@ -110,6 +117,14 @@ while True:
     st["i_rud"] = clamp(st["i_rud"] + e_r * dt, -20.0, 20.0)
     if LAW == "pi":
         rud = clamp(-700 * e_r - 100 * st["i_rud"], -12000, 12000)
+    elif LAW == "v3":
+        # run 3 (crosswind identification): weather-vane torque ≈ 100 counts per kt of crosswind (constant 100-160 KIAS),
+        # steering gain ≈ 1°/s per 1 000 counts (constant) -> no speed scaling + feed-forward from the wind at the aircraft
+        if not st.get("n_w") or st["n_w"] % 8 == 0:
+            wd, wv = g("AMBIENT_WIND_DIRECTION"), g("AMBIENT_WIND_VELOCITY")
+            st["xw"] = wv * math.sin(math.radians(wd - HDG))          # + = from the right
+        st["n_w"] = st.get("n_w", 0) + 1
+        rud = clamp(100.0 * st["xw"] - 700 * e_r + 300 * r - 50 * st["i_rud"], -12000, 12000)
     else:
         ks = min(1.0, 100.0 / max(ias, 30.0))
         # r = d(hdg)/dt (+ = nose right); + counts = nose left -> damping adds + counts for + r
@@ -119,8 +134,9 @@ while True:
         if ias >= SPEEDS[0] - 3:
             phase, seg_t = "plan", t
     elif kind == "step":
-        rud = val                                                    # open loop
-        st["i_rud"] = st["i_rud"]                                    # integrator frozen during the step
+        rud = st.get("rud_base", 0.0) + val                          # open loop on top of the held pedal
+    if kind != "step":
+        st["rud_base"] = rud
     if phase == "plan" and kind != "stop":
         if seg_t is not None and t - seg_t >= dur:
             k += 1
@@ -140,9 +156,15 @@ while True:
             break
     else:
         tgt = v_tgt if phase == "plan" else SPEEDS[0] + 5
+        st["a_f"] = 0.8 * st.get("a_f", 0.0) + 0.2 * (ias - st.get("ias_prev", ias)) / dt
+        st["ias_prev"] = ias
         st["th_i"] = clamp(st["th_i"] + 60.0 * (tgt - ias) * dt, 0.0, MIL)
         # run 1: the speed overshot to 110 KIAS (target 80) -> stronger PI, idle when 4 kt fast
         thr = 0 if ias > tgt + 4 else clamp(st["th_i"] + 600.0 * (tgt - ias), 0, MIL)
+        if ias + 3.0 * st["a_f"] > tgt + 2:                         # anticipation (J79 spool-down, run 2 overshoot)
+            thr = 0
+        elif ACCEL_AB and phase == "accel" and ias < tgt - 20:
+            thr = 16383
         ev("THROTTLE1_SET", int(thr))
     ev("AXIS_RUDDER_SET", int(rud))
     ev("AXIS_AILERONS_SET", int(clamp(-(250.0 * bank), -6000, 6000)))
@@ -155,7 +177,7 @@ while True:
             bad = f"cross-track {c:.0f} ft"
         elif abs(wrap(hdg - HDG)) > 6:
             bad = f"heading error {wrap(hdg - HDG):.1f}°"
-        elif ias > 130:
+        elif ias > max(SPEEDS) + 25:
             bad = f"IAS {ias:.0f}"
         elif theta > 2.5:
             bad = f"pitch {theta:.1f}° (nose lift)"
@@ -193,3 +215,13 @@ for sp in steps_out:
     print(f"step {sp['val']:+.0f} counts at {seg[0][3]:.0f} KIAS: peak yaw rate {pk:+.1f}°/s, heading change {dh:+.2f}° in "
           f"{seg[-1][0] - seg[0][0]:.1f} s ({dh / max(seg[-1][0] - seg[0][0], 0.1) / sp['val'] * 1000:+.2f}°/s per 1 000 "
           f"counts), drift {dc:+.1f} ft")
+# crosswind identification: mean pedal and heading in the second half of every settle/hold segment (weather-vane torque B(V))
+for kk in sorted(set(x[2] for x in rows if x[1] in ("settle", "hold"))):
+    seg = [x for x in rows if x[2] == kk and x[1] in ("settle", "hold")]
+    if len(seg) < 6:
+        continue
+    half = seg[len(seg) // 2:]
+    n = len(half)
+    print(f"{half[0][1]} k{kk}: {sum(x[3] for x in half) / n:.0f} KIAS, mean pedal {sum(x[10] for x in half) / n:+.0f} counts "
+          f"({sum(x[10] for x in half) / n / 163.83:+.1f} %), heading {sum(x[6] for x in half) / n:+.2f}°, "
+          f"cross-track {sum(x[5] for x in half) / n:+.1f} ft")

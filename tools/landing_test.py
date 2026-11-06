@@ -541,6 +541,7 @@ while time.time() - t0 < 600:
             # F9 step 2 repeat: the rollout rudder acting during the post-touchdown skip rolled the jet to -11.7° (sideslip in
             # the air) -> no rudder while airborne in the rollout phase
             ev("AXIS_RUDDER_SET", 0)
+            res["rud_cmd"] = 0.0
             res["prev_hdg_r"] = hdg                                   # no yaw-rate spike after the skip
         else:
             # A3-designed centreline law (card A3-ground-steering.md, run 2 ✓: no oscillation, |c| ≤ 7.5 ft after 800-count
@@ -550,8 +551,11 @@ while time.time() - t0 < 600:
             r_y = wrap(hdg - res.get("prev_hdg_r", hdg)) / dt
             res["prev_hdg_r"] = hdg
             res["i_rud"] = clamp(res.get("i_rud", 0.0) + e_r * dt, -20.0, 20.0)
-            ks = min(1.0, 100.0 / max(ias, 30.0))
-            ev("AXIS_RUDDER_SET", int(clamp(-ks * 700 * e_r + ks * 300 * r_y - 50 * res["i_rud"], -12000, 12000)))
+            # v3 (A3 run 3/4 in the 10 kt crosswind: weather-vane torque ≈ 100 counts per kt, steering gain ≈ 1°/s per 1 000
+            # counts, both ≈ constant 100-160 KIAS) -> no speed scaling + feed-forward from the wind at the aircraft
+            ff = 100.0 * res.get("xw_now", 0.0)                       # + = wind from the right -> nose-left pedal
+            res["rud_cmd"] = clamp(ff - 700 * e_r + 300 * r_y - 50 * res["i_rud"], -12000, 12000)
+            ev("AXIS_RUDDER_SET", int(res["rud_cmd"]))
         if XW is not None and ias > 80:
             # F9 step 1 (2026-11-06): a skip after the touchdown rolled the jet to -7° with the ailerons at 0 -> with a
             # crosswind the ailerons keep the wings level on the rollout (P+D of the validated bank loop, no I term)
@@ -611,7 +615,7 @@ while time.time() - t0 < 600:
         if gc["t_pos"] is None and res["vs_f"] > 0:
             gc["t_pos"] = t
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
-                 round(theta, 1), round(path_err), round(vs_tgt), int(thr), round(hdg, 2)])
+                 round(theta, 1), round(path_err), round(vs_tgt), int(thr), round(hdg, 2), int(res.get("rud_cmd", 0))])
     if FAST and phase in FASTPH:
         time.sleep(0.01)
     elif phase in AIR:
@@ -646,7 +650,7 @@ log.terminate()                                                     # simlog wri
 with open(out, "w", newline="", encoding="utf-8") as f:
     wr = csv.writer(f)
     wr.writerow(["t", "phase", "along_ft", "cross_ft", "agl", "ias", "vs_fpm", "bank", "pitch", "path_err_ft",
-                 "vs_tgt", "throttle", "hdg_true"])
+                 "vs_tgt", "throttle", "hdg_true", "rud_cmd"])
     wr.writerows(rows)
 if res.get("ga_cmd"):
     gc = res["ga_cmd"]

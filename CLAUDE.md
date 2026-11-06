@@ -38,9 +38,10 @@ via input events). **A3** (`tools/taxi_steer_test.py`, card A3-ground-steering.m
 80-110 KIAS; the F9 PI rollout law oscillates on the ground (= the F9 step-2 overshoot); simple model does not reproduce it.
 A3 law (yaw-rate damping, model fit on run 1) ✓ run 2 and in the xw rollout (F3 xw=0 ±1 ft). F9 step 2 third try: air ✓,
 rollout weather-vaned to +9.3° / +101 ft at 170 KIAS (torque ≈ 50 % pedal, design assumed 840 counts; lesson 27).
-**NEXT:** A3 taxi test in the crosswind preset 350/20 at 100/140/160 KIAS (weather-vane torque B(V), steering gain K(V);
-S19d fit: B ≈ 1 250 counts at 100 KIAS ∝ V, K ≈ 0.5 x A3 at high speed) -> rollout law with feed-forward -> model check ->
-F9 step 2 (SDK ground-steering/friction parameters listed in card F9); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+Crosswind taxi identification (A3 run 3): weather-vane torque ≈ 100 counts per kt (const. 100-160 KIAS), steering ≈ 1°/s
+per 1 000 counts (const.) -> rollout law v3 (feed-forward + A3 feedback, no speed scaling). **F9 step 2 (10 kt) PASSED** on the
+4th try (CL -8 ft at TD, rollout ±14 ft). Presets 350/170_30/40/50 (= 15/20/25 kt surface) written.
+**NEXT:** F9 steps 15/20/25 kt and left crosswind (170_..); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

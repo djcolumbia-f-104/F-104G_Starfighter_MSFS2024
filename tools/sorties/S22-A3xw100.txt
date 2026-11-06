@@ -1,0 +1,7 @@
+# S22-A3xw100 (2026-11-06): A3 run 3 - crosswind identification at 100 KIAS (preset F-104G_350_20Kts). Card A3-ground-steering.md.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits wind=350:20 | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+steer    | tools/taxi_steer_test.py {csv} speeds=100 steps=400 settle=8 hold=4 accel=ab flaps=up | samples | 300
+refuel2  | tools/refuel.py | after | 60
