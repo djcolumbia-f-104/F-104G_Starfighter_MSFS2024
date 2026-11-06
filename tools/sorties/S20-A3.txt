@@ -1,0 +1,7 @@
+# S20-A3 (2026-11-06): ground steering identification at 80/120 KIAS. Card docs/notes/test-cards/A3-ground-steering.md.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+steer    | tools/taxi_steer_test.py {csv} | samples | 300
+refuel2  | tools/refuel.py | after | 60

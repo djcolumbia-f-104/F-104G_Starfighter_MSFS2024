@@ -1447,3 +1447,6 @@ FM 1-67/6-3: aileron ±20° gear down / ±9.75° gear up, rudder ±20° / ±6°,
 20° x elasticity(q̄) (formula confirmed by roll_id 16.6° at 210 KIAS and T3-E2 6.0° at 460 KIAS) -> gear-up values only
 above ≈ 280 KIAS; below that 1.3-2x aileron and 1.6-3.3x rudder (gear up), gear-down approach 0.77-1.0x. No change now;
 gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.md).
+- **A3 ground steering (S20-A3)**: rudder-pedal steps 400/800 counts at 78-110 KIAS -> yaw rate ≈ 1.8°/s per 1 000 counts
+  (MSFS reduces the nose-wheel steering strongly with speed); the F9 PI rollout law (700/100, 0.1°/ft) oscillates on the ground
+  (±1-4°, ±5-10 ft, ≈ 3 s; 7.9° / -31 ft after the 800 step -> abort 7.1°). Simple model does not reproduce it (lesson 21).

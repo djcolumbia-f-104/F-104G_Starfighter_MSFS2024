@@ -44,7 +44,7 @@ Status: ✓ passed · ◐ partly / accepted with deviation · ○ open · – la
 |---|---|---|---|---|
 | A1 | Engine idle | stabilised idle on the ground | 67 ± 1 %, EGT 320-420 °C, FF 700-1 600 lb/h (FM 2-13) | ◐ idle EGT 470 °C (AP-7) |
 | A2 | Engine military / static thrust (T3-C) | parking brake, burst to military | 100 ± 1 %, EGT 590 ± 10 °C, idle->mil ≤ 10 s, FF Fig. 2-5 ±500 lb/h; thrust per NASA | ✓ thrust/EGT; ○ accel time, Fig. 2-5 |
-| A3 | Taxi, steering, brakes | low/high speed taxi, brake stop | anti-skid < 10 kt inop; turning radius Fig. 2-4 | ○ |
+| A3 | Taxi, steering, brakes | low/high speed taxi, brake stop | anti-skid < 10 kt inop; turning radius Fig. 2-4 | ◔ 2026-11-06 (S20-A3, `tools/taxi_steer_test.py`): steering ≈ 1.8°/s per 1 000 counts at 80-110 KIAS; the F9 PI rollout law oscillates on the ground (±4°, ±10 ft, abort at 7.1°) -> design next |
 | A4 | Control limits | full deflections gear up/down | rudder ±20° gear down / ±6° gear up, ailerons ±20° / ±9.75° (FM 6-3) | ◑ 2026-11-06 desk (card A4-H4-control-limits.md): sim limits = 20° x elasticity(q̄) - FM gear-up values only above ≈ 280 KIAS; below 1.3-2x aileron / 1.6-3.3x rudder; gear-switched limiter -> cockpit phase (AP-9) |
 | A5 | Drag chute deceleration | high-speed taxi, chute at ≤ 180 KIAS | ground roll Fig. A8-3 vs. A8-4 (chute -12 %) | ○ (with F5) |
 

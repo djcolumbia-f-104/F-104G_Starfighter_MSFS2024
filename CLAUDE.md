@@ -33,7 +33,11 @@ F-104G_350/170_10..25Kts + F-104G_Calm_ISA in %APPDATA%\...\Weather\Presets; sur
 the F-104 (roll due to sideslip) -> runway excursion +87 ft; F9 flights STOPPED (lesson 26), next = desk design of the crab
 method (card F9-crosswind.md). MSFS hung once (long session) - selftest caught the hung watchdog. ENGINE_AUTO_START event
 restarts a shut-down engine (light-off 20 % / 20 s). **Weather: switch back to F-104G_Calm_ISA for all other tests.**
-**NEXT:** F9 desk design; flare technique for F4/F5 TD speeds; remaining test-plan items (A3/A4, B9, E2, G1/G2). `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+**A4/H4** documented deviation (card A4-H4-control-limits.md: sim limits follow q̄, FM limits follow the gear; fix in AP-9
+via input events). **A3** (`tools/taxi_steer_test.py`, card A3-ground-steering.md): steering ≈ 1.8°/s per 1 000 counts at
+80-110 KIAS; the F9 PI rollout law oscillates on the ground (= the F9 step-2 overshoot); simple model does not reproduce it.
+**NEXT:** fit the ground-steering model to the S20-A3 closed-loop data (lag/delay/tyres) -> design the rollout law -> A3 run 2
+(closed loop, 80 KIAS) -> F9 step 2 with the crab method (no rudder in the air); flare technique for F4/F5; B9, E2, G1/G2. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)
