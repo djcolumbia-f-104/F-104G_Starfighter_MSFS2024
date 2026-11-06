@@ -1,0 +1,9 @@
+# S17-GAscale (2026-11-06): check of the go-around gain scaling (elevator x (v_app/IAS)², ailerons x v_app/IAS) and the
+# AGL failed-read guard: F8 dry run with the FAST loop, virtual runway +6 000 ft. Starts airborne.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+dry      | tools/landing_test.py {csv} 6 2.5 6000 nochute fmflare fast ga=50 | F8 GO-AROUND | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel2  | tools/refuel.py | after | 60
+post     | tools/post.py air | POST OK | 90

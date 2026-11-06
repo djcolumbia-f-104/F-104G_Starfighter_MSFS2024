@@ -49,6 +49,13 @@ VTD = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("vtd=")
 # 2026-11-06 (F8, FM 2-29): ga=<ft> = go-around commanded in the flare when AGL falls below <ft> (height loss and time to
 # a positive climb are reported); the go-around itself is the validated hand-flown FM 2-29 procedure
 GA_FT = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("ga=")), None)
+# 2026-11-06 (F7, FM 2-28 touch-and-go): `tg` = after the touchdown IDLE -> flaps TAKEOFF + trim 5° + speed brakes in ->
+# MILITARY -> srot rotation (takeoff_test law: stick schedule to S_HOLD, slow attitude integrator, rate damping, never push)
+# -> at 35 ft AGL the go-around climb law (F8). `tg=stop` = build-up: the same ground run without rotation, abort at
+# 170 KIAS / 7 000 ft past the threshold to a full stop. Card docs/notes/test-cards/F7-touch-and-go.md.
+TG = next((a for a in sys.argv[5:] if a == "tg" or a.startswith("tg=")), None)
+TG_STOP = TG == "tg=stop"
+TG_HOLD, S_HOLD, THETA_T = 2000.0, -6600.0, 10.5     # nose-wheel hold (nose down), srot stick (takeoff_test [M]), target
 if CFG != "land":
     FM_FLARE = True       # F6 dry 1: the idle cut in the flare bled 213 -> 192 KIAS and the sink rose to -926 ft/min ->
                           # FM 2-25 technique (82 % floor, idle at the touchdown) for the landing variants
@@ -57,8 +64,9 @@ if CFG != "land":
 # pass reads only altitude, bank and pitch (+ one of three groups of the slow values in turn) and updates elevator and
 # ailerons -> ≈ 4 Hz uniform. Default for cfg=to|up; option `fast` for cfg=land (the validated LAND path is unchanged
 # without it). Same gains; the VS filter keeps its time constant (coefficient from dt).
-FAST = CFG != "land" or "fast" in sys.argv[5:]
+FAST = CFG != "land" or "fast" in sys.argv[5:] or TG is not None
 AIR = ("level", "approach", "flare", "go-around")
+FASTPH = AIR + ("tg",)
 DEG = 57.29578
 FT_PER_DEG = 60 * 6076.12
 LAT0, LON0, HDG = 48.34472097713059, 11.803858844132039, 263.4     # 26L threshold = T3-D start position (true)
@@ -111,12 +119,16 @@ def lat_fast(n=2):
         res["n_fast"] = res.get("n_fast", 0) + 1
 
 
-def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
+def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt, ks_e=1.0, ks_a=1.0):
     """Hand flying: elevator PI on vertical speed + pitch-rate damping (+axis = nose down); ailerons PID on a bank
     target from the localizer (heading from cross-track; right turn = negative raw bank)."""
     err_fps = (res["vs_f"] - vs_tgt) / 60.0
     res["integ"] = clamp(res["integ"] + err_fps * dt, -200.0, 200.0)
-    cmd_e = clamp(KP_VS * kp_scale * err_fps + KI_VS * res["integ"] + KQ * q, -12000, 6000)
+    cmd_e = clamp(ks_e * (KP_VS * kp_scale * err_fps + KI_VS * res["integ"] + KQ * q), -12000, 6000)
+    if res.get("tg_xfer"):                                            # F7: bumpless transfer from the srot stick (5 s)
+        if res.get("tg_off") is None:
+            res["tg_off"] = res["tg_last"] - cmd_e
+        cmd_e = clamp(cmd_e + res["tg_off"] * max(0.0, 1.0 - (time.time() - res["tg_xfer"]) / 5.0), -12000, 6000)
     res["cmd_e"] = cmd_e                                              # start value of the rollout ramp (bumpless)
     ev("AXIS_ELEVATOR_SET", int(cmd_e))
     hdg_tgt = HDG - clamp(0.05 * c, -15, 15)
@@ -129,7 +141,7 @@ def fly(vs_tgt, kp_scale, bank, p, q, hdg, c, dt):
     # for the landing variants only (cfg=land unchanged: validated landings at 175-190 KIAS)
     # F6 dry 2/3 (2026-11-05): scaling P/D down with (185/IAS)² left the integrator dominant -> 4.5 s divergent PI
     # oscillation (bank 30-36°) -> no scaling (ka = 1); dry 1 with the original gains flew level/approach cleanly
-    ka = 1.0
+    ka = ks_a                    # 1.0 except in the go-around above v_app (2026-11-06, F7: see the go-around phase)
     res["bank_tgt"], res["ka"] = bank_tgt, ka                         # for the fast inner bank loop (lat_fast)
     cmd_a = clamp(-ka * (KP_B * e_b + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)
     ev("AXIS_AILERONS_SET", int(cmd_a))
@@ -247,7 +259,7 @@ while time.time() - t0 < 600:
     t = time.time()
     dt = max(t - prev_t, 0.05)
     prev_t = t
-    if FAST and phase in AIR:
+    if FAST and phase in FASTPH:
         # fast pass (see FAST above): altitude, bank, pitch every pass; slow groups in turn (each ≈ every 3rd pass)
         kk = res.get("n_pass", 0) % 3
         res["n_pass"] = res.get("n_pass", 0) + 1
@@ -271,7 +283,11 @@ while time.time() - t0 < 600:
         s = res["s"] + res.get("gs", 0.0) * 1.68781 * (t - res["t_s"])
         c = res["c"]
         if kk == 1 or "agl_raw" not in res:
-            res["agl_raw"], res["alt_at_agl"] = g("PLANE_ALT_ABOVE_GROUND"), alt
+            agl_r = g("PLANE_ALT_ABOVE_GROUND")
+            # 2026-11-06 (F7 S16b): a failed read (0) dead-reckoned AGL to 15 ft at 1 480 ft AGL - in the approach that
+            # would trigger the flare -> keep the last value when 0 arrives from above 50 ft
+            if not (agl_r == 0 and res.get("agl_raw", 0) > 50):
+                res["agl_raw"], res["alt_at_agl"] = agl_r, alt
             ias_r = g("AIRSPEED_INDICATED")
             res["ias_raw"] = ias_r if ias_r else res.get("ias_raw", 0.0)
             res["gnd_raw"] = g("SIM_ON_GROUND") == 1
@@ -381,13 +397,75 @@ while time.time() - t0 < 600:
                 # far below the clean minimum speed 200-225 KIAS (Fig. 6-4) -> the jet sank into the ground)
                 phase = go_around("dry run end")
                 continue
-            phase = "rollout"
+            phase = "rollout" if not TG else "tg"
             ev("AXIS_AILERONS_SET", 0)
             ev("THROTTLE1_SET", 0)
             res["t_td"] = t
             res["cmd_e_td"] = res.get("cmd_e", 0.0)
-            print(f"rollout elevator ramp starts at the flare command {res['cmd_e_td']:.0f}")
+            if TG:
+                res["tg"] = dict(sub="idle", t=t, s_td=s)
+                print(f"TOUCH-AND-GO: idle at {ias:.0f} KIAS, {s:.0f} ft past the threshold")
+            else:
+                print(f"rollout elevator ramp starts at the flare command {res['cmd_e_td']:.0f}")
         res["last_vs"] = vs
+    elif phase == "tg":
+        tg, el = res["tg"], t - res["tg"]["t"]
+        ev("AXIS_RUDDER_SET", int(clamp(-700 * wrap(HDG - hdg) - 3 * c, -8000, 8000)) if agl < 50 else 0)
+        res["integ_b"] = clamp(res["integ_b"] + bank * dt, -30.0, 30.0)
+        ev("AXIS_AILERONS_SET", int(clamp(-(KP_B * bank + KD_B * p + KI_B * res["integ_b"]), -8000, 8000)))
+        cmd = TG_HOLD
+        stop = None
+        if tg["sub"] == "idle":                                       # bumpless from the flare command to the hold
+            cmd = res["cmd_e_td"] + (TG_HOLD - res["cmd_e_td"]) * clamp(el / 1.5, 0.0, 1.0)
+            if el > 1.0 and theta < 1.5 and gnd:
+                tg.update(sub="config", t_c=t)
+                ev("FLAPS_1")
+                ev("SPOILERS_OFF")
+                aq.set("ELEVATOR_TRIM_POSITION", 5.0 / DEG)          # takeoff trim (srot S_HOLD is tuned for 5°)
+                print(f"T&G: flaps TAKEOFF, trim 5°, speed brakes in at {ias:.0f} KIAS, {s:.0f} ft")
+        elif tg["sub"] == "config":
+            if g("TRAILING_EDGE_FLAPS_LEFT_ANGLE") * DEG <= 16.0 or t - tg["t_c"] > 6.0:
+                tg.update(sub="mil", t_m=t)
+                ev("THROTTLE1_SET", 11141)
+                print(f"T&G: MILITARY at {ias:.0f} KIAS, {s:.0f} ft")
+        elif tg["sub"] == "mil":
+            if TG_STOP and (ias >= 170 or s > 7000):
+                stop = f"build-up end (tg=stop) at {ias:.0f} KIAS, {s:.0f} ft"
+            elif not TG_STOP and g("TURB_ENG_N1:1") >= 95 and ias >= 155:
+                tg.update(sub="rot", t_r=t, vr0=ias)
+                print(f"T&G: rotation (srot) from {ias:.0f} KIAS, {s:.0f} ft")
+        elif tg["sub"] == "rot":
+            ramp = clamp(max((ias - tg["vr0"]) / 25.0, (t - tg["t_r"]) / 4.0), 0.0, 1.0)
+            ff = TG_HOLD + (S_HOLD - TG_HOLD) * ramp
+            if theta > 3.0:                                           # nose wheel off: slow attitude trim
+                res["ith"] = clamp(res.get("ith", 0.0) + (THETA_T - theta) * dt, -10.0, 10.0)
+            res["qf"] = 0.6 * res.get("qf", 0.0) + 0.4 * q
+            cmd = ff - 150.0 * res.get("ith", 0.0) + 150.0 * res["qf"]   # +axis = nose down: rate relieves the pull
+            if agl < 20 and theta > 11.0:                             # tail strike guard (contact 12.3°)
+                cmd += 2000.0 * (theta - 11.0)
+            cmd = clamp(cmd, -12000.0, 0.0)                           # never push during the rotation
+            if not gnd and agl > 5 and "lo" not in tg:
+                tg["lo"] = dict(ias=ias, s=s, theta=theta)
+                print(f"T&G: liftoff at {ias:.0f} KIAS, pitch {theta:.1f}°, {s:.0f} ft past the threshold "
+                      f"({s - tg['s_td']:.0f} ft after the touchdown)")
+            if not gnd and agl > 35:
+                phase = "go-around"                                   # validated FM 2-29 climb (F8), bumpless
+                res["integ"], res["tg_last"], res["tg_xfer"] = 0.0, cmd, time.time()
+                ev("THROTTLE1_SET", 11141)
+                print(f"T&G: climb-out law at {agl:.0f} ft, {ias:.0f} KIAS, pitch {theta:.1f}°")
+        if tg["sub"] in ("idle", "config", "mil") and gnd and ias < 140:
+            stop = f"ABORT T&G: {ias:.0f} KIAS before the rotation"
+        if gnd and s > 8000 and phase == "tg":
+            stop = stop or f"ABORT T&G: still on the ground {s:.0f} ft past the threshold at {ias:.0f} KIAS"
+        if stop:
+            print(stop)
+            phase = "rollout"                                         # validated rollout: idle, nose down, brakes
+            ev("THROTTLE1_SET", 0)
+            res["t_td"], res["cmd_e_td"] = t, cmd
+            tg["stop"] = stop
+        if phase == "tg":
+            ev("AXIS_ELEVATOR_SET", int(cmd))
+        res["cmd_e"] = cmd
     elif phase == "rollout":
         # 2026-10-30 (landing 18, high-rate rollout log): the jet skipped twice after the first touch (3.5 s airborne,
         # ≈ 1 000 ft) -> the ground roll counts from the FINAL touchdown (FM A8-3/A8-4 assume no skip); skips are reported
@@ -429,7 +507,12 @@ while time.time() - t0 < 600:
     elif phase == "go-around":
         # hand-flown climb: +1 500 ft/min, less if the speed is low (0 at v_app - 20), level off 2 000 ft above the field
         vs_tgt = min(clamp(100.0 * (ias - (v_app - 20)), 0.0, 1500.0), clamp(2.0 * (field_elev + 2000 - alt), -500, 1500))
-        fly(vs_tgt, 1.0, bank, p, q, hdg, c, dt)
+        # 2026-11-06 (F7 S16b): the go-around accelerates to 350-450 KIAS at 1 000-1 500 ft AGL with the gains for ≈ 190 KIAS
+        # -> pitch 0 <-> 11-15° (≈ 5 s) and bank up to -42° (F8/dry runs: pitch swings of 14° above 330 KIAS already).
+        # Whole-controller scaling: elevator x (v_app/IAS)² (pitch power ∝ q̄), ailerons x v_app/IAS (p_ss ∝ TAS)
+        ks_e = clamp((v_app / max(ias, 100.0)) ** 2, 0.25, 1.0)
+        ks_a = clamp(v_app / max(ias, 100.0), 0.4, 1.0)
+        fly(vs_tgt, 1.0, bank, p, q, hdg, c, dt, ks_e, ks_a)
         # Maximum until 300 KIAS, then Military (TAKEOFF flap limit 370 KIAS, gear transient 260 KIAS)
         # 2026-11-06 (F5 dry 2, cfg=up): from a 227 KIAS go-around the clean jet reached 271 KIAS before the climb criterion
         # raised the gear (transient limit 260) -> no-flap: Military (FM 2-29 "Military, Maximum if needed"), and the gear
@@ -470,7 +553,7 @@ while time.time() - t0 < 600:
             gc["t_pos"] = t
     rows.append([round(t - t0, 2), phase, round(s), round(c), round(agl), round(ias, 1), round(vs), round(bank, 1),
                  round(theta, 1), round(path_err), round(vs_tgt), int(thr)])
-    if FAST and phase in AIR:
+    if FAST and phase in FASTPH:
         time.sleep(0.01)
     elif phase in AIR:
         lat_fast()

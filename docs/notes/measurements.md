@@ -1426,3 +1426,7 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
 - **F8 go-around from the flare PASSED** (card F8-go-around-flare.md; new landing_test option `ga=<ft>`): real run commanded
   at 49 ft AGL / 187 KIAS / -525 ft/min, height loss 13 ft (lowest 36 ft AGL), positive climb after 2.1 s, gear + TAKEOFF
   flaps at 202 KIAS, UP at 341 KIAS (FM 2-29 ✓); dry run at +6 000 ft identical (13 ft / 1.9 s). Prediction 15-30 ft.
+- **F7 touch-and-go PASSED** (card F7-touch-and-go.md; landing_test `tg`): build-up `tg=stop` ✓; real T&G S16c: TD 173 KIAS,
+  MILITARY at 162 KIAS, srot from 165, liftoff 182 KIAS 4 279 ft after the touchdown, ground pitch ≤ 8.1°, climb-out calm.
+  The first T&G (S16b, liftoff 180 ✓) showed a pitch/roll oscillation of the go-around law at 380-450 KIAS (bank -42° at
+  1 500 ft AGL) -> go-around gain scaling with IAS (lesson 25), verified S17-GAscale (F8 dry: loss 12 ft unchanged, calm).

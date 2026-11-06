@@ -1,0 +1,8 @@
+# S16c-F7 (2026-11-06): F7 touch-and-go repeat after the go-around gain scaling (S17-GAscale). Starts airborne.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+tg       | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare tg | T&G: liftoff | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel2  | tools/refuel.py | after | 60
+post     | tools/post.py air | POST OK | 90

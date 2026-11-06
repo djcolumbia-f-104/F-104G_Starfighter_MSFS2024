@@ -1,0 +1,7 @@
+# S16-F7a (2026-11-06): F7 touch-and-go build-up: real landing + T&G ground sequence without rotation (tg=stop), full stop.
+# Card docs/notes/test-cards/F7-touch-and-go.md. Starts airborne.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py | after | 60
+tgstop   | tools/landing_test.py {csv} 6 2.5 0 nochute fmflare tg=stop | build-up end | 600
+refuel2  | tools/refuel.py | after | 60
