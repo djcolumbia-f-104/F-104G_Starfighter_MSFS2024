@@ -102,3 +102,15 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   after the touchdown, ≈ 1 000 later); roll from 165 KIAS -2.5 % ✓. Dry: virtual TD 179 KIAS CL -6 ft.
 - Presets for the next steps (surface ≈ 0.5 x preset): F-104G_350/170_30/40/50Kts written (15/20/25 kt surface).
 - **Next:** step 3 (preset 350_30 = 15 kt surface, xw=15), then 20, 25 kt (FM limit), and the left crosswind (170_..).
+- **Step 2b (S19f-F9, preset 350/25 = 12.5 kt surface, xw=12.5) - NOT passed (rollout):** crosswind takeoff 177 kt ✓; air:
+  crab 6.4°, below 50 ft bank ±1.2°, TD 179 KIAS -373 ft/min CL -20 ft, heading 3.2° (dry: 5.4°); roll from 165 KIAS +0.8 %.
+  After the skip (≈ 1.5 s, rudder 0) the jet, back on the wheels at 175 KIAS with heading 3.8°, yawed right to 8° in 2 s
+  although the law commanded 4 000-7 600 counts nose left - the simlog confirms the rudder followed (-8.8°, nose left) ->
+  rollout +55 ft (runway edge 74 ft). The steady weather-vane torque of the taxi runs (≈ 1 250 counts) is 6-7x too small to
+  explain it.
+  **Hypothesis (desk next):** ground directional divergence after a crabbed touchdown ("wheelbarrowing"): the main gear is
+  only ≈ 1.8 ft behind the CG (cfg point.1 x = -0.3 ft vs. CG ≈ +1.5 ft at 9 % MAC; old note: "check the main-gear x against
+  the corrected CG") while the loaded nose wheel 12.6 ft ahead gets a large side force from the crab angle. Check the main
+  gear station against CR-2144 Fig. III-2 / the FM three-view; test: taxi run at 150-170 KIAS with a commanded heading offset
+  (step 4-5°) in calm air to see whether the heading diverges; possible cfg question (main-gear x, nose-wheel steering /
+  ground friction parameters) under change control (T3-D, F2/F3 regression). Until then: F9 passed up to 10 kt.

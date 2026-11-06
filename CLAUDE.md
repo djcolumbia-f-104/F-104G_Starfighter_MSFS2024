@@ -41,7 +41,10 @@ rollout weather-vaned to +9.3° / +101 ft at 170 KIAS (torque ≈ 50 % pedal, de
 Crosswind taxi identification (A3 run 3): weather-vane torque ≈ 100 counts per kt (const. 100-160 KIAS), steering ≈ 1°/s
 per 1 000 counts (const.) -> rollout law v3 (feed-forward + A3 feedback, no speed scaling). **F9 step 2 (10 kt) PASSED** on the
 4th try (CL -8 ft at TD, rollout ±14 ft). Presets 350/170_30/40/50 (= 15/20/25 kt surface) written.
-**NEXT:** F9 steps 15/20/25 kt and left crosswind (170_..); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
+F9 12.5 kt ✗: after a crabbed touchdown the jet yaw-diverges on the wheels (8°, +55 ft) despite 47 % pedal - hypothesis:
+main gear only ≈ 1.8 ft behind the CG (cfg x -0.3 ft; old open note) -> nose-wheel side force dominates ("wheelbarrowing").
+**NEXT:** desk: main-gear station vs. CR-2144 Fig. III-2 / FM three-view; calm-air taxi test with a heading offset at
+150-170 KIAS (divergence?); then F9 15/20/25 kt and left crosswind (presets 350/170_30/40/50 need a sim restart to appear); flare technique for F4/F5; B9, E2, G1/G2. Weather: back to F-104G_Calm_ISA. `tools/bank_loop_desk.py` model NOT validated for tuning (lesson 21). Sim PAUSED
 at 16 500 ft on the AP.
 
 ## Previous block (state 2026-11-05)

@@ -1459,3 +1459,6 @@ gear-switched limiter planned for the cockpit phase (card A4-H4-control-limits.m
 - **F9 step 2 (10 kt surface crosswind) PASSED** (S19e, 4th try): rollout law v3 from a crosswind taxi identification (A3 run 3:
   weather-vane torque ≈ 100 counts per kt, const. 100-160 KIAS; steering ≈ 1°/s per 1 000 counts): TD 177 KIAS CL -8 ft heading
   1.2°, rollout -12..+14 ft, bank ±1.8°, roll from 165 KIAS -2.5 %.
+- **F9 12.5 kt surface (S19f, preset 350/25) NOT passed:** air ✓ (crab 6.4°, TD CL -20 ft), but on the wheels after the skip
+  the jet yaw-diverged to 8° (+55 ft) although the rudder was at -8.8° (nose left, 47 % pedal) - 6-7x the taxi weather-vane
+  torque. Hypothesis: main gear only ≈ 1.8 ft behind the CG (cfg x -0.3 ft) -> nose-wheel side force from the crab dominates.
