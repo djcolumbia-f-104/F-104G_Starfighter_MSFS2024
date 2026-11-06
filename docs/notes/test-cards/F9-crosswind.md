@@ -143,3 +143,8 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
 - **15 kt surface (S19i-F9, preset 350/30, xw=15) - PASSED:** crosswind takeoff 177 kt; approach crab 7.6° (dry 7.8°); below
   50 ft bank ±4.1° (limit ±5°), CL -12..+11 ft; TD 179 KIAS -389 ft/min **CL -12 ft, heading 3.8°**; **rollout -18..-7 ft**,
   heading ≤ 4.1°, bank ±3.6°, pedal ≤ 3 600; roll from 165 KIAS -8.0 % (informational).
+- **20 kt surface (S19j-F9, preset 350/40, xw=20) - PASSED (marginal):** crosswind takeoff 176 kt; approach crab 9.9° (dry 10.0°);
+  below 50 ft bank ±2.7° (dry -3.2..+7.0°), CL -24..-17 ft (drift to the downwind side as the crab is faded and the surface
+  wind drops); TD 181 KIAS -412 ft/min **CL -24 ft** (limit ±25), heading 5.3°; **rollout -25..-7 ft**, heading ≤ 6.7°, pedal
+  ≤ 5 800; roll from 165 KIAS -12.3 % (informational). Improvement candidate: integral on the cross-track in the localizer
+  loop / less crab fade near the ground.
