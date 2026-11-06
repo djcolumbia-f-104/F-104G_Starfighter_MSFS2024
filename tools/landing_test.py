@@ -212,9 +212,14 @@ if fuel < 1500 or n1 < 60:                                           # idling on
     sys.exit(f"ABORT: fuel {fuel:.0f} lb, N1 {n1:.0f} % - reload the flight / refuel before the landing test")
 V_FM = {"land": (175, 155), "to": (195, 165), "up": (230, 190)}[CFG]   # Fig. 2-7 / FM 3-32 / FM 3-36 at 16 100 lb
 v_app = V_FM[0] + 5 * (w / 1000 - 16.1)                               # final approach, +5 kt per 1 000 lb
-v_app += 0.5 * (XW or 0.0)                                            # F9: +5 kt per 10 kt crosswind
+# F9: +5 kt per 10 kt crosswind. 2026-11-06 desk check (F9 25 kt skips): that is the FM GUST rule (FM 2-23..2-25: +5 KIAS per
+# 10 kt of gust ABOVE the steady wind), not a steady-crosswind increment; at 25 kt it gave TD 183-184 KIAS (+12 kt, wing still
+# flying -> 2.5 s skips with 8-10° crab). Option xwinc=<factor> (default 0.5 = the flown F9 steps; FM-conform for a steady
+# crosswind = 0)
+XWINC = next((float(a.split("=")[1]) for a in sys.argv[5:] if a.startswith("xwinc=")), 0.5)
+v_app += XWINC * (XW or 0.0)
 v_td = VTD if VTD else V_FM[1] + 5 * (w / 1000 - 16.1)               # touchdown
-v_td += 0.5 * (XW or 0.0) if not VTD else 0.0
+v_td += XWINC * (XW or 0.0) if not VTD else 0.0
 if MINRUN and not VTD:
     v_td = 140.0 + 5 * (w / 1000 - 15.1)
 start_ft = start_nm * 6076.12

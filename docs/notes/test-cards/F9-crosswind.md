@@ -224,3 +224,30 @@ criteria unchanged (|bank| > 30° below 500 ft, |c| > 300 ft); (4) chute not use
   without a desk design (lesson 26 rule). Candidates: (a) a firmer touchdown / no skip (the general landing skip - flare sink
   target, gear rebound; open since 2026-10-30), (b) partial decrab (≈ 50 %) with trk, so a skip with less crab drifts less,
   (c) rollout law: track-based too (align the velocity, not the heading). Also the crosswind takeoff (`xw`) is done.
+
+## Desk analysis 2026-11-06 evening: the touchdown skip in crosswind (input for the next session)
+- **Skip vs. touchdown speed** (sortie logs, first TD -> final TD after the skip): calm (S1a, S6b, S8, S21, S14) TD 172-174 KIAS,
+  Δv ≈ 2 kt (short hop, ≈ 0.7 s); F9 10-20 kt TD 177-181, Δv 4-5 kt; F9 25 kt TD 183-184, Δv 7-8 kt (≈ 2.5 s airborne at
+  ≈ 3 kt/s idle deceleration). The skip itself is the known "wing still flying" float (measurements 2026-10-31: fixed in calm
+  air by bleeding the speed to the FM TD band); the xw increment brings it back.
+- **The increment is not FM-conform:** landing_test added +0.5 x crosswind to v_app and v_td ("+5 kt per 10 kt"), taken from the
+  FM GUST rule (+5 KIAS per 10 kt of gust ABOVE the steady wind, FM 2-23..2-25 / fm-procedures.md). The presets are a steady wind
+  -> FM increment 0. New option **`xwinc=<factor>`** (default 0.5 = all flown F9 steps reproducible; 0 = FM).
+- **Why the skip hurts in crosswind:** the jet re-touches with the full crab (S19n2: 9-10° heading at the 2nd touch), the wheels
+  force the velocity along the heading -> it runs ≈ 9° off the runway direction while the rollout law (weak nose-wheel steering
+  above ≈ 20 kt, ≈ 20 % angle) yaws it back -> +55 ft. So two levers: (1) less skip (xwinc=0), (2) less crab at the touchdown.
+- **Decrab sizing from the measured data (for lever 2):** T3-E2 β/δr = 0.34 -> 4° decrab (half of the 8° crab at 25 kt surface)
+  needs ≈ 12° rudder ≈ 0.6 x the gear-down limit (≈ 18-20° at 180 KIAS, card A4-H4) ≈ 9 800 counts; δa/δr = 0.37 -> ≈ 4.4°
+  aileron to hold the wings level against the rudder's own rolling moment (it rolled RIGHT in S19n: 4 550 counts -> -8.9°).
+  Check on S19n3: 2 500 counts -> heading -1.5° (prediction 0.34 x ≈ 3° rudder ≈ 1°) ✓ order of magnitude. A 9 800-count
+  decrab must be RAMPED (≈ 2-3 s, from ≈ 30 ft) with the track loop banking into the wind (wing-low) - lesson 26: build it at
+  altitude first (virtual runway; the decrab is height-independent, the dry run's double wind = conservative).
+- **Plan next session (each step a build-up, one change at a time):**
+  1. S19o dry (25 kt, `trk xwinc=0`): prediction v_app ≈ 190 KIAS, virtual TD ≈ 172-176 KIAS (flare bleed as in calm air),
+     CL ≤ 20 ft. Then S19o2 real landing (`trk xwinc=0`): prediction TD ≈ 174 KIAS, skip Δv ≤ 3 kt, rollout within ±30 ft.
+  2. Only if the rollout is still > ±25 ft: option `decrab=<fraction>` (ramped rudder, sized above) - build-up at the virtual
+     runway, then real.
+  3. Then left crosswind (preset 170_30 = 15 kt first, symmetric check), then F9 regression of the passed steps with the final
+     options (one at 15 kt).
+  4. Open side item: nose-wheel steering speed schedule (SDK max_speed_full_steering / max_speed_decreasing_steering /
+     min_available_steering_angle_pct unset = defaults, ≈ 20 % from ≈ 20 kt) - needs an F-104 source; regression F2/F3/F9/A3.

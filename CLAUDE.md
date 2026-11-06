@@ -6,7 +6,26 @@ output) since 2026-10-25; write new comments in English too.
 Public repo: https://github.com/djcolumbia-f-104/F-104G_Starfighter_MSFS2024 (commit identity:
 `pete <273588133+djcolumbia-f-104@users.noreply.github.com>`, set locally; push via Git Credential Manager).
 
-## >>> CONTINUE HERE (state 2026-11-06) <<<
+## >>> START HERE NEXT SESSION (written 2026-11-06 evening) <<<
+**Sim state left:** jet standing on EDDM 26L (after the S19n2 landing), sim PAUSED, weather preset **F-104G_350_50Kts**
+(25 kt surface crosswind from the right). Watchdog was running in the background (restart it in a new session).
+**Session start:** `tools/watchdog.py` (background) -> `tools/selftest.py nounits wind=350:50` (or plain selftest after the
+weather is back to F-104G_Calm_ISA).
+**F9 state:** right crosswind 5 / 10 / 12.5 / 15 kt PASSED, 20 kt PASSED marginal, **25 kt (FM limit) flown safely twice,
+NOT passed** (S19k2 CL -39 ft at TD; S19n2 with the new `trk` option CL -4 ft at TD ✓ but a skip with 8-10° crab -> rollout
++55 ft). New today: `takeoff_test.py ... xw` (crosswind takeoff law, needed from ≈ 20 kt), landing_test `trk` (measured crab =
+track loop, crab kept to the TD) and `xwinc=<f>` (crosswind speed increment; the old +0.5 x xw was the FM GUST rule ->
+FM-conform for a steady wind = 0). Lessons 29/30.
+**NEXT (plan in card F9-crosswind.md, section "Desk analysis 2026-11-06 evening"):**
+  1. `tools/sortie.py tools/sorties/S19o-F9.txt` (takeoff xw + dry run `trk xwinc=0`; prediction virtual TD ≈ 172-176 KIAS,
+     CL ≤ 20 ft) -> evaluate -> `S19o2-F9.txt` (real landing; prediction TD ≈ 174 KIAS, skip Δv ≤ 3 kt, rollout ±30 ft).
+  2. Only if the rollout is still > ±25 ft: ramped partial decrab (`decrab=<f>`, sized in the card from T3-E2: 4° decrab ≈ 12°
+     rudder ≈ 9 800 counts + ≈ 4.4° aileron), build-up at the virtual runway first.
+  3. Left crosswind (pete sets F-104G_170_30Kts = 15 kt first), then one F9 regression with the final options.
+  4. Then weather back to **F-104G_Calm_ISA**; other items: nose-wheel steering speed schedule (unset SDK params, needs a
+     source), F2/F3 push/brake pairing, -3·c sign in the validated rollout law (with F3), F4/F5 flare technique, B9, E2, G1/G2.
+
+## Previous block (state 2026-11-06 day)
 **2026-11-06: MSFS SU 7.2 (1.9.24.0, "drag calculations reverted to pre-SU7") -> regression R-SU72 PASSED, no effect**
 (card `docs/notes/test-cards/R-SU72-sim-update.md`, sorties S8-SU72a/b/c: T3-D, T3-A/F/G decel, D5 C, T3-J, SP, F3 all
 unchanged). **S9-ID identification sortie:** (1) SP α/δ "bimodal" = ≈ 0.05° small-signal dead zone above M ≈ 0.87
