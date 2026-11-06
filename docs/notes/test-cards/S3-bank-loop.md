@@ -110,3 +110,44 @@ regression (cfg=land, unchanged gains -> expect the validated result), then F6 d
   -939 ft/min), **TD 197 KIAS** (FM min. 180 ✓), **-302 ft/min**, pitch 6.8° (tail strike 12.3°), 2 359 ft past the threshold,
   centreline -1 ft; bank level ±1.1°, approach ±1.3°, flare ±1.7°; 1 skip of 1-2 ft (≈ 1 s, as in F3); ground roll 3 760 ft
   from the final touchdown at 196 KIAS (pred. ≈ 4 200, -10 %; no FM reference); loop 4.5 Hz. All predictions met.
+
+## Step 4: F5 no-flap landing (FM 3-36) - analysis, prediction, build-up
+- Reference: FM 3-36 (fuel low < 3 000 lb, final ≥ 230, sink ≤ 2 000 ft/min, TD ≥ 190 at 16 100 lb); **FM Fig. A8-2 NO FLAPS
+  (flight test): final 225 / TD 190 at 15 100 lb, +5 kt per 1 000 lb** -> at 16 100 lb TD 195 (landing_test's (230, 190)
+  takes the FM 3-36 text value; A8-2 is used via `vtd=`).
+- Weight: refuel.py 2 500 lb (new optional argument, FM "fuel low") -> ≈ 17 430 lb at the start: final 230 + 6.6 ≈ 237 KIAS,
+  A8-2 TD ≈ 202 -> `vtd=202`. CG ≈ 13-15 % MAC (low-fuel approach at 15.6 % was stable, 2026-10-30).
+- Expected (CL slope ≈ 0.058/° from the 19 340 lb desk number): approach 237 KIAS CL ≈ 0.47 -> α ≈ 8°, pitch ≈ 5.5°; the
+  flare bleeds ≈ 15-20 kt (F6: 213 -> 197 with the 82 % floor) -> **TD ≈ 215-222 KIAS**, α ≈ 9°, pitch ≈ 8.5° (tail strike
+  12.3°, guard 11°); clean shaker ≈ 211 KIAS at 17 400 lb (Fig. 6-4; module shaker α 11.3°, kicker inhibited with the gear
+  down) -> TD above the shaker. Ground roll (TD ≈ 218, no chute, limit 180): ≈ (218/170)² x 3 150 ≈ 5 200 ft; TD ≈ 2 400 ft
+  past the threshold -> ≈ 7 600 of 13 100 ft.
+- Hazards: (1) high-α touchdown -> tail strike: guard (pitch > 11° below 60 ft -> go-around); if the dry run shows pitch
+  > 10° in the flare -> raise vtd before the real landing. (2) Low fuel 2 500 lb + go-around at Maximum: ≈ 1 000 lb in the
+  go-around - the watchdog refuels below 1 500 lb; the dry run ends with `position`. (3) Sink ≤ 2 000 ft/min (FM): the
+  approach flies ≈ 1 050 ft/min at 237 KIAS on 2.5°.
+- Build-up: dry run at virtual runway +6 000 ft (sortie S12-F5dry). GO 2026-11-06.
+- **F5 dry 1** (`S12-F5dry_dry1`, 17 428 lb, 5.1 Hz): approach 237 KIAS α 8.6° (pred. ≈ 8), bank ≤ ±1.3° to the virtual TD;
+  **virtual TD 227 KIAS** (pred. 215-222), -572 ft/min, pitch 8.7° (pred. 8.5), flare max 10.1°. Glide-path intercept: raw VS
+  -2 000..-2 497 ft/min for 1.5 s (FM ≤ 2 000 is about the steady approach, ≈ -1 200 here) - noted.
+  **INCIDENT (at the virtual-runway height, no hazard): go-around pitch-up to 38° / 20 000 ft/min** - the go-around step
+  FLAPS_1 EXTENDED the flaps from UP at 250 KIAS with the 8° no-flap trim; the stabilizer reached the -5° nose-down stop
+  (net +3° nose up), 1.3 g pitch-up, no attitude guard in the go-around; the sortie's `position` step recovered it, POST OK.
+  Fix: FLAPS_1 only for cfg=land; trim relief 1°/s nose down while the elevator command is within 10 % of the nose-down
+  clamp; pitch > 25° warning (lesson 23).
+- **F5 dry 2** (fix 1): go-around pitch ≤ 16.8°, flaps stayed UP, trim relief acted once (8.0 -> 5.6°); TD 227 KIAS
+  -551 ft/min. New finding: gear raised at ≈ 271 KIAS (limit 260; Maximum accelerates the clean jet before the climb
+  criterion) -> cfg=up go-around at Military, gear up also at > 245 KIAS once above 50 ft.
+- **F5 dry 3** (fix 2): gear up at 242 KIAS ✓, go-around pitch ≤ 16.6°, trim relief not needed, bank ±5.4° (at 220-375
+  KIAS); TD 227 KIAS -554 ft/min pitch 8.6°, centreline -1 ft. Build-up complete for all phases.
+- Real F5 prediction: TD ≈ 225-228 KIAS (Fig. A8-2 "touchdown speed" 202 -> +12 %: the script's flare cannot bleed 35 kt from
+  the 237 final; a flight-model check of the no-flap TD speed would need a different flare technique - open), sink
+  ≈ -350..-450 ft/min (ground effect: F6 real -302 vs dry -456), pitch ≈ 8°, roll ≈ (227/170)² x 3 150 ≈ 5 600 ft, stop ≈ 8 600
+  of 13 100 ft. Hazards as above + brake energy from 227 KIAS (not modelled as a failure in the sim as far as known).
+  **GO 2026-11-06.**
+- **Result F5 (S13-F5, `flighttest_2026-11-06_S13-F5_f5.csv`) - flown safely, TD speed above Fig. A8-2:** 17 429 lb, intercept
+  247 KIAS (set_pos speed) -> final 237, flare at 147 ft (241 KIAS), **TD 226 KIAS** (A8-2 202, +12 %), sink +29 ft/min
+  (float, TD 3 575 ft past the threshold), pitch 5.2°, centreline +4 ft, no skip, ground roll **4 594 ft** (pred. 5 600,
+  -18 %; no FM reference), loop 4.4 Hz. Procedure ✓ (final ≥ 230, sink ≤ 2 000 ft/min, TD ≥ 190+); TD speed vs. the A8-2
+  chart = script flare technique (82 % floor + 147 ft flare cannot bleed 35 kt) - open item if the no-flap TD speed is to
+  be checked as a flight-model value.

@@ -1,0 +1,12 @@
+# S12-F5dry (2026-11-06): F5 no-flap (FM 3-36, Fig. A8-2) dry run, virtual runway +6 000 ft, fuel 2 500 lb ("fuel low"),
+# TD speed per Fig. A8-2 (vtd=202). Card docs/notes/test-cards/S3-bank-loop.md step 4. Starts ON THE RUNWAY (takeoff first).
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+runway   | tools/mcp_f104/sim_actions.py runway | on runway EDDM 26L, heading | 120
+refuel1  | tools/refuel.py | after | 60
+takeoff  | tools/takeoff_test.py {csv} 157 10.5 | POST OK | 600
+refuel2  | tools/refuel.py 2500 | after | 60
+dry1     | tools/landing_test.py {csv} 6 2.5 6000 nochute cfg=up vtd=202 | TOUCHDOWN | 600
+pos16    | tools/mcp_f104/sim_actions.py position 16500 520 263 48.36 11.9 8800 wl | positioned; AP on | 120
+refuel3  | tools/refuel.py | after | 60
+post     | tools/post.py air | POST OK | 90

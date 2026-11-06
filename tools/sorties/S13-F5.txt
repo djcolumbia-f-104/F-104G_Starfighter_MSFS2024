@@ -1,0 +1,6 @@
+# S13-F5 (2026-11-06): F5 no-flap landing (FM 3-36, Fig. A8-2), fuel 2 500 lb, vtd=202, landing_test FAST loop; build-up =
+# S12/S12b dry 1-3. Card docs/notes/test-cards/S3-bank-loop.md step 4. Starts airborne.
+# label | command | expect | timeout s
+selftest | tools/selftest.py nounits | SELFTEST ALL OK | 120
+refuel1  | tools/refuel.py 2500 | after | 60
+f5       | tools/landing_test.py {csv} 6 2.5 0 nochute cfg=up vtd=202 | TOUCHDOWN | 600

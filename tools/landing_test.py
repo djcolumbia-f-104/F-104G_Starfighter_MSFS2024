@@ -425,14 +425,31 @@ while time.time() - t0 < 600:
         vs_tgt = min(clamp(100.0 * (ias - (v_app - 20)), 0.0, 1500.0), clamp(2.0 * (field_elev + 2000 - alt), -500, 1500))
         fly(vs_tgt, 1.0, bank, p, q, hdg, c, dt)
         # Maximum until 300 KIAS, then Military (TAKEOFF flap limit 370 KIAS, gear transient 260 KIAS)
-        ev("THROTTLE1_SET", 16383 if ias < 300 else 11141)
+        # 2026-11-06 (F5 dry 2, cfg=up): from a 227 KIAS go-around the clean jet reached 271 KIAS before the climb criterion
+        # raised the gear (transient limit 260) -> no-flap: Military (FM 2-29 "Military, Maximum if needed"), and the gear
+        # goes up at > 245 KIAS once clear of the ground in any configuration
+        ev("THROTTLE1_SET", 16383 if ias < 300 and CFG != "up" else 11141)
         # FM 2-29: gear UP once climbing, flaps TAKEOFF at ≥ 180 KIAS (≥ 30 s), UP at ≥ 260 KIAS; done when clean
-        if vs > 500 and agl > 200 and not res.get("ga_gear"):          # climb established
+        if ((vs > 500 and agl > 200) or (ias > 245 and agl > 50)) and not res.get("ga_gear"):   # climb established / gear limit
             res["ga_gear"] = True
             ev("GEAR_UP")
         if res.get("ga_gear") and ias >= 180 and not res.get("ga_flaps"):
             res["ga_flaps"] = t
-            ev("FLAPS_1")                                             # TAKEOFF
+            # 2026-11-06 (F5 dry 1, cfg=up): FLAPS_1 EXTENDED the flaps from UP at 250 KIAS with the 8° no-flap trim ->
+            # pitch-up to 38° at full nose-down stick. The FM 2-29 step retracts LAND -> TAKEOFF; only for cfg=land
+            if CFG == "land":
+                ev("FLAPS_1")                                         # TAKEOFF
+        # 2026-11-06 (F5 dry 1): no trim management in the go-around - with the elevator command at the nose-down clamp
+        # (6 000 = stabilizer -5°) the approach trim kept the nose rising -> trim relief like a pilot: 1°/s nose down
+        # while the command is within 10 % of the clamp, not below 1°
+        if res.get("cmd_e", 0.0) > 5400:
+            trim_now = g("ELEVATOR_TRIM_POSITION") * DEG
+            if trim_now > 1.0:
+                aq.set("ELEVATOR_TRIM_POSITION", max(1.0, trim_now - 1.0 * dt) / DEG)
+                res["ga_trim_relief"] = res.get("ga_trim_relief", 0) + 1
+        if theta > 25 and not res.get("ga_pitch_warn"):
+            res["ga_pitch_warn"] = True
+            print(f"WARNING go-around pitch {theta:.0f}° at {ias:.0f} KIAS, elevator command {res.get('cmd_e', 0):.0f}")
         # TAKEOFF flap limit 370 KIAS (FM 3-36) has priority over the 30 s BLC cooling time -> retract at 340 KIAS latest
         if res.get("ga_flaps") and ((t - res["ga_flaps"] > 30 and ias >= 260) or ias >= 340) and not res.get("ga_clean"):
             res["ga_clean"] = True

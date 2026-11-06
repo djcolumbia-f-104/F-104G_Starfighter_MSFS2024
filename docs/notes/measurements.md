@@ -1417,3 +1417,7 @@ T3-J 1.34 s / 0.51 at ≈ 470 KIAS (= 1.41 s at 430 scaled) ✓; SP step at 430 
   19 000 lb; flight-test chart read on its sample problem), -302 ft/min, pitch 6.8°, centreline -1 ft, bank ≤ ±1.7°, 1 skip
   1-2 ft, ground roll 3 760 ft (no FM reference). The dry-5 "anomaly" (197 vs. 181) was a wrong prediction (minimum taken
   as target); flare law unchanged.
+- **F5 no-flap landing** (S13-F5; dry runs S12/S12b; card S3-bank-loop.md step 4): 17 429 lb (fuel 2 500 lb, FM "fuel low"),
+  final 237, TD 226 KIAS (Fig. A8-2 202: +12 %, script flare technique), +29 ft/min, pitch 5.2°, CL +4 ft, roll 4 594 ft.
+  Dry runs found two go-around script faults for cfg=up (FLAPS_1 extended the flaps -> pitch-up 38° at the virtual-runway
+  height; gear up at ≈ 271 KIAS) - fixed and re-flown (lesson 23).
